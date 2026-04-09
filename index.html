@@ -519,7 +519,7 @@ function iniciarSincronizacaoMesas(){
       if(mesaAtual){ const at=mesas.find(x=>x.id===mesaAtual.id); if(at) mesaAtual=at; renderCarrinho(); }
     }
     document.getElementById('loading-screen').classList.add('hide');
-  }, (err)=>{
+    if(!document.querySelector('.screen.active')) screen('mesas');
     // Erro no Firebase — usa dados locais
     console.warn('Firebase offline, usando dados locais:', err);
     atualizarIndicador(false);
@@ -840,6 +840,7 @@ document.getElementById('loading-msg').textContent='Carregando dados...';
 // Carrega dados locais primeiro (funciona mesmo offline)
 carregarMesasLocal();
 renderMesas();
+screen('mesas'); // ← EXIBE A TELA PRINCIPAL
 // Tenta conectar Firebase
 try{
   iniciarSincronizacaoMesas();
