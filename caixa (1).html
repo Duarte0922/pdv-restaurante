@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<title>🌙 Luar do Viena — Caixa</title>
+<style>
+:root{
+  --verde:#2fb36d;--verde-dark:#1d7b49;--verde-bg:#1a3d28;
+  --azul:#5e96ff;--azul-dark:#1b3158;
+  --bg:#0c100d;--card:#141a15;--card2:#1a201c;
+  --border:#1e2820;--border2:#252d28;--border3:#303a33;
+  --txt:#f4f7f1;--txt2:#acb5ac;--txt3:#6a8a6a;
+  --rad:16px;--rad-lg:22px;
+  --font:Inter,ui-sans-serif,system-ui,-apple-system,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:manipulation;}
+
+#app{width:100vw;height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+.screen{display:none;width:100%;height:100%;flex-direction:column;}
+.screen.active{display:flex;}
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-thumb{background:#2e3730;border-radius:999px;}
+
+.btn{cursor:pointer;border:1px solid var(--border3);border-radius:var(--rad);
+  background:linear-gradient(180deg,#232a25,#171c18);color:var(--txt);
+  font-family:var(--font);font-size:13px;padding:9px 14px;
+  transition:all .12s;user-select:none;touch-action:manipulation;}
+.btn:active{transform:scale(.96);opacity:.85;}
+.btn-verde{background:linear-gradient(180deg,#2aa160,#1d7b49);color:#fff;border-color:#258754;}
+.btn-azul{background:linear-gradient(180deg,#274f88,var(--azul-dark));border-color:var(--azul);}
+.btn-red{background:linear-gradient(180deg,#8b1a1a,#5c1010);color:#ffaaaa;border-color:#cc3333;}
+
+.header{background:rgba(20,26,21,.97);border-bottom:1px solid var(--border2);
+  padding:10px 14px;display:flex;justify-content:space-between;align-items:center;
+  flex-shrink:0;gap:8px;}
+.header-title{font-size:15px;font-weight:700;}
+
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);
+  backdrop-filter:blur(6px);align-items:center;justify-content:center;z-index:9999;padding:16px;}
+.modal-overlay.open{display:flex;}
+.modal-box{background:linear-gradient(180deg,#1a201c,#131814);border-radius:var(--rad-lg);
+  border:1px solid var(--border3);padding:22px 18px;width:100%;max-width:380px;
+  box-shadow:0 20px 50px rgba(0,0,0,.5);max-height:92vh;overflow-y:auto;}
+
+/* ── NAVEGAÇÃO ABAS ── */
+#nav-abas{display:flex;background:rgba(20,26,21,.95);border-bottom:1px solid var(--border2);
+  flex-shrink:0;}
+.aba{flex:1;padding:12px 8px;text-align:center;font-size:12px;font-weight:600;
+  cursor:pointer;color:var(--txt2);border-bottom:2px solid transparent;
+  transition:all .15s;user-select:none;}
+.aba.ativa{color:var(--verde);border-bottom-color:var(--verde);}
+.aba-content{display:none;flex:1;overflow-y:auto;padding:12px;}
+.aba-content.ativa{display:block;}
+
+/* ── CARDS TOTAIS ── */
+.totais-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:10px;}
+@media(min-width:700px){.totais-grid{grid-template-columns:repeat(4,1fr);}}
+.total-card{background:rgba(20,26,21,.96);border:1px solid var(--border2);
+  border-radius:var(--rad-lg);padding:14px 12px;text-align:center;}
+.total-label{font-size:12px;color:var(--txt2);margin-bottom:6px;}
+.total-valor{font-size:22px;font-weight:700;}
+
+/* ── HISTÓRICO VENDAS ── */
+.venda-item{background:linear-gradient(180deg,#171c18,#131814);border:1px solid var(--border2);
+  border-radius:14px;padding:10px 14px;margin-bottom:8px;}
+
+/* ── MESAS NO CAIXA ── */
+#caixa-mesa-grid{display:grid;gap:8px;margin-top:8px;}
+@media(min-width:600px){#caixa-mesa-grid{grid-template-columns:repeat(4,1fr);}}
+@media(min-width:900px){#caixa-mesa-grid{grid-template-columns:repeat(6,1fr);}}
+@media(max-width:599px){#caixa-mesa-grid{grid-template-columns:repeat(3,1fr);}}
+
+.caixa-mesa-card{border-radius:14px;padding:10px 6px;text-align:center;
+  border:1px solid;cursor:pointer;transition:transform .1s;}
+.caixa-mesa-card:active{transform:scale(.94);}
+
+/* ── ALERTAS IMPRESSÃO ── */
+#alertas-container{position:fixed;top:60px;right:12px;z-index:9998;
+  display:flex;flex-direction:column;gap:8px;max-width:300px;width:90%;}
+.alerta{background:#141a15;border:2px solid var(--verde);border-radius:14px;
+  padding:14px;box-shadow:0 8px 28px rgba(0,0,0,.6);animation:slideIn .3s ease;}
+@keyframes slideIn{from{transform:translateX(120%);opacity:0;}to{transform:translateX(0);opacity:1;}}
+.alerta-titulo{font-size:15px;font-weight:700;color:var(--verde);margin-bottom:4px;}
+.alerta-sub{font-size:11px;color:var(--txt2);margin-bottom:10px;}
+.alerta-itens{font-size:12px;color:#c4d4c4;margin-bottom:10px;line-height:1.7;}
+
+/* INPUT DATA */
+input[type=date]{background:#1a201c;border:1px solid var(--border3);border-radius:10px;
+  color:var(--txt);font-family:var(--font);font-size:13px;padding:8px 12px;
+  cursor:pointer;}
+input[type=number]{background:#1a201c;border:1px solid var(--border3);border-radius:10px;
+  color:var(--txt);font-family:var(--font);font-size:16px;padding:10px 12px;}
+
+/* ── FATURAMENTO ── */
+.fat-card{background:linear-gradient(180deg,#1a2e1e,#111912);border:1px solid #2a4a30;
+  border-radius:var(--rad-lg);padding:14px 16px;margin-bottom:10px;}
+.fat-periodo{font-size:11px;color:var(--txt2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;}
+.fat-valor{font-size:28px;font-weight:700;color:var(--verde);}
+.fat-sub{font-size:12px;color:#8ecfaa;margin-top:2px;}
+.fat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;}
+.fat-mini{background:rgba(20,26,21,.96);border:1px solid var(--border2);border-radius:14px;padding:10px;text-align:center;}
+.fat-mini-label{font-size:10px;color:var(--txt2);margin-bottom:4px;}
+.fat-mini-val{font-size:16px;font-weight:700;}
+/* ── SENHA INPUT ── */
+.senha-input{width:100%;padding:14px;text-align:center;font-size:22px;font-weight:700;
+  letter-spacing:8px;background:#1a201c;border:1px solid var(--border3);border-radius:14px;
+  color:var(--txt);font-family:var(--font);}
+
+</style>
+</head>
+<body>
+
+<div id="alertas-container"></div>
+
+<div id="app">
+
+<!-- ══ TELA PRINCIPAL ══ -->
+<div id="screen-main" class="screen">
+  <div class="header">
+    <div>
+      <div class="header-title">🌙 Luar do Viena — Caixa</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <div id="sync-indicator" style="font-size:10px;padding:4px 10px;border-radius:999px;background:var(--verde-bg);color:var(--verde);">● Online</div>
+      <button class="btn" onclick="abrirConfig()" style="font-size:12px;padding:7px 10px;">⚙ Config</button>
+    </div>
+  </div>
+
+  <!-- ABAS -->
+  <div id="nav-abas">
+    <div class="aba ativa" onclick="mudarAba('mesas')">🪑 Mesas</div>
+    <div class="aba" onclick="mudarAba('caixa')">💰 Caixa</div>
+    <div class="aba" onclick="mudarAba('relatorio')">📊 Relatório</div>
+    <div class="aba" onclick="pedirSenhaFaturamento()">📈 Faturamento</div>
+  </div>
+
+  <!-- ABA MESAS -->
+  <div class="aba-content ativa" id="aba-mesas">
+    <div style="font-size:11px;color:var(--txt2);margin-bottom:8px;display:flex;gap:14px;">
+      <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#2f9d64;margin-right:4px;"></span>Livre</span>
+      <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#cf5b74;margin-right:4px;"></span>Ocupada</span>
+      <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#c89a2a;margin-right:4px;"></span>Conta</span>
+    </div>
+    <div id="caixa-mesa-grid"></div>
+    <div style="margin-top:10px;display:flex;justify-content:space-around;font-size:12px;color:var(--txt2);">
+      <span id="c-stat-livre">0 livres</span>
+      <span id="c-stat-ocup">0 ocupadas</span>
+      <span id="c-stat-conta">0 conta</span>
+    </div>
+  </div>
+
+  <!-- ABA CAIXA (dia atual) -->
+  <div class="aba-content" id="aba-caixa">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <div style="font-size:13px;font-weight:600;" id="caixa-data-hoje"></div>
+      <div style="display:flex;gap:6px;">
+        <button class="btn btn-azul" onclick="imprimirCaixaHoje()" style="font-size:12px;padding:7px 10px;">🖨 Imprimir</button>
+        <button class="btn btn-red" onclick="confirmarFecharCaixa()" style="font-size:12px;padding:7px 10px;">🔒 Fechar</button>
+      </div>
+    </div>
+    <div class="totais-grid" id="caixa-totais-hoje"></div>
+    <div style="background:linear-gradient(180deg,#1a2e1e,#111912);border:1px solid #2a4a30;border-radius:var(--rad-lg);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <span style="font-size:14px;font-weight:600;color:#8ecfaa;">Total do Dia</span>
+      <span style="font-size:28px;font-weight:700;color:var(--verde);" id="caixa-total-hoje">R$ 0,00</span>
+    </div>
+    <div style="background:rgba(20,26,21,.96);border:1px solid var(--border2);border-radius:var(--rad-lg);overflow:hidden;">
+      <div style="padding:10px 14px;border-bottom:1px solid var(--border2);display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:13px;font-weight:600;">Pedidos Fechados</span>
+        <span style="font-size:12px;color:var(--txt2);" id="caixa-qtd-hoje">0 vendas</span>
+      </div>
+      <div id="caixa-historico-hoje" style="padding:6px 8px;max-height:300px;overflow-y:auto;"></div>
+    </div>
+  </div>
+
+  <!-- ABA RELATÓRIO POR DATA -->
+  <div class="aba-content" id="aba-relatorio">
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
+      <div>
+        <div style="font-size:11px;color:var(--txt2);margin-bottom:4px;">Selecione a data:</div>
+        <input type="date" id="data-relatorio">
+      </div>
+      <button class="btn btn-verde" onclick="carregarRelatorio()" style="align-self:flex-end;padding:9px 16px;">Buscar</button>
+      <button class="btn btn-azul" onclick="imprimirRelatorio()" style="align-self:flex-end;padding:9px 16px;">🖨 Imprimir</button>
+    </div>
+    <div id="relatorio-resultado">
+      <div style="text-align:center;padding:40px;color:var(--txt2);">Selecione uma data e clique em Buscar</div>
+    </div>
+  </div>
+
+  <!-- ABA FATURAMENTO (protegida por senha) -->
+  <div class="aba-content" id="aba-faturamento">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+      <div style="font-size:13px;font-weight:600;" id="fat-titulo">Faturamento</div>
+      <div style="display:flex;gap:6px;">
+        <button class="btn" onclick="mudarPeriodoFat('semana')" id="btn-fat-sem" style="font-size:12px;padding:7px 12px;">Semana</button>
+        <button class="btn btn-verde" onclick="mudarPeriodoFat('mes')" id="btn-fat-mes" style="font-size:12px;padding:7px 12px;">Mês</button>
+      </div>
+    </div>
+    <div id="fat-resultado"><div style="text-align:center;padding:40px;color:var(--txt2);">Carregando...</div></div>
+  </div>
+
+</div>
+
+</div><!-- #app -->
+
+
+<!-- MODAL SENHA FATURAMENTO -->
+<div class="modal-overlay" id="modal-senha-fat">
+  <div class="modal-box" style="text-align:center;">
+    <div style="font-size:28px;margin-bottom:8px;">🔐</div>
+    <div style="font-size:15px;font-weight:600;margin-bottom:6px;">Área do Proprietário</div>
+    <div style="font-size:12px;color:var(--txt2);margin-bottom:16px;">Digite a senha para acessar o faturamento</div>
+    <input class="senha-input" type="password" id="input-senha-fat" maxlength="10" placeholder="••••"
+      oninput="this.value=this.value.replace(/[^0-9]/g,'')"
+      onkeydown="if(event.key==='Enter')confirmarSenhaFat()">
+    <div style="font-size:11px;color:#cc3333;margin-top:8px;min-height:16px;" id="msg-senha-fat"></div>
+    <div style="display:flex;gap:8px;margin-top:16px;">
+      <button class="btn" onclick="fecharModal('modal-senha-fat');document.getElementById('input-senha-fat').value=''" style="flex:1;">Cancelar</button>
+      <button class="btn btn-verde" onclick="confirmarSenhaFat()" style="flex:1;font-weight:700;">Entrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL TROCAR SENHA -->
+<div class="modal-overlay" id="modal-trocar-senha">
+  <div class="modal-box">
+    <div style="font-size:15px;font-weight:700;margin-bottom:16px;">🔑 Trocar Senha do Proprietário</div>
+    <div style="font-size:12px;color:var(--txt2);margin-bottom:8px;">Nova senha (somente números):</div>
+    <input class="senha-input" type="password" id="input-nova-senha" maxlength="10" placeholder="nova senha"
+      oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+    <div style="font-size:12px;color:var(--txt2);margin-top:10px;margin-bottom:8px;">Confirmar nova senha:</div>
+    <input class="senha-input" type="password" id="input-confirma-senha" maxlength="10" placeholder="repita a senha"
+      oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+    <div style="font-size:11px;color:#cc3333;margin-top:8px;min-height:16px;" id="msg-trocar-senha"></div>
+    <div style="display:flex;gap:8px;margin-top:16px;">
+      <button class="btn" onclick="fecharModal('modal-trocar-senha')" style="flex:1;">Cancelar</button>
+      <button class="btn btn-verde" onclick="confirmarTrocarSenha()" style="flex:1;font-weight:700;">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL LIMPAR DADOS (dentro de config, protegido por senha master) -->
+<div class="modal-overlay" id="modal-limpar">
+  <div class="modal-box" style="text-align:center;">
+    <div style="font-size:36px;margin-bottom:10px;">⚠️</div>
+    <div style="font-size:15px;font-weight:700;color:#ffaaaa;margin-bottom:8px;">Limpar TODOS os Dados de Teste?</div>
+    <div style="font-size:12px;color:var(--txt2);margin-bottom:6px;line-height:1.6;">
+      Esta ação irá:<br>
+      • Zerar todas as mesas<br>
+      • Apagar pedidos pendentes da cozinha<br>
+      • Apagar caixa do dia<br>
+      • Apagar fila de impressão
+    </div>
+    <div style="font-size:11px;background:#3a1a1a;border:1px solid #cc3333;border-radius:10px;padding:8px;color:#ff8080;margin-bottom:16px;">
+      ⚠ Ação irreversível — use apenas para resetar antes de entregar ao cliente
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn" onclick="fecharModal('modal-limpar')" style="flex:1;">Cancelar</button>
+      <button class="btn btn-red" onclick="executarLimpeza()" style="flex:1;font-weight:700;">Confirmar Reset</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DETALHES MESA -->
+<div class="modal-overlay" id="modal-mesa-detalhe">
+  <div class="modal-box">
+    <div style="font-size:16px;font-weight:600;margin-bottom:14px;" id="modal-mesa-titulo">Mesa</div>
+    <div id="modal-mesa-conteudo"></div>
+    <button class="btn" onclick="fecharModal('modal-mesa-detalhe')" style="width:100%;margin-top:14px;color:var(--txt2);">Fechar</button>
+  </div>
+</div>
+
+<!-- MODAL CONFIGURAÇÕES -->
+<div class="modal-overlay" id="modal-config">
+  <div class="modal-box">
+    <div style="font-size:16px;font-weight:700;margin-bottom:16px;">⚙ Configurações</div>
+    <div style="margin-bottom:14px;">
+      <div style="font-size:13px;font-weight:600;margin-bottom:6px;">Número de Mesas</div>
+      <div style="font-size:12px;color:var(--txt2);margin-bottom:8px;">Quantas mesas o restaurante tem?</div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input type="number" id="input-num-mesas" min="1" max="60" value="16"
+          style="width:90px;">
+        <span style="font-size:13px;color:var(--txt2);">mesas</span>
+      </div>
+    </div>
+    <div style="background:rgba(47,179,109,.08);border:1px solid var(--verde-bg);border-radius:12px;padding:10px;font-size:12px;color:#8ecfaa;margin-bottom:16px;">
+      ⚠ Ao salvar, o número de mesas será atualizado em todos os dispositivos imediatamente.
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn" onclick="fecharModal('modal-config')" style="flex:1;">Cancelar</button>
+      <button class="btn btn-verde" onclick="salvarConfig()" style="flex:1;font-weight:700;">Salvar</button>
+    </div>
+    <div style="border-top:1px solid var(--border2);margin-top:18px;padding-top:16px;">
+      <div style="font-size:11px;color:var(--txt2);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;">Ferramentas de reset</div>
+      <button class="btn btn-red" onclick="fecharModal('modal-config');abrirModal('modal-limpar')" style="width:100%;font-size:12px;margin-bottom:8px;">🗑 Limpar todos os dados de teste</button>
+      <button class="btn" onclick="fecharModal('modal-config');pedirSenhaTrocar()" style="width:100%;font-size:12px;color:var(--txt2);">🔑 Trocar senha do proprietário</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL FECHAR CAIXA -->
+<div class="modal-overlay" id="modal-fechar-caixa">
+  <div class="modal-box" style="text-align:center;">
+    <div style="font-size:36px;margin-bottom:12px;">🔒</div>
+    <div style="font-size:16px;font-weight:600;margin-bottom:8px;">Fechar Caixa do Dia?</div>
+    <div style="font-size:13px;color:var(--txt2);margin-bottom:18px;">Imprima o relatório antes. Esta ação apaga o histórico do dia atual do cache local.</div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn" onclick="fecharModal('modal-fechar-caixa')" style="flex:1;">Cancelar</button>
+      <button class="btn btn-red" onclick="fecharCaixa()" style="flex:1;font-weight:700;">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set, onValue, update, remove, push, get, query, orderByChild, equalTo, onChildAdded }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const FB={
+  apiKey:"AIzaSyAXMDwp1-VT3FdBMHkihTPESWL8smJLZcc",
+  authDomain:"pdv-restaurante-a7b75.firebaseapp.com",
+  databaseURL:"https://pdv-restaurante-a7b75-default-rtdb.firebaseio.com",
+  projectId:"pdv-restaurante-a7b75",
+  storageBucket:"pdv-restaurante-a7b75.firebasestorage.app",
+  messagingSenderId:"262025117951",
+  appId:"1:262025117951:web:384a6ec2567d8a231bccca"
+};
+const db=getDatabase(initializeApp(FB));
+
+const fmt=v=>'R$ '+Number(v).toFixed(2).replace('.',',');
+const nomePag=p=>({dinheiro:'Dinheiro',cartao:'Cartão',pix:'Pix'}[p]||'—');
+const iconePag=p=>({dinheiro:'💵',cartao:'💳',pix:'📲'}[p]||'❓');
+const corPag=p=>({dinheiro:'#2fb36d',cartao:'#5e96ff',pix:'#c89a2a'}[p]||'#acb5ac');
+const abrirModal=id=>document.getElementById(id).classList.add('open');
+const fecharModal=id=>document.getElementById(id).classList.remove('open');
+window.fecharModal=fecharModal;
+
+let mesas=[];
+let caixaHoje={dinheiro:0,cartao:0,pix:0,vendas:{}};
+const hoje=new Date().toLocaleDateString('pt-BR').replace(/\//g,'-');
+
+// Define data padrão no input de relatório
+document.getElementById('data-relatorio').value=new Date().toISOString().slice(0,10);
+document.getElementById('caixa-data-hoje').textContent='Caixa — '+new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'});
+
+// ── ABAS ─────────────────────────────────────────────────────────
+window.mudarAba=function(aba){
+  const nomes=['mesas','caixa','relatorio','faturamento'];
+  document.querySelectorAll('.aba').forEach((el,i)=>el.classList.toggle('ativa',nomes[i]===aba));
+  document.querySelectorAll('.aba-content').forEach(el=>el.classList.remove('ativa'));
+  document.getElementById('aba-'+aba).classList.add('ativa');
+};
+
+// ── MESAS (visão caixa) ───────────────────────────────────────────
+function renderMesasCaixa(){
+  const grid=document.getElementById('caixa-mesa-grid');
+  grid.innerHTML='';
+  let liv=0,ocu=0,con=0;
+  mesas.forEach(m=>{
+    if(m.status==='livre')liv++;
+    else if(m.status==='ocupada')ocu++;
+    else con++;
+    const cor=m.status==='livre'?'#2f9d64':m.status==='ocupada'?'#cf5b74':'#c89a2a';
+    const bg=m.status==='livre'?'linear-gradient(180deg,#edf8f0,#e0f5e6)':m.status==='ocupada'?'linear-gradient(180deg,#fff0f3,#ffe6ea)':'linear-gradient(180deg,#fff8e8,#fff2d2)';
+    const total=(m.pedido||[]).reduce((s,i)=>s+i.preco*i.qtd,0);
+    const el=document.createElement('div');
+    el.className='caixa-mesa-card';
+    el.style.cssText=`background:${bg};border-color:${cor};`;
+    el.innerHTML=`<div style="font-size:13px;font-weight:700;color:${cor};">Mesa ${String(m.id).padStart(2,'0')}</div>
+      <div style="font-size:10px;color:${cor};margin:2px 0;">${m.status==='livre'?'Livre':m.status==='ocupada'?'Ocupada':'Conta'}</div>
+      ${total>0?`<div style="font-size:12px;font-weight:700;color:${cor};">${fmt(total)}</div>`:''}`;
+    el.onclick=()=>verDetalhesMesa(m);
+    grid.appendChild(el);
+  });
+  document.getElementById('c-stat-livre').textContent=liv+' livres';
+  document.getElementById('c-stat-ocup').textContent=ocu+' ocupadas';
+  document.getElementById('c-stat-conta').textContent=con+' conta';
+}
+
+function verDetalhesMesa(m){
+  document.getElementById('modal-mesa-titulo').textContent='Mesa '+String(m.id).padStart(2,'0')+' — '+
+    (m.status==='livre'?'Livre':m.status==='ocupada'?'Ocupada':'Conta solicitada');
+  const pedido=m.pedido||[];
+  if(!pedido.length){
+    document.getElementById('modal-mesa-conteudo').innerHTML='<p style="color:var(--txt2);font-size:13px;">Mesa vazia.</p>';
+  }else{
+    const total=pedido.reduce((s,i)=>s+i.preco*i.qtd,0);
+    document.getElementById('modal-mesa-conteudo').innerHTML=
+      pedido.map(it=>`<div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px solid var(--border2);">
+        <span>${it.qtd}x ${it.nome}${it.obs?` <em style="font-size:11px;color:var(--txt2);">(${it.obs})</em>`:''}</span>
+        <span style="font-weight:600;">${fmt(it.preco*it.qtd)}</span>
+      </div>`).join('')+
+      `<div style="display:flex;justify-content:space-between;font-size:14px;font-weight:700;padding:10px 0;color:var(--verde);">
+        <span>Total</span><span>${fmt(total)}</span>
+      </div>`;
+  }
+  abrirModal('modal-mesa-detalhe');
+}
+
+// ── CAIXA HOJE ───────────────────────────────────────────────────
+function renderCaixaHoje(c){
+  const vendas=c.vendas?Object.values(c.vendas):[];
+  const total=(c.dinheiro||0)+(c.cartao||0)+(c.pix||0);
+  document.getElementById('caixa-total-hoje').textContent=fmt(total);
+  document.getElementById('caixa-qtd-hoje').textContent=vendas.length+' vendas';
+  document.getElementById('caixa-totais-hoje').innerHTML=[
+    {label:'💵 Dinheiro',val:c.dinheiro||0,cor:'#2fb36d'},
+    {label:'💳 Cartão',val:c.cartao||0,cor:'#5e96ff'},
+    {label:'📲 Pix',val:c.pix||0,cor:'#c89a2a'},
+    {label:'📦 Vendas',val:vendas.length,cor:'#acb5ac',qtd:true},
+  ].map(x=>`<div class="total-card">
+    <div class="total-label">${x.label}</div>
+    <div class="total-valor" style="color:${x.cor};">${x.qtd?x.val:fmt(x.val)}</div>
+  </div>`).join('');
+  const hist=document.getElementById('caixa-historico-hoje');
+  if(!vendas.length){hist.innerHTML='<div style="text-align:center;padding:20px;color:var(--txt2);font-size:13px;">Nenhuma venda hoje</div>';return;}
+  hist.innerHTML=vendas.slice().reverse().map(v=>`<div class="venda-item">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:13px;font-weight:700;">Mesa ${String(v.mesa).padStart(2,'0')}</span>
+        <span style="font-size:11px;color:var(--txt2);">${v.hora}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span>${iconePag(v.pagamento)}</span>
+        <span style="font-size:14px;font-weight:700;color:${corPag(v.pagamento)};">${fmt(v.total)}</span>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--txt2);">${(v.itens||[]).slice(0,3).map(it=>it.qtd+'x '+it.nome).join(', ')+((v.itens||[]).length>3?' +mais...':'')}</div>
+  </div>`).join('');
+}
+
+// ── RELATÓRIO POR DATA ───────────────────────────────────────────
+window.carregarRelatorio=async function(){
+  const inputVal=document.getElementById('data-relatorio').value;
+  if(!inputVal){alert('Selecione uma data.');return;}
+  const [ano,mes,dia]=inputVal.split('-');
+  const dataFB=`${dia}-${mes}-${ano}`;
+  document.getElementById('relatorio-resultado').innerHTML='<div style="text-align:center;padding:30px;color:var(--txt2);">Carregando...</div>';
+  try{
+    const snap=await get(ref(db,`caixa/${dataFB}`));
+    const dados=snap.val();
+    if(!dados){
+      document.getElementById('relatorio-resultado').innerHTML='<div style="text-align:center;padding:40px;color:var(--txt2);">Nenhum dado encontrado para esta data.</div>';
+      return;
+    }
+    const vendas=dados.vendas?Object.values(dados.vendas):[];
+    const total=(dados.dinheiro||0)+(dados.cartao||0)+(dados.pix||0);
+    const dataFormatada=`${dia}/${mes}/${ano}`;
+    document.getElementById('relatorio-resultado').innerHTML=`
+      <div style="font-size:14px;font-weight:700;margin-bottom:10px;color:var(--verde);">📅 ${dataFormatada}</div>
+      <div class="totais-grid" style="margin-bottom:10px;">
+        ${[
+          {label:'💵 Dinheiro',val:dados.dinheiro||0,cor:'#2fb36d'},
+          {label:'💳 Cartão',val:dados.cartao||0,cor:'#5e96ff'},
+          {label:'📲 Pix',val:dados.pix||0,cor:'#c89a2a'},
+          {label:'📦 Vendas',val:vendas.length,cor:'#acb5ac',qtd:true},
+        ].map(x=>`<div class="total-card">
+          <div class="total-label">${x.label}</div>
+          <div class="total-valor" style="color:${x.cor};">${x.qtd?x.val:fmt(x.val)}</div>
+        </div>`).join('')}
+      </div>
+      <div style="background:linear-gradient(180deg,#1a2e1e,#111912);border:1px solid #2a4a30;border-radius:var(--rad-lg);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <span style="font-size:14px;font-weight:600;color:#8ecfaa;">Total do Dia</span>
+        <span style="font-size:26px;font-weight:700;color:var(--verde);">${fmt(total)}</span>
+      </div>
+      <div style="background:rgba(20,26,21,.96);border:1px solid var(--border2);border-radius:var(--rad-lg);overflow:hidden;">
+        <div style="padding:10px 14px;border-bottom:1px solid var(--border2);font-size:13px;font-weight:600;">Vendas do dia</div>
+        <div style="padding:6px 8px;">
+          ${!vendas.length?'<div style="text-align:center;padding:16px;color:var(--txt2);font-size:13px;">Nenhuma venda</div>':
+          vendas.slice().reverse().map(v=>`<div class="venda-item">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span style="font-size:13px;font-weight:700;">Mesa ${String(v.mesa).padStart(2,'0')}</span>
+                <span style="font-size:11px;color:var(--txt2);">${v.hora}</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;">
+                <span>${iconePag(v.pagamento)}</span>
+                <span style="font-size:14px;font-weight:700;color:${corPag(v.pagamento)};">${fmt(v.total)}</span>
+              </div>
+            </div>
+            <div style="font-size:11px;color:var(--txt2);">${(v.itens||[]).map(it=>it.qtd+'x '+it.nome).join(', ')}</div>
+          </div>`).join('')}
+        </div>
+      </div>`;
+  }catch(e){
+    document.getElementById('relatorio-resultado').innerHTML='<div style="text-align:center;padding:40px;color:#ff8080;">Erro ao carregar. Verifique a conexão.</div>';
+  }
+};
+
+window.imprimirRelatorio=function(){
+  const inputVal=document.getElementById('data-relatorio').value;
+  const conteudo=document.getElementById('relatorio-resultado').innerHTML;
+  if(conteudo.includes('Selecione')){ alert('Busque os dados primeiro.'); return; }
+  const [ano,mes,dia]=inputVal.split('-');
+  const popup=window.open('','_blank','width=480,height=700');
+  if(!popup){alert('Libere pop-ups.');return;}
+  popup.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Relatório ${dia}/${mes}/${ano}</title>
+  <style>body{font-family:Arial,sans-serif;margin:0;padding:18px;color:#000;}
+  .totais-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px;}
+  .total-card{border:1px solid #ccc;border-radius:8px;padding:10px;text-align:center;}
+  .total-label{font-size:11px;color:#555;margin-bottom:4px;}
+  .total-valor{font-size:18px;font-weight:bold;}
+  .venda-item{border:1px solid #ddd;border-radius:8px;padding:8px 10px;margin-bottom:6px;}
+  @media print{button{display:none;}}</style></head><body>
+  <div style="text-align:center;border-bottom:2px dashed #000;padding-bottom:12px;margin-bottom:14px;">
+    <div style="font-size:20px;font-weight:bold;">🌙 LUAR DO VIENA</div>
+    <div style="font-size:14px;font-weight:bold;margin-top:4px;">RELATÓRIO DE CAIXA</div>
+    <div style="font-size:12px;margin-top:4px;">${dia}/${mes}/${ano}</div>
+  </div>
+  ${conteudo}
+  </body></html>`);
+  popup.document.close();
+  setTimeout(()=>{popup.print();popup.close();},400);
+};
+
+// ── IMPRESSÃO AUTOMÁTICA (monitor) ───────────────────────────────
+// IDs já exibidos nesta sessão — evita repetir ao recarregar a página
+const _alertasJaMostrados = new Set();
+
+function tocarBeep(){
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    [0,180,360].forEach(d=>{
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      o.connect(g);g.connect(ctx.destination);
+      o.frequency.value=880;
+      g.gain.setValueAtTime(0.3,ctx.currentTime+d/1000);
+      g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+d/1000+0.15);
+      o.start(ctx.currentTime+d/1000);o.stop(ctx.currentTime+d/1000+0.15);
+    });
+  }catch{}
+}
+
+function criarAlerta(titulo,subtitulo,itensHtml,onImprimir){
+  tocarBeep();
+  const div=document.createElement('div');
+  div.className='alerta';
+  div.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:2px;">
+    <div class="alerta-titulo">${titulo}</div>
+    <button onclick="this.closest('.alerta').remove()" style="background:none;border:none;cursor:pointer;color:var(--txt2);font-size:22px;line-height:1;padding:0 0 0 8px;flex-shrink:0;" title="Fechar">×</button>
+  </div>
+    <div class="alerta-sub">${subtitulo}</div>
+    <div class="alerta-itens">${itensHtml}</div>
+    <button style="width:100%;padding:10px;background:linear-gradient(180deg,#2aa160,#1d7b49);border:none;border-radius:10px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;" id="btn-al-${Date.now()}">🖨 IMPRIMIR</button>`;
+  document.getElementById('alertas-container').appendChild(div);
+  div.querySelector('button[id]').onclick=function(){
+    this.disabled=true;this.textContent='Imprimindo...';
+    onImprimir();
+    setTimeout(()=>div.remove(),600);
+  };
+}
+
+function imprimirComanda(pedido){
+  const popup=window.open('','_blank','width=420,height=580');
+  if(!popup)return;
+  const linhas=pedido.itens.map(it=>`<div style="padding:8px 0;border-bottom:1px dashed #ccc;">
+    <div style="display:flex;justify-content:space-between;"><strong style="font-size:15px;">${it.qtd}x ${it.nome}</strong><span>${fmt(it.preco*it.qtd)}</span></div>
+    ${it.obs?`<div style="font-size:12px;color:#555;">→ ${it.obs}</div>`:''}
+    <div style="font-size:10px;color:#777;text-transform:uppercase;">${it.setor||''}</div>
+  </div>`).join('');
+  popup.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Cozinha Mesa ${String(pedido.mesa).padStart(2,'0')}</title>
+  <style>body{font-family:Arial,sans-serif;margin:0;padding:16px;color:#000;}@media print{button{display:none;}}</style></head><body>
+  <div style="max-width:300px;margin:0 auto;">
+    <div style="text-align:center;border-bottom:2px dashed #000;padding-bottom:10px;margin-bottom:12px;">
+      <div style="font-size:22px;font-weight:bold;">COMANDA</div>
+      <div style="font-size:18px;font-weight:bold;margin-top:6px;">Mesa ${String(pedido.mesa).padStart(2,'0')}</div>
+      <div style="font-size:12px;margin-top:4px;">${pedido.data}</div>
+      <div style="font-size:11px;">#${pedido.codigo}</div>
+    </div>
+    ${linhas}
+    <div style="margin-top:14px;text-align:center;font-size:11px;border-top:2px dashed #000;padding-top:10px;">🌙 Luar do Viena</div>
+  </div></body></html>`);
+  popup.document.close();
+  setTimeout(()=>{popup.print();popup.close();},400);
+}
+
+function imprimirContaMesa(dados){
+  const itens=dados.itens||[];
+  const sub=itens.reduce((s,i)=>s+i.preco*i.qtd,0);
+  const desc=dados.desconto||0;
+  const total=sub-(sub*(desc/100));
+  const popup=window.open('','_blank','width=420,height=620');
+  if(!popup)return;
+  popup.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Conta Mesa ${String(dados.mesa).padStart(2,'0')}</title>
+  <style>body{font-family:Arial,sans-serif;margin:0;padding:18px;color:#000;}table{width:100%;border-collapse:collapse;}@media print{button{display:none;}}</style></head><body>
+  <div style="max-width:320px;margin:0 auto;">
+    <div style="text-align:center;border-bottom:2px dashed #000;padding-bottom:12px;margin-bottom:14px;">
+      <div style="font-size:22px;font-weight:bold;">🌙 LUAR DO VIENA</div>
+      <div style="font-size:13px;margin-top:4px;">Mesa ${String(dados.mesa).padStart(2,'0')} · ${dados.data}</div>
+    </div>
+    <table>
+      <tbody>${itens.map(it=>`<tr><td style="padding:5px 0;">${it.qtd}x ${it.nome}${it.obs?' ('+it.obs+')':''}</td><td style="text-align:right;font-weight:bold;">${fmt(it.preco*it.qtd)}</td></tr>`).join('')}</tbody>
+    </table>
+    <div style="border-top:1px dashed #000;margin-top:12px;padding-top:10px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span>Subtotal</span><strong>${fmt(sub)}</strong></div>
+      ${desc?`<div style="display:flex;justify-content:space-between;margin-bottom:4px;color:#555;"><span>Desconto (${desc}%)</span><span>-${fmt(sub*(desc/100))}</span></div>`:''}
+      <div style="display:flex;justify-content:space-between;font-size:18px;font-weight:bold;margin-top:8px;"><span>TOTAL</span><span>${fmt(total)}</span></div>
+      ${dados.pagamento?`<div style="margin-top:8px;font-size:12px;color:#555;">Pagamento: ${nomePag(dados.pagamento)}</div>`:''}
+    </div>
+    <div style="text-align:center;margin-top:16px;font-size:11px;border-top:2px dashed #000;padding-top:10px;">Obrigado pela visita! 🌙</div>
+  </div></body></html>`);
+  popup.document.close();
+  setTimeout(()=>{popup.print();popup.close();},400);
+}
+
+// Escuta pedidos cozinha pendentes
+onChildAdded(query(ref(db,'pedidos_cozinha'),orderByChild('status'),equalTo('pendente')),(snap)=>{
+  const id=snap.key;
+  if(_alertasJaMostrados.has(id)) return; // já foi mostrado nesta sessão
+  _alertasJaMostrados.add(id);
+  const p=snap.val();
+  const itensHtml=p.itens.map(it=>`<div>• <strong>${it.qtd}x ${it.nome}</strong>${it.obs?` (${it.obs})`:''}  <small style="color:var(--txt2);">[${it.setor||''}]</small></div>`).join('');
+  criarAlerta(`🔔 MESA ${String(p.mesa).padStart(2,'0')} — COZINHA`,p.data+' · #'+p.codigo,itensHtml,()=>{
+    imprimirComanda(p);
+    update(ref(db,'pedidos_cozinha/'+id),{status:'impresso',impressoEm:Date.now()});
+  });
+});
+
+// Escuta contas para imprimir
+onChildAdded(query(ref(db,'contas_imprimir'),orderByChild('status'),equalTo('pendente')),(snap)=>{
+  const id=snap.key;
+  if(_alertasJaMostrados.has(id)) return; // já foi mostrado nesta sessão
+  _alertasJaMostrados.add(id);
+  const d=snap.val();
+  const total=(d.itens||[]).reduce((s,i)=>s+i.preco*i.qtd,0);
+  criarAlerta(`🧾 CONTA MESA ${String(d.mesa).padStart(2,'0')}`,`Total: ${fmt(total)}`,`Pagamento: ${nomePag(d.pagamento)||'?'}`,()=>{
+    imprimirContaMesa(d);
+    update(ref(db,'contas_imprimir/'+id),{status:'impresso',impressoEm:Date.now()});
+  });
+});
+
+// ── CONFIGURAÇÕES ─────────────────────────────────────────────────
+window.abrirConfig=function(){
+  get(ref(db,'config/numMesas')).then(s=>{
+    document.getElementById('input-num-mesas').value=s.val()||16;
+    abrirModal('modal-config');
+  });
+};
+
+window.salvarConfig=async function(){
+  const n=parseInt(document.getElementById('input-num-mesas').value)||16;
+  await set(ref(db,'config/numMesas'),n);
+  fecharModal('modal-config');
+  alert('✓ Número de mesas atualizado para '+n+'. O tablet será atualizado automaticamente!');
+};
+
+// ── FECHAR CAIXA ─────────────────────────────────────────────────
+window.confirmarFecharCaixa=()=>abrirModal('modal-fechar-caixa');
+window.fecharCaixa=async function(){
+  try{await remove(ref(db,'caixa/'+hoje));}catch{}
+  fecharModal('modal-fechar-caixa');
+  renderCaixaHoje({dinheiro:0,cartao:0,pix:0,vendas:{}});
+};
+
+// ── IMPRIMIR CAIXA HOJE ──────────────────────────────────────────
+window.imprimirCaixaHoje=function(){
+  const c=caixaHoje;
+  const vendas=c.vendas?Object.values(c.vendas):[];
+  const total=(c.dinheiro||0)+(c.cartao||0)+(c.pix||0);
+  const popup=window.open('','_blank','width=480,height=700');
+  if(!popup){alert('Libere pop-ups.');return;}
+  popup.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Caixa ${hoje}</title>
+  <style>body{font-family:Arial,sans-serif;margin:0;padding:18px;color:#000;}table{width:100%;border-collapse:collapse;}th,td{padding:5px 4px;font-size:13px;}th{border-bottom:1px solid #ccc;font-size:11px;color:#555;}@media print{button{display:none;}}</style></head><body>
+  <div style="max-width:380px;margin:0 auto;">
+    <div style="text-align:center;border-bottom:2px dashed #000;padding-bottom:12px;margin-bottom:14px;">
+      <div style="font-size:20px;font-weight:bold;">🌙 LUAR DO VIENA</div>
+      <div style="font-size:15px;font-weight:bold;margin-top:4px;">FECHAMENTO DE CAIXA</div>
+      <div style="font-size:12px;margin-top:4px;">${new Date().toLocaleString('pt-BR')}</div>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:14px;"><span>💵 Dinheiro</span><strong>${fmt(c.dinheiro||0)}</strong></div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:14px;"><span>💳 Cartão</span><strong>${fmt(c.cartao||0)}</strong></div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:12px;font-size:14px;"><span>📲 Pix</span><strong>${fmt(c.pix||0)}</strong></div>
+    <div style="display:flex;justify-content:space-between;border-top:2px solid #000;padding-top:10px;margin-bottom:16px;font-size:18px;font-weight:bold;"><span>TOTAL GERAL</span><span>${fmt(total)}</span></div>
+    <table><thead><tr><th>Hora</th><th>Mesa</th><th>Pagamento</th><th style="text-align:right;">Total</th></tr></thead>
+    <tbody>${vendas.map(v=>`<tr><td>${v.hora}</td><td style="text-align:center;">Mesa ${String(v.mesa).padStart(2,'0')}</td><td style="text-align:center;">${nomePag(v.pagamento)}</td><td style="text-align:right;font-weight:bold;">${fmt(v.total)}</td></tr>`).join('')}</tbody></table>
+    <div style="text-align:center;margin-top:16px;font-size:11px;border-top:2px dashed #000;padding-top:10px;">${vendas.length} vendas · Obrigado!</div>
+  </div></body></html>`);
+  popup.document.close();
+  setTimeout(()=>{popup.print();popup.close();},400);
+};
+
+// ── FIREBASE SYNC ─────────────────────────────────────────────────
+onValue(ref(db,'mesas'),(snap)=>{
+  const dados=snap.val();
+  if(!dados)return;
+  mesas=Object.values(dados).sort((a,b)=>a.id-b.id);
+  renderMesasCaixa();
+});
+
+onValue(ref(db,'caixa/'+hoje),(snap)=>{
+  const dados=snap.val()||{dinheiro:0,cartao:0,pix:0,vendas:{}};
+  caixaHoje=dados;
+  renderCaixaHoje(dados);
+});
+
+onValue(ref(db,'.info/connected'),(snap)=>{
+  const el=document.getElementById('sync-indicator');
+  const on=!!snap.val();
+  el.textContent=on?'● Online':'◌ Offline';
+  el.style.background=on?'var(--verde-bg)':'#3a1a1a';
+  el.style.color=on?'var(--verde)':'#ff8080';
+});
+
+
+// ── SENHA MASTER + PROPRIETÁRIO ───────────────────────────────
+const SENHA_MASTER = '4125';
+function getSenhaProprietario(){ return localStorage.getItem('lv_senha_prop') || ''; }
+function setSenhaProprietario(s){ localStorage.setItem('lv_senha_prop', s); }
+function senhaValida(s){ return s === SENHA_MASTER || (getSenhaProprietario() && s === getSenhaProprietario()); }
+
+window.pedirSenhaFaturamento=function(){
+  const senhaAtual = getSenhaProprietario();
+  if(!senhaAtual){
+    // Primeira vez — pede para criar senha
+    document.getElementById('msg-senha-fat').textContent = 'Primeiro acesso: crie uma senha numérica.';
+    document.getElementById('input-senha-fat').value='';
+    abrirModal('modal-senha-fat');
+  } else {
+    document.getElementById('msg-senha-fat').textContent='';
+    document.getElementById('input-senha-fat').value='';
+    abrirModal('modal-senha-fat');
+  }
+};
+
+window.confirmarSenhaFat=function(){
+  const v = document.getElementById('input-senha-fat').value.trim();
+  if(!v){ document.getElementById('msg-senha-fat').textContent='Digite a senha.'; return; }
+  const senhaAtual = getSenhaProprietario();
+  // Primeiro acesso — cria a senha
+  if(!senhaAtual){
+    if(v.length < 4){ document.getElementById('msg-senha-fat').textContent='Mínimo 4 dígitos.'; return; }
+    setSenhaProprietario(v);
+    fecharModal('modal-senha-fat');
+    document.getElementById('input-senha-fat').value='';
+    mudarAba('faturamento'); carregarFaturamento('semana');
+    return;
+  }
+  if(senhaValida(v)){
+    fecharModal('modal-senha-fat');
+    document.getElementById('input-senha-fat').value='';
+    mudarAba('faturamento'); carregarFaturamento('semana');
+  } else {
+    document.getElementById('msg-senha-fat').textContent='Senha incorreta.';
+    document.getElementById('input-senha-fat').value='';
+  }
+};
+
+window.pedirSenhaTrocar=function(){
+  // Só precisa da senha master para trocar
+  const nova = prompt('Digite a SENHA MASTER para autorizar a troca:');
+  if(!nova) return;
+  if(nova !== SENHA_MASTER){ alert('Senha master incorreta.'); return; }
+  document.getElementById('input-nova-senha').value='';
+  document.getElementById('input-confirma-senha').value='';
+  document.getElementById('msg-trocar-senha').textContent='';
+  abrirModal('modal-trocar-senha');
+};
+
+window.confirmarTrocarSenha=function(){
+  const nova = document.getElementById('input-nova-senha').value.trim();
+  const conf = document.getElementById('input-confirma-senha').value.trim();
+  if(nova.length < 4){ document.getElementById('msg-trocar-senha').textContent='Mínimo 4 dígitos.'; return; }
+  if(nova !== conf){ document.getElementById('msg-trocar-senha').textContent='As senhas não conferem.'; return; }
+  setSenhaProprietario(nova);
+  fecharModal('modal-trocar-senha');
+  alert('✓ Senha atualizada com sucesso!');
+};
+
+// ── LIMPAR TODOS OS DADOS (reset de teste) ────────────────────
+window.executarLimpeza=async function(){
+  fecharModal('modal-limpar');
+  try{
+    // Zera todas as mesas
+    const snapM=await get(ref(db,'mesas'));
+    if(snapM.val()){
+      const updates={};
+      Object.keys(snapM.val()).forEach(k=>{
+        const m=snapM.val()[k];
+        updates['mesas/'+k]={id:m.id,status:'livre',inicio:null,pedido:{}};
+      });
+      await update(ref(db),updates);
+    }
+    // Apaga pedidos cozinha e fila impressão
+    await remove(ref(db,'pedidos_cozinha'));
+    await remove(ref(db,'contas_imprimir'));
+    // Apaga caixa do dia atual
+    await remove(ref(db,'caixa/'+hoje));
+    alert('✓ Dados zerados! Sistema pronto para o cliente.');
+  }catch(e){
+    alert('Erro ao limpar: '+e.message);
+  }
+};
+
+// ── FATURAMENTO SEMANAL / MENSAL ──────────────────────────────
+let periodoFatAtual = 'semana';
+
+window.mudarPeriodoFat=function(p){
+  periodoFatAtual=p;
+  document.getElementById('btn-fat-sem').className='btn'+(p==='semana'?' btn-verde':'');
+  document.getElementById('btn-fat-mes').className='btn'+(p==='mes'?' btn-verde':'');
+  carregarFaturamento(p);
+};
+
+async function carregarFaturamento(periodo){
+  const el=document.getElementById('fat-resultado');
+  el.innerHTML='<div style="text-align:center;padding:30px;color:var(--txt2);">Carregando...</div>';
+
+  // Gera lista de datas do período
+  const datas=[];
+  const hoje2=new Date();
+  const dias = periodo==='semana' ? 7 : 30;
+  for(let i=0;i<dias;i++){
+    const d=new Date(hoje2); d.setDate(d.getDate()-i);
+    datas.push(d.toLocaleDateString('pt-BR').replace(/\//g,'-'));
+  }
+
+  // Busca cada dia no Firebase
+  let totalGeral=0,totalDin=0,totalCart=0,totalPix=0,totalVendas=0;
+  const diasComVenda=[];
+  for(const data of datas){
+    try{
+      const snap=await get(ref(db,'caixa/'+data));
+      const d=snap.val();
+      if(d&&((d.dinheiro||0)+(d.cartao||0)+(d.pix||0))>0){
+        const t=(d.dinheiro||0)+(d.cartao||0)+(d.pix||0);
+        totalGeral+=t; totalDin+=d.dinheiro||0; totalCart+=d.cartao||0; totalPix+=d.pix||0;
+        const vs=d.vendas?Object.values(d.vendas):[];
+        totalVendas+=vs.length;
+        diasComVenda.push({data,total:t,vendas:vs.length,dinheiro:d.dinheiro||0,cartao:d.cartao||0,pix:d.pix||0});
+      }
+    }catch{}
+  }
+
+  const titulo=periodo==='semana'?'Últimos 7 dias':'Últimos 30 dias';
+  document.getElementById('fat-titulo').textContent='📈 Faturamento — '+titulo;
+
+  if(!totalGeral){
+    el.innerHTML='<div style="text-align:center;padding:40px;color:var(--txt2);">Nenhuma venda no período</div>';
+    return;
+  }
+
+  const ticketMedio=totalVendas>0?(totalGeral/totalVendas):0;
+  el.innerHTML=`
+    <div class="fat-card">
+      <div class="fat-periodo">${titulo}</div>
+      <div class="fat-valor">${fmt(totalGeral)}</div>
+      <div class="fat-sub">${totalVendas} venda(s) · Ticket médio ${fmt(ticketMedio)}</div>
+    </div>
+    <div class="fat-grid">
+      <div class="fat-mini"><div class="fat-mini-label">💵 Dinheiro</div><div class="fat-mini-val" style="color:#2fb36d;">${fmt(totalDin)}</div></div>
+      <div class="fat-mini"><div class="fat-mini-label">💳 Cartão</div><div class="fat-mini-val" style="color:#5e96ff;">${fmt(totalCart)}</div></div>
+      <div class="fat-mini"><div class="fat-mini-label">📲 Pix</div><div class="fat-mini-val" style="color:#c89a2a;">${fmt(totalPix)}</div></div>
+    </div>
+    <div style="background:rgba(20,26,21,.96);border:1px solid var(--border2);border-radius:var(--rad-lg);overflow:hidden;">
+      <div style="padding:10px 14px;border-bottom:1px solid var(--border2);font-size:13px;font-weight:600;">Detalhe por dia</div>
+      <div style="padding:6px 8px;">
+        ${diasComVenda.length===0?'<div style="text-align:center;padding:16px;color:var(--txt2);">Sem dados</div>':
+        diasComVenda.map(d=>`<div class="venda-item">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <span style="font-size:13px;font-weight:700;">${d.data}</span>
+              <span style="font-size:11px;color:var(--txt2);margin-left:8px;">${d.vendas} venda(s)</span>
+            </div>
+            <span style="font-size:15px;font-weight:700;color:var(--verde);">${fmt(d.total)}</span>
+          </div>
+          <div style="font-size:11px;color:var(--txt2);margin-top:4px;">
+            💵 ${fmt(d.dinheiro)} · 💳 ${fmt(d.cartao)} · 📲 ${fmt(d.pix)}
+          </div>
+        </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+// Mostra tela
+document.getElementById('screen-main').classList.add('active');
+</script>
+</body>
+</html>
