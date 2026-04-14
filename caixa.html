@@ -94,22 +94,6 @@ input[type=date]{background:#1a201c;border:1px solid var(--border3);border-radiu
   cursor:pointer;}
 input[type=number]{background:#1a201c;border:1px solid var(--border3);border-radius:10px;
   color:var(--txt);font-family:var(--font);font-size:16px;padding:10px 12px;}
-
-/* ── FATURAMENTO ── */
-.fat-card{background:linear-gradient(180deg,#1a2e1e,#111912);border:1px solid #2a4a30;
-  border-radius:var(--rad-lg);padding:14px 16px;margin-bottom:10px;}
-.fat-periodo{font-size:11px;color:var(--txt2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;}
-.fat-valor{font-size:28px;font-weight:700;color:var(--verde);}
-.fat-sub{font-size:12px;color:#8ecfaa;margin-top:2px;}
-.fat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;}
-.fat-mini{background:rgba(20,26,21,.96);border:1px solid var(--border2);border-radius:14px;padding:10px;text-align:center;}
-.fat-mini-label{font-size:10px;color:var(--txt2);margin-bottom:4px;}
-.fat-mini-val{font-size:16px;font-weight:700;}
-/* ── SENHA INPUT ── */
-.senha-input{width:100%;padding:14px;text-align:center;font-size:22px;font-weight:700;
-  letter-spacing:8px;background:#1a201c;border:1px solid var(--border3);border-radius:14px;
-  color:var(--txt);font-family:var(--font);}
-
 </style>
 </head>
 <body>
@@ -135,7 +119,6 @@ input[type=number]{background:#1a201c;border:1px solid var(--border3);border-rad
     <div class="aba ativa" onclick="mudarAba('mesas')">🪑 Mesas</div>
     <div class="aba" onclick="mudarAba('caixa')">💰 Caixa</div>
     <div class="aba" onclick="mudarAba('relatorio')">📊 Relatório</div>
-    <div class="aba" onclick="pedirSenhaFaturamento()">📈 Faturamento</div>
   </div>
 
   <!-- ABA MESAS -->
@@ -190,80 +173,9 @@ input[type=number]{background:#1a201c;border:1px solid var(--border3);border-rad
       <div style="text-align:center;padding:40px;color:var(--txt2);">Selecione uma data e clique em Buscar</div>
     </div>
   </div>
-
-  <!-- ABA FATURAMENTO (protegida por senha) -->
-  <div class="aba-content" id="aba-faturamento">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
-      <div style="font-size:13px;font-weight:600;" id="fat-titulo">Faturamento</div>
-      <div style="display:flex;gap:6px;">
-        <button class="btn" onclick="mudarPeriodoFat('semana')" id="btn-fat-sem" style="font-size:12px;padding:7px 12px;">Semana</button>
-        <button class="btn btn-verde" onclick="mudarPeriodoFat('mes')" id="btn-fat-mes" style="font-size:12px;padding:7px 12px;">Mês</button>
-      </div>
-    </div>
-    <div id="fat-resultado"><div style="text-align:center;padding:40px;color:var(--txt2);">Carregando...</div></div>
-  </div>
-
 </div>
 
 </div><!-- #app -->
-
-
-<!-- MODAL SENHA FATURAMENTO -->
-<div class="modal-overlay" id="modal-senha-fat">
-  <div class="modal-box" style="text-align:center;">
-    <div style="font-size:28px;margin-bottom:8px;">🔐</div>
-    <div style="font-size:15px;font-weight:600;margin-bottom:6px;">Área do Proprietário</div>
-    <div style="font-size:12px;color:var(--txt2);margin-bottom:16px;">Digite a senha para acessar o faturamento</div>
-    <input class="senha-input" type="password" id="input-senha-fat" maxlength="10" placeholder="••••"
-      oninput="this.value=this.value.replace(/[^0-9]/g,'')"
-      onkeydown="if(event.key==='Enter')confirmarSenhaFat()">
-    <div style="font-size:11px;color:#cc3333;margin-top:8px;min-height:16px;" id="msg-senha-fat"></div>
-    <div style="display:flex;gap:8px;margin-top:16px;">
-      <button class="btn" onclick="fecharModal('modal-senha-fat');document.getElementById('input-senha-fat').value=''" style="flex:1;">Cancelar</button>
-      <button class="btn btn-verde" onclick="confirmarSenhaFat()" style="flex:1;font-weight:700;">Entrar</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL TROCAR SENHA -->
-<div class="modal-overlay" id="modal-trocar-senha">
-  <div class="modal-box">
-    <div style="font-size:15px;font-weight:700;margin-bottom:16px;">🔑 Trocar Senha do Proprietário</div>
-    <div style="font-size:12px;color:var(--txt2);margin-bottom:8px;">Nova senha (somente números):</div>
-    <input class="senha-input" type="password" id="input-nova-senha" maxlength="10" placeholder="nova senha"
-      oninput="this.value=this.value.replace(/[^0-9]/g,'')">
-    <div style="font-size:12px;color:var(--txt2);margin-top:10px;margin-bottom:8px;">Confirmar nova senha:</div>
-    <input class="senha-input" type="password" id="input-confirma-senha" maxlength="10" placeholder="repita a senha"
-      oninput="this.value=this.value.replace(/[^0-9]/g,'')">
-    <div style="font-size:11px;color:#cc3333;margin-top:8px;min-height:16px;" id="msg-trocar-senha"></div>
-    <div style="display:flex;gap:8px;margin-top:16px;">
-      <button class="btn" onclick="fecharModal('modal-trocar-senha')" style="flex:1;">Cancelar</button>
-      <button class="btn btn-verde" onclick="confirmarTrocarSenha()" style="flex:1;font-weight:700;">Salvar</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL LIMPAR DADOS (dentro de config, protegido por senha master) -->
-<div class="modal-overlay" id="modal-limpar">
-  <div class="modal-box" style="text-align:center;">
-    <div style="font-size:36px;margin-bottom:10px;">⚠️</div>
-    <div style="font-size:15px;font-weight:700;color:#ffaaaa;margin-bottom:8px;">Limpar TODOS os Dados de Teste?</div>
-    <div style="font-size:12px;color:var(--txt2);margin-bottom:6px;line-height:1.6;">
-      Esta ação irá:<br>
-      • Zerar todas as mesas<br>
-      • Apagar pedidos pendentes da cozinha<br>
-      • Apagar caixa do dia<br>
-      • Apagar fila de impressão
-    </div>
-    <div style="font-size:11px;background:#3a1a1a;border:1px solid #cc3333;border-radius:10px;padding:8px;color:#ff8080;margin-bottom:16px;">
-      ⚠ Ação irreversível — use apenas para resetar antes de entregar ao cliente
-    </div>
-    <div style="display:flex;gap:8px;">
-      <button class="btn" onclick="fecharModal('modal-limpar')" style="flex:1;">Cancelar</button>
-      <button class="btn btn-red" onclick="executarLimpeza()" style="flex:1;font-weight:700;">Confirmar Reset</button>
-    </div>
-  </div>
-</div>
 
 <!-- MODAL DETALHES MESA -->
 <div class="modal-overlay" id="modal-mesa-detalhe">
@@ -293,11 +205,6 @@ input[type=number]{background:#1a201c;border:1px solid var(--border3);border-rad
     <div style="display:flex;gap:8px;">
       <button class="btn" onclick="fecharModal('modal-config')" style="flex:1;">Cancelar</button>
       <button class="btn btn-verde" onclick="salvarConfig()" style="flex:1;font-weight:700;">Salvar</button>
-    </div>
-    <div style="border-top:1px solid var(--border2);margin-top:18px;padding-top:16px;">
-      <div style="font-size:11px;color:var(--txt2);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;">Ferramentas de reset</div>
-      <button class="btn btn-red" onclick="fecharModal('modal-config');abrirModal('modal-limpar')" style="width:100%;font-size:12px;margin-bottom:8px;">🗑 Limpar todos os dados de teste</button>
-      <button class="btn" onclick="fecharModal('modal-config');pedirSenhaTrocar()" style="width:100%;font-size:12px;color:var(--txt2);">🔑 Trocar senha do proprietário</button>
     </div>
   </div>
 </div>
@@ -349,8 +256,10 @@ document.getElementById('caixa-data-hoje').textContent='Caixa — '+new Date().t
 
 // ── ABAS ─────────────────────────────────────────────────────────
 window.mudarAba=function(aba){
-  const nomes=['mesas','caixa','relatorio','faturamento'];
-  document.querySelectorAll('.aba').forEach((el,i)=>el.classList.toggle('ativa',nomes[i]===aba));
+  document.querySelectorAll('.aba').forEach((el,i)=>{
+    const nomes=['mesas','caixa','relatorio'];
+    el.classList.toggle('ativa',nomes[i]===aba);
+  });
   document.querySelectorAll('.aba-content').forEach(el=>el.classList.remove('ativa'));
   document.getElementById('aba-'+aba).classList.add('ativa');
 };
@@ -518,20 +427,6 @@ window.imprimirRelatorio=function(){
 };
 
 // ── IMPRESSÃO AUTOMÁTICA (monitor) ───────────────────────────────
-// IDs já exibidos nesta sessão — evita repetir ao recarregar a página
-// IDs já vistos — persiste no localStorage para sobreviver a atualizações de página
-const _alertasJaMostrados = {
-  _key: 'lv_alertas_vistos',
-  _set: new Set(JSON.parse(localStorage.getItem('lv_alertas_vistos') || '[]')),
-  has(id){ return this._set.has(id); },
-  add(id){
-    this._set.add(id);
-    // Guarda só os últimos 200 IDs para não acumular indefinidamente
-    const arr = [...this._set].slice(-200);
-    localStorage.setItem(this._key, JSON.stringify(arr));
-  }
-};
-
 function tocarBeep(){
   try{
     const ctx=new(window.AudioContext||window.webkitAudioContext)();
@@ -550,15 +445,17 @@ function criarAlerta(titulo,subtitulo,itensHtml,onImprimir){
   tocarBeep();
   const div=document.createElement('div');
   div.className='alerta';
-  div.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:2px;">
+  const uid='btn-al-'+Date.now();
+  div.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;">
     <div class="alerta-titulo">${titulo}</div>
-    <button onclick="this.closest('.alerta').remove()" style="background:none;border:none;cursor:pointer;color:var(--txt2);font-size:22px;line-height:1;padding:0 0 0 8px;flex-shrink:0;" title="Fechar">×</button>
+    <button class="btn-fechar-alerta" style="background:#3a1a1a;border:1px solid #cc3333;border-radius:8px;color:#ff8080;font-size:16px;font-weight:700;cursor:pointer;padding:2px 8px;line-height:1;flex-shrink:0;margin-left:8px;" title="Fechar sem imprimir">✕</button>
   </div>
     <div class="alerta-sub">${subtitulo}</div>
     <div class="alerta-itens">${itensHtml}</div>
-    <button style="width:100%;padding:10px;background:linear-gradient(180deg,#2aa160,#1d7b49);border:none;border-radius:10px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;" id="btn-al-${Date.now()}">🖨 IMPRIMIR</button>`;
+    <button class="btn-imprimir-alerta" style="width:100%;padding:10px;background:linear-gradient(180deg,#2aa160,#1d7b49);border:none;border-radius:10px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;">🖨 IMPRIMIR</button>`;
   document.getElementById('alertas-container').appendChild(div);
-  div.querySelector('button[id]').onclick=function(){
+  div.querySelector('.btn-fechar-alerta').onclick=()=>div.remove();
+  div.querySelector('.btn-imprimir-alerta').onclick=function(){
     this.disabled=true;this.textContent='Imprimindo...';
     onImprimir();
     setTimeout(()=>div.remove(),600);
@@ -620,16 +517,9 @@ function imprimirContaMesa(dados){
 
 // Escuta pedidos cozinha pendentes
 onChildAdded(query(ref(db,'pedidos_cozinha'),orderByChild('status'),equalTo('pendente')),(snap)=>{
-  const id=snap.key;
-  if(_alertasJaMostrados.has(id)) return;
-  _alertasJaMostrados.add(id);
-  const p=snap.val();
-  const ehBar=p.setor==='bar'||p.itens.every(it=>it.setor==='bar');
-  const titulo=ehBar
-    ? `🍺 MESA ${String(p.mesa).padStart(2,'0')} — BAR`
-    : `🔔 MESA ${String(p.mesa).padStart(2,'0')} — COZINHA`;
-  const itensHtml=p.itens.map(it=>`<div>• <strong>${it.qtd}x ${it.nome}</strong>${it.obs?` (${it.obs})`:''}</div>`).join('');
-  criarAlerta(titulo,p.data+' · #'+p.codigo,itensHtml,()=>{
+  const p=snap.val();const id=snap.key;
+  const itensHtml=p.itens.map(it=>`<div>• <strong>${it.qtd}x ${it.nome}</strong>${it.obs?` (${it.obs})`:''}  <small style="color:var(--txt2);">[${it.setor||''}]</small></div>`).join('');
+  criarAlerta(`🔔 MESA ${String(p.mesa).padStart(2,'0')} — COZINHA`,p.data+' · #'+p.codigo,itensHtml,()=>{
     imprimirComanda(p);
     update(ref(db,'pedidos_cozinha/'+id),{status:'impresso',impressoEm:Date.now()});
   });
@@ -637,10 +527,7 @@ onChildAdded(query(ref(db,'pedidos_cozinha'),orderByChild('status'),equalTo('pen
 
 // Escuta contas para imprimir
 onChildAdded(query(ref(db,'contas_imprimir'),orderByChild('status'),equalTo('pendente')),(snap)=>{
-  const id=snap.key;
-  if(_alertasJaMostrados.has(id)) return; // já foi mostrado nesta sessão
-  _alertasJaMostrados.add(id);
-  const d=snap.val();
+  const d=snap.val();const id=snap.key;
   const total=(d.itens||[]).reduce((s,i)=>s+i.preco*i.qtd,0);
   criarAlerta(`🧾 CONTA MESA ${String(d.mesa).padStart(2,'0')}`,`Total: ${fmt(total)}`,`Pagamento: ${nomePag(d.pagamento)||'?'}`,()=>{
     imprimirContaMesa(d);
@@ -719,176 +606,6 @@ onValue(ref(db,'.info/connected'),(snap)=>{
   el.style.background=on?'var(--verde-bg)':'#3a1a1a';
   el.style.color=on?'var(--verde)':'#ff8080';
 });
-
-
-// ── SENHA MASTER + PROPRIETÁRIO ───────────────────────────────
-const SENHA_MASTER = '4125';
-function getSenhaProprietario(){ return localStorage.getItem('lv_senha_prop') || ''; }
-function setSenhaProprietario(s){ localStorage.setItem('lv_senha_prop', s); }
-function senhaValida(s){ return s === SENHA_MASTER || (getSenhaProprietario() && s === getSenhaProprietario()); }
-
-window.pedirSenhaFaturamento=function(){
-  const senhaAtual = getSenhaProprietario();
-  if(!senhaAtual){
-    // Primeira vez — pede para criar senha
-    document.getElementById('msg-senha-fat').textContent = 'Primeiro acesso: crie uma senha numérica.';
-    document.getElementById('input-senha-fat').value='';
-    abrirModal('modal-senha-fat');
-  } else {
-    document.getElementById('msg-senha-fat').textContent='';
-    document.getElementById('input-senha-fat').value='';
-    abrirModal('modal-senha-fat');
-  }
-};
-
-window.confirmarSenhaFat=function(){
-  const v = document.getElementById('input-senha-fat').value.trim();
-  if(!v){ document.getElementById('msg-senha-fat').textContent='Digite a senha.'; return; }
-  const senhaAtual = getSenhaProprietario();
-  // Primeiro acesso — cria a senha
-  if(!senhaAtual){
-    if(v.length < 4){ document.getElementById('msg-senha-fat').textContent='Mínimo 4 dígitos.'; return; }
-    setSenhaProprietario(v);
-    fecharModal('modal-senha-fat');
-    document.getElementById('input-senha-fat').value='';
-    mudarAba('faturamento'); carregarFaturamento('semana');
-    return;
-  }
-  if(senhaValida(v)){
-    fecharModal('modal-senha-fat');
-    document.getElementById('input-senha-fat').value='';
-    mudarAba('faturamento'); carregarFaturamento('semana');
-  } else {
-    document.getElementById('msg-senha-fat').textContent='Senha incorreta.';
-    document.getElementById('input-senha-fat').value='';
-  }
-};
-
-window.pedirSenhaTrocar=function(){
-  // Só precisa da senha master para trocar
-  const nova = prompt('Digite a SENHA MASTER para autorizar a troca:');
-  if(!nova) return;
-  if(nova !== SENHA_MASTER){ alert('Senha master incorreta.'); return; }
-  document.getElementById('input-nova-senha').value='';
-  document.getElementById('input-confirma-senha').value='';
-  document.getElementById('msg-trocar-senha').textContent='';
-  abrirModal('modal-trocar-senha');
-};
-
-window.confirmarTrocarSenha=function(){
-  const nova = document.getElementById('input-nova-senha').value.trim();
-  const conf = document.getElementById('input-confirma-senha').value.trim();
-  if(nova.length < 4){ document.getElementById('msg-trocar-senha').textContent='Mínimo 4 dígitos.'; return; }
-  if(nova !== conf){ document.getElementById('msg-trocar-senha').textContent='As senhas não conferem.'; return; }
-  setSenhaProprietario(nova);
-  fecharModal('modal-trocar-senha');
-  alert('✓ Senha atualizada com sucesso!');
-};
-
-// ── LIMPAR TODOS OS DADOS (reset de teste) ────────────────────
-window.executarLimpeza=async function(){
-  fecharModal('modal-limpar');
-  try{
-    // Zera todas as mesas
-    const snapM=await get(ref(db,'mesas'));
-    if(snapM.val()){
-      const updates={};
-      Object.keys(snapM.val()).forEach(k=>{
-        const m=snapM.val()[k];
-        updates['mesas/'+k]={id:m.id,status:'livre',inicio:null,pedido:{}};
-      });
-      await update(ref(db),updates);
-    }
-    // Apaga pedidos cozinha e fila impressão
-    await remove(ref(db,'pedidos_cozinha'));
-    await remove(ref(db,'contas_imprimir'));
-    // Apaga caixa do dia atual
-    await remove(ref(db,'caixa/'+hoje));
-    alert('✓ Dados zerados! Sistema pronto para o cliente.');
-  }catch(e){
-    alert('Erro ao limpar: '+e.message);
-  }
-};
-
-// ── FATURAMENTO SEMANAL / MENSAL ──────────────────────────────
-let periodoFatAtual = 'semana';
-
-window.mudarPeriodoFat=function(p){
-  periodoFatAtual=p;
-  document.getElementById('btn-fat-sem').className='btn'+(p==='semana'?' btn-verde':'');
-  document.getElementById('btn-fat-mes').className='btn'+(p==='mes'?' btn-verde':'');
-  carregarFaturamento(p);
-};
-
-async function carregarFaturamento(periodo){
-  const el=document.getElementById('fat-resultado');
-  el.innerHTML='<div style="text-align:center;padding:30px;color:var(--txt2);">Carregando...</div>';
-
-  // Gera lista de datas do período
-  const datas=[];
-  const hoje2=new Date();
-  const dias = periodo==='semana' ? 7 : 30;
-  for(let i=0;i<dias;i++){
-    const d=new Date(hoje2); d.setDate(d.getDate()-i);
-    datas.push(d.toLocaleDateString('pt-BR').replace(/\//g,'-'));
-  }
-
-  // Busca cada dia no Firebase
-  let totalGeral=0,totalDin=0,totalCart=0,totalPix=0,totalVendas=0;
-  const diasComVenda=[];
-  for(const data of datas){
-    try{
-      const snap=await get(ref(db,'caixa/'+data));
-      const d=snap.val();
-      if(d&&((d.dinheiro||0)+(d.cartao||0)+(d.pix||0))>0){
-        const t=(d.dinheiro||0)+(d.cartao||0)+(d.pix||0);
-        totalGeral+=t; totalDin+=d.dinheiro||0; totalCart+=d.cartao||0; totalPix+=d.pix||0;
-        const vs=d.vendas?Object.values(d.vendas):[];
-        totalVendas+=vs.length;
-        diasComVenda.push({data,total:t,vendas:vs.length,dinheiro:d.dinheiro||0,cartao:d.cartao||0,pix:d.pix||0});
-      }
-    }catch{}
-  }
-
-  const titulo=periodo==='semana'?'Últimos 7 dias':'Últimos 30 dias';
-  document.getElementById('fat-titulo').textContent='📈 Faturamento — '+titulo;
-
-  if(!totalGeral){
-    el.innerHTML='<div style="text-align:center;padding:40px;color:var(--txt2);">Nenhuma venda no período</div>';
-    return;
-  }
-
-  const ticketMedio=totalVendas>0?(totalGeral/totalVendas):0;
-  el.innerHTML=`
-    <div class="fat-card">
-      <div class="fat-periodo">${titulo}</div>
-      <div class="fat-valor">${fmt(totalGeral)}</div>
-      <div class="fat-sub">${totalVendas} venda(s) · Ticket médio ${fmt(ticketMedio)}</div>
-    </div>
-    <div class="fat-grid">
-      <div class="fat-mini"><div class="fat-mini-label">💵 Dinheiro</div><div class="fat-mini-val" style="color:#2fb36d;">${fmt(totalDin)}</div></div>
-      <div class="fat-mini"><div class="fat-mini-label">💳 Cartão</div><div class="fat-mini-val" style="color:#5e96ff;">${fmt(totalCart)}</div></div>
-      <div class="fat-mini"><div class="fat-mini-label">📲 Pix</div><div class="fat-mini-val" style="color:#c89a2a;">${fmt(totalPix)}</div></div>
-    </div>
-    <div style="background:rgba(20,26,21,.96);border:1px solid var(--border2);border-radius:var(--rad-lg);overflow:hidden;">
-      <div style="padding:10px 14px;border-bottom:1px solid var(--border2);font-size:13px;font-weight:600;">Detalhe por dia</div>
-      <div style="padding:6px 8px;">
-        ${diasComVenda.length===0?'<div style="text-align:center;padding:16px;color:var(--txt2);">Sem dados</div>':
-        diasComVenda.map(d=>`<div class="venda-item">
-          <div style="display:flex;justify-content:space-between;align-items:center;">
-            <div>
-              <span style="font-size:13px;font-weight:700;">${d.data}</span>
-              <span style="font-size:11px;color:var(--txt2);margin-left:8px;">${d.vendas} venda(s)</span>
-            </div>
-            <span style="font-size:15px;font-weight:700;color:var(--verde);">${fmt(d.total)}</span>
-          </div>
-          <div style="font-size:11px;color:var(--txt2);margin-top:4px;">
-            💵 ${fmt(d.dinheiro)} · 💳 ${fmt(d.cartao)} · 📲 ${fmt(d.pix)}
-          </div>
-        </div>`).join('')}
-      </div>
-    </div>`;
-}
 
 // Mostra tela
 document.getElementById('screen-main').classList.add('active');
