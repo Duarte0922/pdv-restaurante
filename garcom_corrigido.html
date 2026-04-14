@@ -1,0 +1,1389 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>🌙 Luar do Viena — Garçom</title>
+<style>
+:root{
+  --verde:#2fb36d;--verde-dark:#1d7b49;--verde-bg:#1a3d28;
+  --azul:#5e96ff;--azul-dark:#1b3158;
+  --bg:#0c100d;--card:#141a15;--card2:#1a201c;
+  --border:#1e2820;--border2:#252d28;--border3:#303a33;
+  --txt:#f4f7f1;--txt2:#acb5ac;
+  --rad:16px;--rad-lg:22px;
+  --font:Inter,ui-sans-serif,system-ui,-apple-system,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:manipulation;}
+#app{width:100vw;height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+.screen{display:none;width:100%;height:100%;flex-direction:column;}
+.screen.active{display:flex;}
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-thumb{background:#2e3730;border-radius:999px;}
+
+.btn{cursor:pointer;border:1px solid var(--border3);border-radius:var(--rad);
+  background:linear-gradient(180deg,#232a25,#171c18);color:var(--txt);
+  font-family:var(--font);font-size:14px;padding:10px 16px;
+  transition:all .12s;user-select:none;touch-action:manipulation;}
+.btn:active{transform:scale(.96);opacity:.85;}
+.btn-verde{background:linear-gradient(180deg,#2aa160,#1d7b49);color:#fff;border-color:#258754;}
+.btn-azul{background:linear-gradient(180deg,#274f88,var(--azul-dark));border-color:var(--azul);}
+.btn-red{background:linear-gradient(180deg,#f25a4e,#de3f3f);color:#fff;border-color:#dc4747;}
+
+.header{background:rgba(20,26,21,.97);border-bottom:1px solid var(--border2);
+  padding:10px 14px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;gap:8px;}
+.header-title{font-size:15px;font-weight:700;}
+.header-sub{font-size:11px;color:var(--txt2);margin-top:1px;}
+
+/* STATUS DUPLO — Firebase + Local */
+#status-wrap{display:flex;gap:6px;align-items:center;flex-shrink:0;}
+.badge{font-size:10px;padding:3px 8px;border-radius:999px;white-space:nowrap;}
+.badge-fb{background:#1a2d3d;color:#5e96ff;}
+.badge-local{background:#1a1a2d;color:#888;}
+.badge-fb.ok{background:var(--verde-bg);color:var(--verde);}
+.badge-local.ok{background:#1a2e1e;color:#7ecfa0;}
+.badge-fb.off{background:#3a1a1a;color:#ff8080;}
+.badge-local.off{background:#3a1a1a;color:#ff8080;}
+
+#status-bar{position:fixed;top:0;left:0;right:0;padding:7px;text-align:center;
+  font-size:12px;font-weight:600;z-index:99999;transition:transform .3s;transform:translateY(-100%);}
+#status-bar.show{transform:translateY(0);}
+#status-bar.offline{background:#8b1a1a;color:#ffaaaa;}
+#status-bar.online{background:#1a3d28;color:#2fb36d;}
+#status-bar.local{background:#274f88;color:#aad4ff;}
+#status-bar.sync{background:#274f88;color:#aad4ff;}
+
+#loading-screen{position:fixed;inset:0;background:var(--bg);display:flex;
+  flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:99998;}
+#loading-screen.hide{display:none;}
+.spinner{width:48px;height:48px;border:3px solid #2a4a30;border-top-color:var(--verde);
+  border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);
+  backdrop-filter:blur(6px);align-items:center;justify-content:center;z-index:9999;padding:16px;}
+.modal-overlay.open{display:flex;}
+.modal-box{background:linear-gradient(180deg,#1a201c,#131814);border-radius:var(--rad-lg);
+  border:1px solid var(--border3);padding:22px 18px;width:100%;max-width:360px;
+  box-shadow:0 20px 50px rgba(0,0,0,.5);max-height:92vh;overflow-y:auto;}
+
+/* MESAS */
+#mesa-grid{display:grid;gap:10px;padding:12px 14px;flex:1;overflow-y:auto;align-content:start;}
+@media(max-width:599px){#mesa-grid{grid-template-columns:repeat(3,1fr);}}
+@media(min-width:600px){#mesa-grid{grid-template-columns:repeat(4,1fr);}}
+@media(min-width:900px){#mesa-grid{grid-template-columns:repeat(6,1fr);}}
+@media(min-width:1200px){#mesa-grid{grid-template-columns:repeat(8,1fr);}}
+
+.mesa-card{border-radius:var(--rad-lg);padding:14px 8px;cursor:pointer;text-align:center;
+  display:flex;flex-direction:column;justify-content:center;align-items:center;
+  min-height:100px;border:2px solid;transition:transform .1s;user-select:none;
+  box-shadow:0 8px 24px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.6);}
+.mesa-card:active{transform:scale(.93);}
+.mesa-card.livre{background:linear-gradient(180deg,#f0faf4,#e4f5ea);border-color:#2f9d64;}
+.mesa-card.ocupada{background:linear-gradient(180deg,#fff5f7,#ffecef);border-color:#cf5b74;}
+.mesa-card.conta{background:linear-gradient(180deg,#fffbf0,#fff4d6);border-color:#c89a2a;}
+
+/* PEDIDO */
+/* Layout de 3 fatias: header fixo | produtos flex:1 | painel inferior fixo */
+#screen-pedido{display:flex;flex-direction:column;height:100%;}
+#pedido-body{display:flex;flex:1;min-height:0;overflow:hidden;}
+#cat-list{width:82px;background:rgba(20,26,21,.95);border-right:1px solid var(--border2);
+  display:flex;flex-direction:column;gap:4px;padding:6px 4px;overflow-y:auto;flex-shrink:0;}
+.cat-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:60px;border-radius:14px;padding:6px 3px;gap:2px;font-size:9px;
+  line-height:1.2;text-align:center;border:1px solid var(--border3);
+  background:linear-gradient(180deg,#232a25,#171c18);color:var(--txt);cursor:pointer;
+  transition:all .12s;user-select:none;}
+.cat-btn:active{transform:scale(.94);}
+.cat-btn.ativo{background:linear-gradient(180deg,#2f5e9f,#1f355c);border-color:var(--azul);}
+.cat-icon{font-size:18px;}
+#produto-area{flex:1;min-height:0;overflow-y:auto;padding:8px;}
+#cat-titulo{font-size:11px;color:var(--txt2);margin-bottom:6px;padding:0 2px;}
+#produto-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;}
+@media(min-width:900px){#produto-grid{grid-template-columns:repeat(3,1fr);}}
+@media(min-width:1200px){#produto-grid{grid-template-columns:repeat(4,1fr);}}
+
+/* Produto menor para sobrar espaço ao carrinho */
+.prod-card{background:linear-gradient(180deg,#1e2420,#161b17);border:1px solid #2a322c;
+  border-radius:12px;padding:8px 8px;cursor:pointer;min-height:64px;
+  display:flex;flex-direction:column;justify-content:space-between;transition:transform .1s;}
+.prod-card:active{transform:scale(.95);}
+.prod-nome{font-size:11px;font-weight:500;line-height:1.2;}
+.prod-preco{font-size:13px;color:var(--verde);font-weight:700;margin-top:4px;}
+.prod-tamanhos{font-size:10px;color:var(--verde);font-weight:600;margin-top:3px;line-height:1.5;}
+
+/* Painel inferior: altura fixa, nunca some */
+#carrinho-panel{
+  background:rgba(20,26,21,.99);
+  border-top:1px solid var(--border3);
+  flex-shrink:0;
+  display:flex;
+  flex-direction:column;
+  /* Altura máxima: 40% da tela — o restante fica para os produtos */
+  max-height:40vh;
+}
+#carrinho-header{padding:8px 14px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none;flex-shrink:0;}
+/* Lista de itens: scroll interno */
+#carrinho-body{flex:1;min-height:0;overflow-y:auto;padding:0 10px 0;}
+#carrinho-lista{padding:3px 0;}
+/* Botão SEMPRE visível — fica fora do scroll */
+#btn-cozinha-fixo{
+  flex-shrink:0;
+  margin:6px 10px 8px;
+  border-radius:14px;
+  font-size:14px;
+  font-weight:700;
+  padding:12px;
+  width:calc(100% - 20px);
+  display:block !important;
+}
+.cart-item{background:linear-gradient(180deg,#171c18,#131814);border:1px solid #252d28;border-radius:14px;padding:9px;font-size:12px;margin:5px 0;}
+.badge-qtd{background:linear-gradient(180deg,#ff6464,#dc3e3e);color:#fff;border-radius:999px;font-size:10px;padding:2px 7px;margin-left:4px;}
+.tag-enviado{background:var(--verde-bg);color:var(--verde);border-radius:999px;font-size:10px;padding:2px 7px;}
+.tag-novo{background:#3a2e0a;color:#c9a427;border-radius:999px;font-size:10px;padding:2px 7px;}
+.qtd-btn{background:#1f2521;border:1px solid #313a33;border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:16px;color:var(--txt);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+
+#screen-fechamento .content{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px;}
+.card-section{background:rgba(20,26,21,.96);border:1px solid var(--border2);border-radius:var(--rad-lg);overflow:hidden;}
+.card-section-header{padding:10px 14px;border-bottom:1px solid var(--border2);font-size:13px;font-weight:600;}
+.pag-btn{flex:1;display:flex;flex-direction:column;align-items:center;padding:14px 6px;gap:6px;font-size:12px;border-radius:18px;}
+.pag-icon{font-size:24px;}
+#screen-ok{align-items:center;justify-content:center;gap:14px;padding:24px;}
+.ok-circle{width:80px;height:80px;border-radius:50%;background:linear-gradient(180deg,#2aa160,#1d7b49);display:flex;align-items:center;justify-content:center;font-size:36px;}
+
+/* FECHAMENTO PARCIAL */
+.fech-item-row{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border2);}
+.fech-item-row.sel{background:rgba(47,179,109,.08);}
+.fech-check{width:24px;height:24px;border-radius:6px;border:2px solid var(--border3);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:13px;}
+.fech-check.on{background:var(--verde);border-color:var(--verde);}
+.fech-qtd-btn{background:#1f2521;border:1px solid #313a33;border-radius:6px;width:26px;height:26px;cursor:pointer;font-size:14px;color:var(--txt);display:flex;align-items:center;justify-content:center;}
+/* PAGAMENTO DIVIDIDO */
+.pag-div-row{background:linear-gradient(180deg,#171c18,#131814);border:1px solid #252d28;border-radius:14px;padding:10px 12px;display:flex;align-items:center;gap:10px;margin-bottom:7px;}
+.pag-div-input{flex:1;padding:8px 10px;background:#1a201c;border:1px solid var(--border3);border-radius:10px;color:var(--txt);font-size:16px;font-weight:600;font-family:var(--font);text-align:right;width:100px;}
+.pag-div-input:focus{outline:none;border-color:var(--verde);}
+.add-pag-btn{flex:1;min-width:80px;padding:9px 6px;border:1px dashed var(--border3);border-radius:12px;background:none;cursor:pointer;font-size:13px;color:var(--txt2);font-family:var(--font);text-align:center;}
+.add-pag-btn:active{opacity:.7;}
+.add-pag-btn.usado{opacity:.3;pointer-events:none;}
+.falta-bar{height:4px;border-radius:2px;background:#1e2820;margin:6px 0 4px;overflow:hidden;}
+.falta-bar-fill{height:100%;border-radius:2px;background:var(--verde);transition:width .3s;}
+</style>
+</head>
+<body>
+
+<!-- TELA DE LOGIN -->
+<div id="login-screen" style="position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;padding:24px;">
+  <div style="font-size:36px;margin-bottom:8px;">🌙</div>
+  <div style="font-family:var(--font);font-size:20px;font-weight:700;color:var(--verde);margin-bottom:4px;">Luar do Viena</div>
+  <div style="font-size:12px;color:var(--txt2);margin-bottom:28px;">Acesso do Garçom</div>
+  <div style="width:100%;max-width:320px;display:flex;flex-direction:column;gap:12px;">
+    <input id="login-nome" type="text" placeholder="Seu nome" autocomplete="name"
+      style="padding:14px 16px;border-radius:14px;border:1px solid var(--border3);background:#1a201c;color:var(--txt);font-size:15px;font-family:var(--font);outline:none;width:100%;">
+    <input id="login-senha" type="password" placeholder="Senha" autocomplete="current-password"
+      style="padding:14px 16px;border-radius:14px;border:1px solid var(--border3);background:#1a201c;color:var(--txt);font-size:15px;font-family:var(--font);outline:none;width:100%;">
+    <div id="login-erro" style="color:#cf5b74;font-size:12px;text-align:center;min-height:16px;"></div>
+    <button onclick="tentarLogin()"
+      style="padding:15px;border-radius:14px;border:none;background:linear-gradient(180deg,#2fb36d,#1d7b49);color:#fff;font-size:16px;font-weight:700;cursor:pointer;font-family:var(--font);">
+      Entrar
+    </button>
+  </div>
+</div>
+
+<div id="loading-screen">
+  <div class="spinner"></div>
+  <div style="font-size:17px;font-weight:700;color:var(--verde);">🌙 Luar do Viena</div>
+  <div style="font-size:12px;color:var(--txt2);" id="loading-msg">Iniciando...</div>
+</div>
+<div id="status-bar"></div>
+
+<div id="app">
+
+<!-- MESAS -->
+<div id="screen-mesas" class="screen">
+  <div class="header">
+    <div>
+      <div class="header-title">🌙 Luar do Viena</div>
+      <div class="header-sub" id="clock"></div>
+    </div>
+    <div id="status-wrap">
+      <div class="badge badge-fb" id="badge-fb">☁ Firebase</div>
+      <div class="badge badge-local" id="badge-local">📡 Local</div>
+    </div>
+  </div>
+  <div style="padding:8px 14px 0;display:flex;gap:14px;font-size:11px;color:var(--txt2);flex-shrink:0;">
+    <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#2f9d64;margin-right:4px;"></span>Livre</span>
+    <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#cf5b74;margin-right:4px;"></span>Ocupada</span>
+    <span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#c89a2a;margin-right:4px;"></span>Conta</span>
+  </div>
+  <div id="mesa-grid"></div>
+  <div style="background:rgba(20,26,21,.98);border-top:1px solid var(--border2);padding:8px 14px;display:flex;justify-content:space-around;font-size:12px;color:var(--txt2);">
+    <span id="stat-livre">0 livres</span><span id="stat-ocup">0 ocupadas</span><span id="stat-conta">0 conta</span>
+  </div>
+</div>
+
+<!-- PEDIDO -->
+<div id="screen-pedido" class="screen">
+  <div class="header">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <button class="btn" onclick="voltarMesas()" style="padding:8px 12px;font-size:13px;">← Mesas</button>
+      <div>
+        <div class="header-title" id="titulo-mesa">Mesa 01</div>
+        <div class="header-sub" id="tempo-mesa"></div>
+      </div>
+    </div>
+    <button class="btn btn-verde" onclick="abrirFechamento()" style="font-size:13px;padding:9px 14px;font-weight:600;">Fechar Mesa</button>
+  </div>
+  <div id="pedido-body">
+    <div id="cat-list"></div>
+    <div id="produto-area">
+      <div id="cat-titulo"></div>
+      <div id="produto-grid"></div>
+    </div>
+  </div>
+  <div id="carrinho-panel">
+    <div id="carrinho-header" onclick="toggleCarrinho()">
+      <span style="font-size:14px;font-weight:700;">Pedido <span class="badge-qtd" id="badge-qtd">0</span></span>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:14px;font-weight:700;color:var(--verde);" id="total-pedido">R$ 0,00</span>
+        <span id="carrinho-toggle-icon" style="color:var(--txt2);">▲</span>
+      </div>
+    </div>
+    <div id="carrinho-body">
+      <div id="carrinho-lista"></div>
+    </div>
+    <button id="btn-cozinha-fixo" class="btn btn-red" onclick="enviarCozinha()">🖨 Enviar para Cozinha</button>
+  </div>
+</div>
+
+<!-- FECHAMENTO -->
+<div id="screen-fechamento" class="screen">
+  <div class="header">
+    <button class="btn" onclick="voltarPedido()" style="padding:8px 12px;font-size:13px;">← Voltar</button>
+    <div class="header-title" id="titulo-fechamento">Fechamento</div>
+    <button class="btn btn-azul" onclick="imprimirConta()" style="font-size:13px;padding:9px 14px;">🖨 Conta</button>
+  </div>
+
+  <!-- ABAS: Mesa Completa | Fechamento Parcial -->
+  <div style="display:flex;border-bottom:1px solid var(--border2);flex-shrink:0;">
+    <button id="aba-total" onclick="mudarAbaFech('total')"
+      style="flex:1;padding:11px;font-size:13px;font-weight:600;background:var(--card);border:none;color:var(--verde);border-bottom:2px solid var(--verde);cursor:pointer;font-family:var(--font);">
+      Mesa Completa
+    </button>
+    <button id="aba-parcial" onclick="mudarAbaFech('parcial')"
+      style="flex:1;padding:11px;font-size:13px;font-weight:600;background:transparent;border:none;color:var(--txt2);border-bottom:2px solid transparent;cursor:pointer;font-family:var(--font);">
+      🧾 Fechamento Parcial
+    </button>
+  </div>
+
+  <div class="content">
+    <!-- Itens -->
+    <div class="card-section">
+      <div class="card-section-header" style="display:flex;justify-content:space-between;align-items:center;">
+        <span id="label-itens-fech">Consumo da Mesa</span>
+        <button id="btn-sel-todos" onclick="toggleTodosFech()" style="display:none;background:none;border:none;cursor:pointer;font-size:11px;color:var(--verde);font-family:var(--font);">Selecionar todos</button>
+      </div>
+      <div id="tabela-fechamento"></div>
+      <div style="padding:10px 14px;border-top:1px solid var(--border2);display:flex;justify-content:space-between;">
+        <span style="font-size:13px;color:var(--txt2);">Subtotal</span>
+        <span style="font-size:13px;font-weight:600;" id="subtotal-fech">R$ 0,00</span>
+      </div>
+    </div>
+
+    <!-- Desconto -->
+    <div class="card-section" style="padding:12px 14px;">
+      <div style="font-size:13px;font-weight:600;margin-bottom:10px;">Desconto / Taxa</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <button class="btn" onclick="aplicarDesconto(10)" style="font-size:12px;">-10%</button>
+        <button class="btn" onclick="aplicarDesconto(-10)" style="font-size:12px;">+10% taxa</button>
+        <button class="btn" onclick="aplicarDescontoCustom()" style="font-size:12px;">Outro %</button>
+        <button class="btn" onclick="aplicarDesconto(0)" style="font-size:12px;">Limpar</button>
+      </div>
+      <div style="font-size:12px;color:var(--txt2);margin-top:8px;" id="desconto-info">Nenhum aplicado</div>
+    </div>
+
+    <!-- Total -->
+    <div style="background:linear-gradient(180deg,#1a2e1e,#111912);border:1px solid #2a4a30;border-radius:var(--rad-lg);padding:16px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:15px;font-weight:600;color:#8ecfaa;">Total a Pagar</span>
+        <span style="font-size:32px;font-weight:700;color:var(--verde);" id="total-final">R$ 0,00</span>
+      </div>
+    </div>
+
+    <!-- Pagamento dividido -->
+    <div class="card-section" style="padding:12px 14px;">
+      <div style="font-size:13px;font-weight:600;margin-bottom:4px;">Forma de Pagamento</div>
+      <div style="font-size:11px;color:var(--txt2);margin-bottom:10px;">Adicione 1 ou mais formas — pode dividir entre diferentes meios</div>
+      <div style="display:flex;gap:6px;margin-bottom:10px;">
+        <button class="add-pag-btn" id="addpag-dinheiro" onclick="addPagDiv('dinheiro')">💵 + Dinheiro</button>
+        <button class="add-pag-btn" id="addpag-cartao"   onclick="addPagDiv('cartao')">💳 + Cartão</button>
+        <button class="add-pag-btn" id="addpag-pix"      onclick="addPagDiv('pix')">📲 + Pix</button>
+      </div>
+      <div id="pag-div-lista"></div>
+      <div class="falta-bar"><div class="falta-bar-fill" id="falta-bar-fill" style="width:0%"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--txt2);">
+        <span>Pago: <span id="res-pago-div" style="color:var(--verde);font-weight:600;">R$ 0,00</span></span>
+        <span id="res-diff-div" style="font-weight:600;color:#cf5b74;">Falta: R$ 0,00</span>
+      </div>
+      <!-- Troco dinheiro -->
+      <div id="troco-box" style="display:none;margin-top:10px;">
+        <div style="font-size:12px;color:var(--txt2);margin-bottom:6px;">Troco (dinheiro)</div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input id="valor-recebido" type="number" step="0.01" min="0" placeholder="Valor recebido (R$)"
+            style="flex:1;padding:10px;background:#1a201c;border:1px solid var(--border3);border-radius:12px;color:var(--txt);font-size:15px;font-family:var(--font);"
+            oninput="calcularTroco()">
+          <div style="text-align:right;min-width:80px;">
+            <div style="font-size:11px;color:var(--txt2);">Troco</div>
+            <div style="font-size:18px;font-weight:700;color:var(--verde);" id="valor-troco">R$ 0,00</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn btn-verde" id="btn-confirmar-venda" onclick="concluirVenda()"
+      style="padding:16px;font-size:15px;font-weight:700;border-radius:18px;opacity:.4;pointer-events:none;">
+      ✓ Confirmar Pagamento e Liberar Mesa
+    </button>
+    <div style="height:10px;"></div>
+  </div>
+</div>
+
+<!-- OK -->
+<div id="screen-ok" class="screen">
+  <div class="ok-circle">✓</div>
+  <div style="font-size:22px;font-weight:700;">Pagamento confirmado!</div>
+  <div style="font-size:14px;color:var(--txt2);text-align:center;" id="ok-msg"></div>
+  <button class="btn btn-verde" onclick="voltarMesas()" style="padding:12px 28px;font-size:14px;margin-top:10px;">← Voltar ao Salão</button>
+</div>
+</div><!-- #app -->
+
+<!-- MODAIS -->
+<div class="modal-overlay" id="modal-tamanho">
+  <div class="modal-box">
+    <div style="font-size:16px;font-weight:600;margin-bottom:4px;" id="modal-pizza-nome">Pizza</div>
+    <div style="font-size:12px;color:var(--txt2);margin-bottom:14px;">Selecione o tamanho:</div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <button class="btn" id="btn-tam-M"  onclick="escolherTamanho('M');"  style="text-align:left;padding:14px 16px;font-size:15px;font-weight:600;">Média (M)</button>
+      <button class="btn" id="btn-tam-G"  onclick="escolherTamanho('G')"  style="text-align:left;padding:14px 16px;font-size:15px;font-weight:600;">Grande (G)</button>
+      <button class="btn" id="btn-tam-GG" onclick="escolherTamanho('GG')"  style="text-align:left;padding:14px 16px;font-size:15px;font-weight:600;">Gigante (GG)</button>
+    </div>
+    <button class="btn" onclick="fecharModal('modal-tamanho')" style="width:100%;margin-top:12px;color:var(--txt2);">Cancelar</button>
+  </div>
+</div>
+<div class="modal-overlay" id="modal-ponto">
+  <div class="modal-box">
+    <div style="font-size:16px;font-weight:600;margin-bottom:4px;" id="modal-nome-item">Item</div>
+    <div style="font-size:12px;color:var(--txt2);margin-bottom:14px;">Ponto da carne:</div>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <button class="btn" onclick="escolherPonto('Mal passado')" style="text-align:left;padding:14px 16px;font-size:14px;">🩸 Mal passado</button>
+      <button class="btn" onclick="escolherPonto('Ao ponto')"    style="text-align:left;padding:14px 16px;font-size:14px;">🥩 Ao ponto</button>
+      <button class="btn" onclick="escolherPonto('Bem passado')" style="text-align:left;padding:14px 16px;font-size:14px;">🔥 Bem passado</button>
+    </div>
+    <button class="btn" onclick="fecharModal('modal-ponto')" style="width:100%;margin-top:12px;color:var(--txt2);">Cancelar</button>
+  </div>
+</div>
+<div class="modal-overlay" id="modal-cozinha">
+  <div class="modal-box" style="text-align:center;">
+    <div style="font-size:40px;margin-bottom:12px;" id="cozinha-icon">🔔</div>
+    <div style="font-size:16px;font-weight:600;margin-bottom:8px;" id="cozinha-titulo">Pedido enviado!</div>
+    <div style="font-size:13px;color:var(--txt2);margin-bottom:18px;" id="cozinha-msg"></div>
+    <button class="btn btn-verde" onclick="fecharModal('modal-cozinha')" style="padding:12px 40px;font-size:15px;">OK</button>
+  </div>
+</div>
+<div class="modal-overlay" id="modal-desconto">
+  <div class="modal-box">
+    <div style="font-size:15px;font-weight:600;margin-bottom:14px;">Desconto / Taxa</div>
+    <input id="input-desconto-custom" type="number" min="-100" max="100" placeholder="Ex: 15 ou -15"
+      style="width:100%;padding:12px;background:#1a201c;border:1px solid var(--border3);border-radius:12px;color:var(--txt);font-size:16px;font-family:var(--font);margin-bottom:8px;">
+    <div style="font-size:12px;color:var(--txt2);margin-bottom:14px;">Positivo = desconto · Negativo = taxa</div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn" onclick="fecharModal('modal-desconto')" style="flex:1;">Cancelar</button>
+      <button class="btn btn-verde" onclick="aplicarDescontoCustomConfirm()" style="flex:1;">Aplicar</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- MODAL CONFIRMAR FECHAMENTO DE MESA -->
+<div class="modal-overlay" id="modal-confirmar-fechamento">
+  <div class="modal-box" style="text-align:center;">
+    <div style="font-size:36px;margin-bottom:12px;">🧾</div>
+    <div style="font-size:16px;font-weight:700;margin-bottom:8px;" id="msg-confirmar-fech">Fechar Mesa?</div>
+    <div style="font-size:13px;color:var(--txt2);margin-bottom:18px;">Deseja ir para a tela de fechamento e pagamento?</div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn" onclick="fecharModal('modal-confirmar-fechamento')" style="flex:1;">Cancelar</button>
+      <button class="btn btn-verde" onclick="fecharModal('modal-confirmar-fechamento');_irParaFechamento();" style="flex:1;font-weight:700;">✓ Sim, fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ACRÉSCIMOS PIZZA (borda) -->
+<div class="modal-overlay" id="modal-borda">
+  <div class="modal-box">
+    <div style="font-size:15px;font-weight:700;margin-bottom:4px;" id="borda-pizza-nome">Pizza</div>
+    <div style="font-size:12px;color:var(--txt2);margin-bottom:14px;" id="borda-tam-info">Tamanho selecionado</div>
+    <div style="font-size:13px;font-weight:600;margin-bottom:10px;">Deseja acréscimo de borda?</div>
+    <div style="display:flex;flex-direction:column;gap:8px;" id="borda-opcoes"></div>
+    <button class="btn btn-verde" onclick="semBorda()" style="width:100%;margin-top:14px;font-weight:700;">Sem borda — confirmar pedido</button>
+    <button class="btn" onclick="fecharModal('modal-borda')" style="width:100%;margin-top:8px;color:var(--txt2);">Cancelar</button>
+  </div>
+</div>
+
+
+<!-- MODAL TAMANHO MEIO A MEIO (só G e GG) -->
+<div class="modal-overlay" id="modal-mm-tamanho">
+  <div class="modal-box" style="text-align:center;">
+    <div style="font-size:28px;margin-bottom:8px;">🍕</div>
+    <div style="font-size:16px;font-weight:700;margin-bottom:4px;">Pizza Meio a Meio</div>
+    <div style="font-size:12px;color:var(--txt2);margin-bottom:18px;">Selecione o tamanho:</div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <button class="btn btn-azul" onclick="escolherTamMM('G')"
+        style="padding:15px;font-size:15px;font-weight:700;">
+        Grande (G)<br>
+        <span style="font-size:12px;font-weight:400;color:#aad4ff;">Trad. R$ 52,90 · Esp. R$ 57,90 (cada metade = ½)</span>
+      </button>
+      <button class="btn btn-azul" onclick="escolherTamMM('GG')"
+        style="padding:15px;font-size:15px;font-weight:700;">
+        Gigante (GG)<br>
+        <span style="font-size:12px;font-weight:400;color:#aad4ff;">Trad. R$ 61,90 · Esp. R$ 76,90 (cada metade = ½)</span>
+      </button>
+    </div>
+    <button class="btn" onclick="fecharModal('modal-mm-tamanho')"
+      style="width:100%;margin-top:14px;color:var(--txt2);">Cancelar</button>
+  </div>
+</div>
+
+<!-- MODAL MEIO A MEIO — passo 1: primeiro sabor -->
+<div class="modal-overlay" id="modal-meiomeio1">
+  <div class="modal-box" style="max-height:85vh;overflow-y:auto;">
+    <div style="font-size:15px;font-weight:700;margin-bottom:4px;">Pizza Meio a Meio</div>
+    <div style="font-size:12px;color:var(--txt2);margin-bottom:14px;">Passo 1 — escolha o 1º sabor:</div>
+    <div id="mm1-cat" style="display:flex;gap:6px;margin-bottom:10px;">
+      <button class="btn" id="mm1-btn-trad" onclick="filtrarMM1('trad')" style="font-size:12px;padding:7px 12px;">Tradicionais</button>
+      <button class="btn btn-azul" id="mm1-btn-esp" onclick="filtrarMM1('esp')" style="font-size:12px;padding:7px 12px;">Especiais</button>
+    </div>
+    <div id="mm1-lista" style="display:flex;flex-direction:column;gap:6px;"></div>
+    <button class="btn" onclick="fecharModal('modal-meiomeio1')" style="width:100%;margin-top:12px;color:var(--txt2);">Cancelar</button>
+  </div>
+</div>
+
+<!-- MODAL MEIO A MEIO — passo 2: segundo sabor -->
+<div class="modal-overlay" id="modal-meiomeio2">
+  <div class="modal-box" style="max-height:85vh;overflow-y:auto;">
+    <div style="font-size:15px;font-weight:700;margin-bottom:2px;">Pizza Meio a Meio</div>
+    <div style="font-size:12px;color:var(--verde);margin-bottom:4px;" id="mm2-sabor1-info">1º sabor: ...</div>
+    <div style="font-size:12px;color:var(--txt2);margin-bottom:14px;">Passo 2 — escolha o 2º sabor:</div>
+    <div id="mm2-cat" style="display:flex;gap:6px;margin-bottom:10px;">
+      <button class="btn" id="mm2-btn-trad" onclick="filtrarMM2('trad')" style="font-size:12px;padding:7px 12px;">Tradicionais</button>
+      <button class="btn btn-azul" id="mm2-btn-esp" onclick="filtrarMM2('esp')" style="font-size:12px;padding:7px 12px;">Especiais</button>
+    </div>
+    <div id="mm2-lista" style="display:flex;flex-direction:column;gap:6px;"></div>
+    <button class="btn" onclick="fecharModal('modal-meiomeio2');abrirModal('modal-meiomeio1')" style="width:100%;margin-top:12px;color:var(--txt2);">← Voltar</button>
+  </div>
+</div>
+
+<script type="module">
+// ════════════════════════════════════════════════════════════════
+// ⚙ CONFIGURAÇÃO — troque o IP após instalar no restaurante
+// ════════════════════════════════════════════════════════════════
+const IP_NOTEBOOK = 'http://192.168.1.100:5000'; // ← TROCAR pelo IP real do notebook
+const TIMEOUT_LOCAL = 2000; // ms para tentar IP local
+
+// ════════════════════════════════════════════════════════════════
+// FIREBASE
+// ════════════════════════════════════════════════════════════════
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set, onValue, push, get, update }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const db = getDatabase(initializeApp({
+  apiKey:"AIzaSyAXMDwp1-VT3FdBMHkihTPESWL8smJLZcc",
+  authDomain:"pdv-restaurante-a7b75.firebaseapp.com",
+  databaseURL:"https://pdv-restaurante-a7b75-default-rtdb.firebaseio.com",
+  projectId:"pdv-restaurante-a7b75",
+  storageBucket:"pdv-restaurante-a7b75.firebasestorage.app",
+  messagingSenderId:"262025117951",
+  appId:"1:262025117951:web:384a6ec2567d8a231bccca"
+}));
+
+// ════════════════════════════════════════════════════════════════
+// ESTADO DE CONECTIVIDADE
+// ════════════════════════════════════════════════════════════════
+let fbOnline = false;   // Firebase (internet)
+let localOnline = false; // IP local (rede interna)
+
+function atualizarBadges(){
+  const fb = document.getElementById('badge-fb');
+  const lc = document.getElementById('badge-local');
+  fb.textContent = fbOnline ? '✓ Firebase' : '✗ Firebase';
+  fb.className = 'badge badge-fb ' + (fbOnline ? 'ok' : 'off');
+  lc.textContent = localOnline ? '✓ Rede local' : '✗ Rede local';
+  lc.className = 'badge badge-local ' + (localOnline ? 'ok' : 'off');
+}
+
+// Testa IP local a cada 15s
+async function testarLocal(){
+  try{
+    const r = await fetch(IP_NOTEBOOK+'/ping', {signal: AbortSignal.timeout(TIMEOUT_LOCAL)});
+    localOnline = r.ok;
+  }catch{ localOnline = false; }
+  atualizarBadges();
+}
+testarLocal();
+setInterval(testarLocal, 15000);
+
+onValue(ref(db,'.info/connected'), snap=>{
+  fbOnline = !!snap.val();
+  atualizarBadges();
+  if(fbOnline){ processarFila(); }
+});
+
+// ════════════════════════════════════════════════════════════════
+// STORAGE LOCAL (offline fallback)
+// ════════════════════════════════════════════════════════════════
+const K = { mesas:'lv_mesas', fila:'lv_fila', caixa:'lv_caixa' };
+const salvarLocal = (k,v) => localStorage.setItem(k, JSON.stringify(v));
+const lerLocal = k => { try{ return JSON.parse(localStorage.getItem(k)); }catch{ return null; } };
+
+function lerFila(){ return lerLocal(K.fila)||[]; }
+function salvarFila(q){ salvarLocal(K.fila, q); }
+function adicionarFila(op){ const q=lerFila(); q.push(op); salvarFila(q); }
+
+function salvarMesasLocal(){ salvarLocal(K.mesas, mesas); }
+function carregarMesasLocal(){
+  const m = lerLocal(K.mesas);
+  if(m && m.length) mesas = m;
+}
+
+// ════════════════════════════════════════════════════════════════
+// ENVIO TRIPLO — Firebase > IP local > fila offline
+// ════════════════════════════════════════════════════════════════
+async function enviarParaNotebook(rota, dados){
+  // 1. Tenta Firebase
+  if(fbOnline){
+    try{
+      const no = rota === '/imprimir/cozinha' ? 'pedidos_cozinha' : 'contas_imprimir';
+      await push(ref(db, no), {...dados, status:'pendente', timestamp:Date.now()});
+      return 'firebase';
+    }catch(e){ console.warn('FB falhou:', e); }
+  }
+  // 2. Tenta IP local
+  if(localOnline){
+    try{
+      const r = await fetch(IP_NOTEBOOK+rota, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(dados),
+        signal: AbortSignal.timeout(TIMEOUT_LOCAL)
+      });
+      if(r.ok) return 'local';
+    }catch(e){ console.warn('Local falhou:', e); }
+  }
+  // 3. Salva na fila para sincronizar depois
+  adicionarFila({rota, dados, timestamp: Date.now()});
+  return 'fila';
+}
+
+async function salvarMesaFirebase(mesa){
+  salvarMesasLocal();
+  if(!fbOnline){ adicionarFila({tipo:'mesa', dados:{id:mesa.id,status:mesa.status,inicio:mesa.inicio,pedido:mesa.pedido}}); return; }
+  try{
+    const po={};(mesa.pedido||[]).forEach((it,i)=>po['i'+i]=it);
+    await set(ref(db,'mesas/mesa'+mesa.id),{id:mesa.id,status:mesa.status,inicio:mesa.inicio,pedido:po});
+  }catch{ adicionarFila({tipo:'mesa',dados:{id:mesa.id,status:mesa.status,inicio:mesa.inicio,pedido:mesa.pedido}}); }
+}
+
+async function salvarVendaFirebase(venda){
+  const hoje = new Date().toLocaleDateString('pt-BR').replace(/\//g,'-');
+  if(!fbOnline){ adicionarFila({tipo:'venda',dados:venda}); return; }
+  try{
+    await set(ref(db,`caixa/${hoje}/vendas/v${Date.now()}`), venda);
+    const snap = await get(ref(db,`caixa/${hoje}`));
+    const atual = snap.val()||{};
+    await update(ref(db,`caixa/${hoje}`),{[venda.pagamento]:(atual[venda.pagamento]||0)+venda.total, data:hoje});
+  }catch{ adicionarFila({tipo:'venda',dados:venda}); }
+}
+
+// Processa fila quando internet volta
+async function processarFila(){
+  const fila = lerFila();
+  if(!fila.length) return;
+  mostrarStatus('↑ Sincronizando '+fila.length+' operação(ões)...','sync',0);
+  const erros = [];
+  for(const op of fila){
+    try{
+      if(op.tipo==='mesa'){
+        const m=op.dados; const po={};
+        (m.pedido||[]).forEach((it,i)=>po['i'+i]=it);
+        await set(ref(db,'mesas/mesa'+m.id),{id:m.id,status:m.status,inicio:m.inicio,pedido:po});
+      } else if(op.tipo==='venda'){
+        const v=op.dados; const hoje=new Date().toLocaleDateString('pt-BR').replace(/\//g,'-');
+        await set(ref(db,`caixa/${hoje}/vendas/v${Date.now()}`),v);
+        const snap=await get(ref(db,`caixa/${hoje}`));
+        const atual=snap.val()||{};
+        await update(ref(db,`caixa/${hoje}`),{[v.pagamento]:(atual[v.pagamento]||0)+v.total,data:hoje});
+      } else if(op.rota){
+        const no = op.rota.includes('cozinha') ? 'pedidos_cozinha' : 'contas_imprimir';
+        await push(ref(db,no),{...op.dados,status:'pendente',timestamp:Date.now()});
+      }
+    }catch{ erros.push(op); }
+  }
+  salvarFila(erros);
+  mostrarStatus(erros.length===0?'✓ Sincronização concluída!':'⚠ '+erros.length+' item(ns) não sincronizado(s)', erros.length===0?'online':'offline');
+}
+
+
+// ════════════════════════════════════════════════════════════════
+// BORDAS DE PIZZA
+// ════════════════════════════════════════════════════════════════
+const BORDAS = {
+  'Catupiry':       {M:11, G:13, GG:15},
+  'Cheddar/Catupiry':{M:12, G:14, GG:16},
+};
+
+// Chamado após escolher tamanho — abre tela de borda
+function abrirBorda(pizzaNome, tam, preco, catNome){
+  itemPendente = {nome:pizzaNome, preco, tamanhoObs:tam, categoria:catNome};
+  document.getElementById('borda-pizza-nome').textContent = pizzaNome;
+  document.getElementById('borda-tam-info').textContent = 'Tamanho: '+tam+' — '+fmt(preco);
+  const ops = document.getElementById('borda-opcoes');
+  ops.innerHTML = '';
+  Object.entries(BORDAS).forEach(([nome, precos])=>{
+    const precoBorda = precos[tam] || 0;
+    const btn = document.createElement('button');
+    btn.className = 'btn';
+    btn.style.cssText = 'text-align:left;padding:13px 16px;font-size:14px;font-weight:600;';
+    btn.textContent = 'Borda de '+nome+' — +'+fmt(precoBorda);
+    btn.onclick = ()=>{ fecharModal('modal-borda'); confirmarPizzaComBorda('Borda de '+nome, precoBorda); };
+    ops.appendChild(btn);
+  });
+  fecharModal('modal-tamanho');
+  abrirModal('modal-borda');
+}
+
+window.semBorda = function(){
+  fecharModal('modal-borda');
+  const p = itemPendente;
+  if(!p) return;
+  pushItem({nome:p.nome, preco:p.preco}, p.tamanhoObs, p.categoria);
+  itemPendente = null;
+};
+
+function confirmarPizzaComBorda(bordaNome, precoBorda){
+  const p = itemPendente;
+  if(!p) return;
+  const obsCompleta = p.tamanhoObs + ' + ' + bordaNome;
+  pushItem({nome:p.nome, preco:p.preco + precoBorda}, obsCompleta, p.categoria);
+  itemPendente = null;
+}
+
+// ════════════════════════════════════════════════════════════════
+// PIZZA MEIO A MEIO — versão 2
+// Fluxo: botão no topo → escolhe G/GG → sabor 1 (trad+esp) → sabor 2 → borda
+// ════════════════════════════════════════════════════════════════
+let mmTamanho = null;
+let mmSabor1  = null;
+
+// Abre o modal de tamanho especial para meio a meio (só G e GG)
+window.abrirMeioAMeio = function(){
+  mmSabor1 = null; mmTamanho = null;
+  abrirModal('modal-mm-tamanho');
+};
+
+window.escolherTamMM = function(tam){
+  mmTamanho = tam;
+  fecharModal('modal-mm-tamanho');
+  filtrarMM1('trad');
+  abrirModal('modal-meiomeio1');
+};
+
+function listarPizzasMM(lista, tam){
+  return lista.map(p=>({nome:p.nome, metade:p.tamanhos[tam]/2, catNome:'Pizza Trad.'}));
+}
+function listarPizzasMMEsp(lista, tam){
+  return lista.map(p=>({nome:p.nome, metade:p.tamanhos[tam]/2, catNome:'Pizza Esp.'}));
+}
+
+function renderListaMM(containerId, tipo, onClickFn){
+  const container = document.getElementById(containerId);
+  container.innerHTML = '';
+  const itens = tipo==='trad'
+    ? listarPizzasMM(pizzasTrad, mmTamanho)
+    : listarPizzasMMEsp(pizzasEsp, mmTamanho);
+  itens.forEach(it=>{
+    const btn = document.createElement('button');
+    btn.className = 'btn';
+    btn.style.cssText = 'text-align:left;padding:11px 14px;font-size:13px;width:100%;';
+    btn.innerHTML = '<span style="font-weight:600;">'+it.nome+'</span><br><span style="font-size:11px;color:var(--verde);">½ = '+fmt(it.metade)+'</span>';
+    btn.onclick = ()=>onClickFn(it);
+    container.appendChild(btn);
+  });
+}
+
+window.filtrarMM1 = function(tipo){
+  document.getElementById('mm1-btn-trad').className='btn'+(tipo==='trad'?' btn-azul':'');
+  document.getElementById('mm1-btn-esp').className ='btn'+(tipo==='esp' ?' btn-azul':'');
+  renderListaMM('mm1-lista', tipo, (it)=>{
+    mmSabor1 = it;
+    document.getElementById('mm2-sabor1-info').textContent = '1º: '+it.nome+' ('+fmt(it.metade)+')';
+    fecharModal('modal-meiomeio1');
+    filtrarMM2('trad');
+    abrirModal('modal-meiomeio2');
+  });
+};
+
+window.filtrarMM2 = function(tipo){
+  document.getElementById('mm2-btn-trad').className='btn'+(tipo==='trad'?' btn-azul':'');
+  document.getElementById('mm2-btn-esp').className ='btn'+(tipo==='esp' ?' btn-azul':'');
+  renderListaMM('mm2-lista', tipo, (it)=>{
+    fecharModal('modal-meiomeio2');
+    const total = mmSabor1.metade + it.metade;
+    const nome  = '½ '+mmSabor1.nome+' / ½ '+it.nome;
+    // Adiciona ao carrinho
+    pushItem({nome, preco:total}, mmTamanho, 'Pizza Trad.');
+    // Abre modal de borda
+    itemPendente = {nome, preco:total, tamanhoObs:mmTamanho, categoria:'Pizza Trad.'};
+    setTimeout(()=>abrirModal('modal-borda'), 200);
+    mmSabor1 = null; mmTamanho = null;
+  });
+};
+
+
+// ════════════════════════════════════════════════════════════════
+// CARDÁPIO
+// ════════════════════════════════════════════════════════════════
+const pizzasTrad=['01 - Frango c/ Catupiry','02 - Palmito á Bolonhesa','03 - Palmito c/ Catupiry',
+  '04 - Portuguesa','05 - Napolitana','06 - Calabresa','07 - Mussarela','08 - Á Moda',
+  '09 - Frango á Bolonhesa','10 - Presunto','11 - Vegetariana','12 - Bacon','13 - Bacon Milho',
+  '14 - Sugestão Renito','15 - Atum','16 - Chef Cheddar','17 - Espanta Vampiro'
+].map(n=>({nome:n,tamanhos:{M:40.90,G:52.90,GG:61.90}}));
+const pizzasEsp=['18 - Lombo Tropical','19 - Lombo Canadense','20 - Milhombo','21 - A Moda Renito',
+  '22 - Quatro Queijo','23 - Salaminho Italiano','24 - 4 Carnes','25 - 5 Carnes',
+  '26 - Nordestina','27 - Porconobilis','28 - A Moda Especial'
+].map(n=>({nome:n,tamanhos:{M:45.90,G:57.90,GG:76.90}}));
+const categorias=[
+  {nome:'Pizza Trad.',icon:'🍕',pizza:true,produtos:pizzasTrad},
+  {nome:'Pizza Esp.',icon:'🌟',pizza:true,produtos:pizzasEsp},
+  {nome:'Sanduíches',icon:'🍔',produtos:[
+    {nome:'01 - Hamburguer',preco:10},{nome:'02 - X-Burguer',preco:11},{nome:'03 - Misto Especial',preco:11},
+    {nome:'04 - X-Bacon',preco:14},{nome:'05 - Framburguer',preco:14.5},{nome:'06 - X-Egg-Burguer',preco:14.5},
+    {nome:'07 - X-Egg-Bacon',preco:16},{nome:'08 - X-Tudo',preco:17},{nome:'09 - Daliane',preco:23.5},
+    {nome:'10 - 5 Carnes',preco:24.5},{nome:'11 - X-Tudão',preco:19.5},{nome:'12 - X-Frango',preco:19.5},
+    {nome:'13 - Super X-Tudo',preco:24.5},{nome:'14 - RM Sanduíche',preco:25},{nome:'15 - LR Burguer',preco:26.5},
+    {nome:'16 - Rangão',preco:28.5},{nome:'17 - Califórnia',preco:22.5},{nome:'18 - X-Bruno',preco:22.5},
+    {nome:'19 - Chefe',preco:24.5},{nome:'20 - Patrão',preco:30.5},{nome:'21 - Ki-Frango',preco:24.5},
+    {nome:'22 - Dom Geraldo',preco:29.5},{nome:'23 - São Carlos',preco:24.5},{nome:'24 - Dom Cleiton',preco:31.5},
+    {nome:'25 - F-Kalll',preco:32.5},{nome:'26 - Marley',preco:25.5},{nome:'27 - Betoven',preco:35.5},
+  ]},
+  {nome:'Porções',icon:'🍟',carne:true,produtos:[
+    {nome:'Fritas 400g Mussarela',preco:24.9},{nome:'Fritas 400g Muss./Bacon',preco:34.9},
+    {nome:'Fritas 400g Muss./Bacon/Cala.',preco:49.9},{nome:'Carne de Sol c/ Fritas',preco:75.9},
+    {nome:'Contra Filé c/ Fritas',preco:77.9},{nome:'Fígado com Jiló',preco:32.9},
+    {nome:'Linguiça Caseira c/ Fritas',preco:55.9},{nome:'Pernil c/ Fritas/Mandioca',preco:55.9},
+    {nome:'Arroz na Chapa',preco:24.9},{nome:'Arroz com Pernil',preco:36.9},
+    {nome:'Porção Mista',preco:136.9},{nome:'Filé de Peito de Frango',preco:42.9},
+    {nome:'Picanha',preco:96.9},{nome:'Costelinha c/ Mandioca',preco:67.9},
+    {nome:'Coxinha da Asa 1kg',preco:50.9},
+  ]},
+  {nome:'Peixes',icon:'🐟',produtos:[
+    {nome:'Tilápia 400g Molho Especial',preco:53.9},{nome:'Tilápia 400g c/ Batata',preco:68.9},
+    {nome:'Cascudo 800g Molho Especial',preco:46.9},{nome:'Cascudo 800g c/ Batata',preco:60.9},
+    {nome:'Cascudo 400g Molho Especial',preco:23.9},{nome:'Cascudo 400g c/ Batata',preco:30.9},
+  ]},
+  {nome:'Bebidas',icon:'🥤',produtos:[
+    {nome:'Suco de Caixinha',preco:5},{nome:'Suco 1 Litro',preco:12},
+    {nome:'Refri 1L Guaraná',preco:9},{nome:'Refri 1L Coca-Cola',preco:12},
+    {nome:'Refri 2L Fanta/Guaraná',preco:15},{nome:'Refri 2L Coca-Cola',preco:17},
+    {nome:'Refrigerante Lata',preco:6},
+    {nome:'Polpa Acerola/Abacaxi/Laranja/Morango',preco:7.5},
+    {nome:'Polpa Graviola/Cacau/Maracujá/Açaí',preco:8},
+  ]},
+  {nome:'Aperitivos/Cervejas',icon:'🍺',produtos:[
+    // ── Cervejas ──
+    {nome:'Brahma / Skol 600ml',preco:10},{nome:'Kaiser 600ml',preco:8},
+    {nome:'Original 600ml',preco:13},{nome:'Spaten / Stella 600ml',preco:14},
+    {nome:'Heineken 600ml',preco:16},
+    // ── Vinhos ──
+    {nome:'Vinho Taça (Chapinha/Campo Largo/Canção)',preco:22.9},
+    {nome:'Vinho Garrafa (Chapinha/Campo Largo/Canção)',preco:22.9},
+    {nome:'Vinho Pergola Taça',preco:10.9},{nome:'Vinho Pergola Garrafa',preco:45.9},
+    // ── Whisky ──
+    {nome:'White Horse',preco:15},{nome:'Old Eight',preco:8},
+    {nome:'Jone Walk Red',preco:17},{nome:'Natu Nobilis',preco:8},
+    // ── Caipirinhas ──
+    {nome:'Caip Orlof — Abacaxi',preco:20},{nome:'Caip Orlof — Morango',preco:20},
+    {nome:'Caip Orlof — Limão',preco:20},{nome:'Caip Orlof — Maracujá',preco:20},
+    {nome:'Caip Orlof — Uva',preco:20},
+    // ── Aperitivos ──
+    {nome:'Pinga 51',preco:5},{nome:'Conhaque Pres.',preco:5},
+    {nome:'Vodka Orlof',preco:7},{nome:'Seleta',preco:7},{nome:'Vale Verde',preco:13},
+    {nome:'Campari',preco:13},{nome:'Pinga da Roça',preco:4},
+    {nome:'Conhaque Dumek',preco:11},{nome:'Salinas',preco:7},{nome:'Rum Bacardi',preco:10},
+  ]},
+  {nome:'Espaguete',icon:'🍝',produtos:[
+    {nome:'Espaguete na Chapa — Pequeno',preco:19.9},
+    {nome:'Espaguete na Chapa — Grande',preco:29.9},
+  ]},
+];
+
+// ════════════════════════════════════════════════════════════════
+// ESTADO
+// ════════════════════════════════════════════════════════════════
+let mesas=[], mesaAtual=null, itemPendente=null, pagSelecionado=null;
+let descontoAtual=0, carrinhoAberto=true;
+
+function inicializarMesas(n){
+  const novas=Array.from({length:n},(_,i)=>{
+    const ex=mesas.find(m=>m.id===i+1);
+    return ex||{id:i+1,status:'livre',inicio:null,pedido:[]};
+  });
+  mesas=novas;
+}
+
+// ════════════════════════════════════════════════════════════════
+// UTILS
+// ════════════════════════════════════════════════════════════════
+const fmt=v=>'R$ '+Number(v).toFixed(2).replace('.',',');
+const tempoMesa=ts=>{if(!ts)return'';const m=Math.floor((Date.now()-ts)/60000);return m<60?m+' min':Math.floor(m/60)+'h '+(m%60)+'min';};
+const getSetor=cat=>(cat==='Bebidas'||cat==='Cervejas'||cat==='Aperitivos/Cervejas')?'bar':'cozinha';
+const nomePag=p=>({dinheiro:'Dinheiro',cartao:'Cartão',pix:'Pix'}[p]||'—');
+const iconePag=p=>({dinheiro:'💵',cartao:'💳',pix:'📲'}[p]||'❓');
+const corPag=p=>({dinheiro:'#2fb36d',cartao:'#5e96ff',pix:'#c89a2a'}[p]||'#acb5ac');
+function tela(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('screen-'+id).classList.add('active');window.scrollTo(0,0);}
+const abrirModal=id=>document.getElementById(id).classList.add('open');
+const fecharModal=id=>document.getElementById(id).classList.remove('open');
+window.fecharModal=fecharModal;
+function mostrarStatus(msg,tipo,tempo=3000){
+  const b=document.getElementById('status-bar');
+  b.textContent=msg;b.className='show '+tipo;
+  if(tempo>0)setTimeout(()=>b.classList.remove('show'),tempo);
+}
+
+// ════════════════════════════════════════════════════════════════
+// MESAS
+// ════════════════════════════════════════════════════════════════
+function renderMesas(){
+  const grid=document.getElementById('mesa-grid');
+  grid.innerHTML='';
+  let liv=0,ocu=0,con=0;
+  mesas.forEach(m=>{
+    if(m.status==='livre')liv++;
+    else if(m.status==='ocupada')ocu++;
+    else con++;
+    const total=(m.pedido||[]).reduce((s,i)=>s+i.preco*i.qtd,0);
+    const el=document.createElement('div');
+    el.className='mesa-card '+m.status;
+    const cor=m.status==='livre'?'#2f9d64':m.status==='ocupada'?'#cf5b74':'#c89a2a';
+    el.innerHTML=`<div style="font-size:15px;font-weight:700;color:${cor};">Mesa ${String(m.id).padStart(2,'0')}</div>
+      <div style="font-size:10px;color:${cor};margin:2px 0;">${m.status==='livre'?'Livre':m.status==='ocupada'?'Ocupada':'Conta'}</div>
+      ${m.inicio?`<div style="font-size:10px;color:${cor};opacity:.8;">${tempoMesa(m.inicio)}</div>`:''}
+      ${total>0?`<div style="font-size:13px;font-weight:700;color:${cor};margin-top:3px;">${fmt(total)}</div>`:''}`;
+    el.onpointerup=()=>abrirMesa(m.id);
+    grid.appendChild(el);
+  });
+  document.getElementById('stat-livre').textContent=liv+' livres';
+  document.getElementById('stat-ocup').textContent=ocu+' ocupadas';
+  document.getElementById('stat-conta').textContent=con+' conta';
+}
+
+function abrirMesa(id){
+  mesaAtual=mesas.find(m=>m.id===id);
+  if(!mesaAtual.inicio)mesaAtual.inicio=Date.now();
+  if(mesaAtual.status==='livre')mesaAtual.status='ocupada';
+  salvarMesaFirebase(mesaAtual);
+  document.getElementById('titulo-mesa').textContent='Mesa '+String(id).padStart(2,'0');
+  document.getElementById('tempo-mesa').textContent='Aberta há '+tempoMesa(mesaAtual.inicio);
+  renderCategorias();renderCarrinho();tela('pedido');
+}
+window.voltarMesas=()=>{renderMesas();tela('mesas');};
+window.voltarPedido=()=>tela('pedido');
+
+// ════════════════════════════════════════════════════════════════
+// CATEGORIAS / PRODUTOS
+// ════════════════════════════════════════════════════════════════
+function renderCategorias(){
+  const list=document.getElementById('cat-list');
+  list.innerHTML='';
+  categorias.forEach((c,i)=>{
+    const el=document.createElement('div');
+    el.className='cat-btn'+(i===0?' ativo':'');
+    el.innerHTML=`<span class="cat-icon">${c.icon}</span><span>${c.nome}</span>`;
+    el.onclick=()=>{document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('ativo'));el.classList.add('ativo');selecionarCat(i);};
+    list.appendChild(el);
+  });
+  selecionarCat(0);
+}
+function selecionarCat(idx){
+  const c=categorias[idx];
+  document.getElementById('cat-titulo').textContent=c.icon+' '+c.nome;
+  const grid=document.getElementById('produto-grid');
+  grid.innerHTML='';
+
+  // Botão Meio a Meio no topo das categorias de pizza
+  if(c.pizza){
+    const btnMM=document.createElement('div');
+    btnMM.style.cssText='grid-column:1/-1;background:linear-gradient(180deg,#1a3564,#102040);border:2px solid var(--azul);border-radius:14px;padding:13px 16px;cursor:pointer;display:flex;align-items:center;gap:10px;margin-bottom:4px;';
+    btnMM.innerHTML='<span style="font-size:22px;">🍕</span><div><div style="font-weight:700;font-size:14px;color:#aad4ff;">Pizza Meio a Meio</div><div style="font-size:11px;color:var(--txt2);">Escolha 2 sabores — G ou GG</div></div>';
+    btnMM.onclick=()=>abrirMeioAMeio();
+    grid.appendChild(btnMM);
+  }
+
+  c.produtos.forEach(p=>{
+    const el=document.createElement('div');
+    el.className='prod-card';
+    const ph=p.tamanhos?`<div class="prod-tamanhos">M ${fmt(p.tamanhos.M)}<br>G ${fmt(p.tamanhos.G)}<br>GG ${fmt(p.tamanhos.GG)}</div>`:`<div class="prod-preco">${fmt(p.preco)}</div>`;
+    el.innerHTML=`<div class="prod-nome">${p.nome}</div>${ph}`;
+    el.onclick=()=>adicionarItem(p,c.nome,c.carne,c.pizza);
+    grid.appendChild(el);
+  });
+}
+
+// ════════════════════════════════════════════════════════════════
+// CARRINHO
+// ════════════════════════════════════════════════════════════════
+function adicionarItem(p,catNome,carne,pizza){
+  if(pizza&&p.tamanhos){itemPendente={...p,categoria:catNome};document.getElementById('modal-pizza-nome').textContent=p.nome;document.getElementById('btn-tam-M').textContent='Média (M) — '+fmt(p.tamanhos.M);document.getElementById('btn-tam-G').textContent='Grande (G) — '+fmt(p.tamanhos.G);document.getElementById('btn-tam-GG').textContent='Gigante (GG) — '+fmt(p.tamanhos.GG);abrirModal('modal-tamanho');return;}
+  if(carne){itemPendente={...p,categoria:catNome};document.getElementById('modal-nome-item').textContent=p.nome;abrirModal('modal-ponto');return;}
+  pushItem(p,'',catNome);
+}
+window.escolherTamanho=tam=>{
+  const p=itemPendente;
+  // Salva tamanho pendente para o meio a meio poder ler
+  if(p) p._tamPendente=tam;
+  // Abre modal de borda (que pode finalizar sem borda também)
+  abrirBorda(p.nome, tam, p.tamanhos[tam], p.categoria);
+};
+window.escolherPonto=ponto=>{fecharModal('modal-ponto');pushItem(itemPendente,ponto,itemPendente.categoria);itemPendente=null;};
+function pushItem(p,obs,catNome){
+  const cat=catNome||p.categoria||'';
+  const ex=mesaAtual.pedido.find(i=>i.nome===p.nome&&i.obs===obs&&!i.enviadoCozinha);
+  if(ex)ex.qtd++;
+  else mesaAtual.pedido.push({nome:p.nome,preco:p.preco,qtd:1,obs,categoria:cat,setor:getSetor(cat),enviadoCozinha:false,criadoEm:Date.now()});
+  salvarMesaFirebase(mesaAtual);renderCarrinho();
+  if(!carrinhoAberto)toggleCarrinho();
+}
+window.toggleCarrinho=function(){
+  carrinhoAberto=!carrinhoAberto;
+  // Itens somem/aparecem, botão SEMPRE visível
+  document.getElementById('carrinho-body').style.display=carrinhoAberto?'block':'none';
+  document.getElementById('carrinho-toggle-icon').textContent=carrinhoAberto?'▲':'▼';
+};
+function renderCarrinho(){
+  const lista=document.getElementById('carrinho-lista');
+  const total=mesaAtual?(mesaAtual.pedido||[]).reduce((s,i)=>s+i.preco*i.qtd,0):0;
+  const qtd=mesaAtual?(mesaAtual.pedido||[]).reduce((s,i)=>s+i.qtd,0):0;
+  document.getElementById('badge-qtd').textContent=qtd;
+  document.getElementById('total-pedido').textContent=fmt(total);
+  if(!mesaAtual||!mesaAtual.pedido||!mesaAtual.pedido.length){lista.innerHTML='<div style="font-size:12px;color:var(--txt2);text-align:center;padding:12px;">Nenhum item</div>';return;}
+  lista.innerHTML='';
+  mesaAtual.pedido.forEach((it,idx)=>{
+    const d=document.createElement('div');d.className='cart-item';
+    d.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:start;">
+      <div style="flex:1;padding-right:4px;"><span style="font-weight:600;">${it.nome}</span>${it.obs?`<span style="font-size:10px;color:var(--txt2);"> — ${it.obs}</span>`:''}
+        <div style="margin-top:4px;"><span class="${it.enviadoCozinha?'tag-enviado':'tag-novo'}">${it.enviadoCozinha?'✓ Enviado':'⏳ Novo'}</span>
+        <span style="font-size:10px;color:var(--txt2);margin-left:6px;text-transform:capitalize;">${it.setor}</span></div></div>
+      <button onclick="removerItem(${idx})" style="background:none;border:none;cursor:pointer;color:var(--txt2);font-size:20px;padding:0;line-height:1;">×</button></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:7px;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button class="qtd-btn" onclick="ajustarQtd(${idx},-1)">-</button>
+        <span style="font-weight:700;min-width:16px;text-align:center;">${it.qtd}</span>
+        <button class="qtd-btn" onclick="ajustarQtd(${idx},1)">+</button>
+      </div>
+      <span style="color:var(--verde);font-weight:700;">${fmt(it.preco*it.qtd)}</span></div>`;
+    lista.appendChild(d);
+  });
+}
+window.ajustarQtd=(idx,d)=>{mesaAtual.pedido[idx].qtd+=d;if(mesaAtual.pedido[idx].qtd<=0)mesaAtual.pedido.splice(idx,1);salvarMesaFirebase(mesaAtual);renderCarrinho();};
+window.removerItem=idx=>{mesaAtual.pedido.splice(idx,1);salvarMesaFirebase(mesaAtual);renderCarrinho();};
+
+// ════════════════════════════════════════════════════════════════
+// COZINHA — envia via Firebase OU IP local OU fila
+// ════════════════════════════════════════════════════════════════
+window.enviarCozinha=async function(){
+  if(!mesaAtual||!mesaAtual.pedido||!mesaAtual.pedido.length)return;
+  const todos=mesaAtual.pedido.filter(it=>!it.enviadoCozinha);
+  if(!todos.length){document.getElementById('cozinha-msg').textContent='Todos os itens já foram enviados.';abrirModal('modal-cozinha');return;}
+
+  // Separa itens por setor
+  const itensCozinha=todos.filter(it=>it.setor!=='bar');
+  const itensBar=todos.filter(it=>it.setor==='bar');
+  const agora=new Date().toLocaleString('pt-BR');
+  const ts=Date.now();
+  let resultado='firebase';
+
+  // Envia para cozinha (só itens de cozinha)
+  if(itensCozinha.length){
+    const codigo=mesaAtual.id+'-C-'+ts.toString().slice(-5);
+    const dados={mesa:mesaAtual.id,codigo,data:agora,setor:'cozinha',
+      itens:itensCozinha.map(it=>({nome:it.nome,qtd:it.qtd,preco:it.preco,obs:it.obs||'',setor:'cozinha'}))};
+    resultado=await enviarParaNotebook('/imprimir/cozinha',dados);
+  }
+
+  // Envia para bar (só bebidas/cervejas) — nó separado no Firebase
+  if(itensBar.length){
+    const codigo=mesaAtual.id+'-B-'+ts.toString().slice(-5);
+    const dados={mesa:mesaAtual.id,codigo,data:agora,setor:'bar',
+      itens:itensBar.map(it=>({nome:it.nome,qtd:it.qtd,preco:it.preco,obs:it.obs||'',setor:'bar'}))};
+    await enviarParaNotebook('/imprimir/cozinha',dados);
+  }
+
+  todos.forEach(it=>{it.enviadoCozinha=true;it.enviadoEm=Date.now();});
+  salvarMesaFirebase(mesaAtual);renderCarrinho();
+  const qtd=todos.reduce((s,i)=>s+i.qtd,0);
+  const msgs={firebase:'✓ Enviado via internet!',local:'✓ Enviado pela rede local!',fila:'⏳ Salvo — enviará quando conectar'};
+  const icons={firebase:'🔔',local:'📡',fila:'⏳'};
+  let detalhe='';
+  if(itensCozinha.length&&itensBar.length) detalhe=itensCozinha.length+' cozinha + '+itensBar.length+' bar';
+  else if(itensBar.length) detalhe=itensBar.length+' item(ns) → bar';
+  else detalhe=itensCozinha.length+' item(ns) → cozinha';
+  document.getElementById('cozinha-icon').textContent=icons[resultado];
+  document.getElementById('cozinha-titulo').textContent=resultado==='fila'?'Pedido salvo!':'Pedido enviado!';
+  document.getElementById('cozinha-msg').textContent=detalhe+' — '+msgs[resultado];
+  abrirModal('modal-cozinha');
+};
+
+// ════════════════════════════════════════════════════════════════
+// FECHAMENTO — completo + parcial + pagamento dividido
+// ════════════════════════════════════════════════════════════════
+let abaFech='total';
+let qtdSel={};   // {idx: qtd selecionada} para modo parcial
+let pagDiv=[];   // [{tipo, valor}] pagamentos divididos
+
+window.mudarAbaFech=function(aba){
+  abaFech=aba;
+  const estiloAtivo='flex:1;padding:11px;font-size:13px;font-weight:600;background:var(--card);border:none;color:var(--verde);border-bottom:2px solid var(--verde);cursor:pointer;font-family:var(--font);';
+  const estiloInativo='flex:1;padding:11px;font-size:13px;font-weight:600;background:transparent;border:none;color:var(--txt2);border-bottom:2px solid transparent;cursor:pointer;font-family:var(--font);';
+  document.getElementById('aba-total').style.cssText  =aba==='total'  ?estiloAtivo:estiloInativo;
+  document.getElementById('aba-parcial').style.cssText=aba==='parcial'?estiloAtivo:estiloInativo;
+  document.getElementById('btn-sel-todos').style.display=aba==='parcial'?'block':'none';
+  document.getElementById('label-itens-fech').textContent=aba==='parcial'?'✔ Selecione os itens a pagar':'Consumo da Mesa';
+  if(aba==='total'){
+    // seleciona tudo
+    (mesaAtual.pedido||[]).forEach((_,i)=>{qtdSel[i]=mesaAtual.pedido[i].qtd;});
+  } else {
+    qtdSel={};
+  }
+  pagDiv=[];
+  renderFechamento();
+};
+
+window.toggleTodosFech=function(){
+  const todos=mesaAtual.pedido||[];
+  const algumDesmarcado=todos.some((_,i)=>!qtdSel[i]||qtdSel[i]===0);
+  todos.forEach((_,i)=>{qtdSel[i]=algumDesmarcado?todos[i].qtd:0;});
+  renderFechamento();
+};
+
+window.toggleItemFech=function(idx){
+  const it=mesaAtual.pedido[idx];
+  qtdSel[idx]=(qtdSel[idx]&&qtdSel[idx]>0)?0:it.qtd;
+  renderFechamento();
+};
+
+window.ajustarQtdFech=function(idx,delta){
+  const max=mesaAtual.pedido[idx].qtd;
+  qtdSel[idx]=Math.min(max,Math.max(0,(qtdSel[idx]||0)+delta));
+  renderFechamento();
+};
+
+function subTotalFech(){
+  return (mesaAtual.pedido||[]).reduce((s,it,i)=>s+it.preco*(abaFech==='parcial'?(qtdSel[i]||0):it.qtd),0);
+}
+
+window.abrirFechamento=function(){
+  if(!mesaAtual||!mesaAtual.pedido||!mesaAtual.pedido.length){
+    document.getElementById('msg-confirmar-fech').textContent='⚠ Mesa sem itens';
+    document.getElementById('modal-confirmar-fechamento').querySelector('div[style*="txt2"]').textContent='Não há itens no pedido. Deseja ir assim mesmo para o fechamento?';
+  } else {
+    const total=(mesaAtual.pedido||[]).reduce((s,i)=>s+i.preco*i.qtd,0);
+    document.getElementById('msg-confirmar-fech').textContent='Fechar Mesa '+String(mesaAtual.id).padStart(2,'0')+'?';
+    document.getElementById('modal-confirmar-fechamento').querySelector('div[style*="txt2"]').textContent='Total: '+fmt(total)+' · Deseja ir para a tela de fechamento e pagamento?';
+  }
+  abrirModal('modal-confirmar-fechamento');
+};
+
+window._irParaFechamento=function(){
+  descontoAtual=0; pagDiv=[]; abaFech='total';
+  (mesaAtual.pedido||[]).forEach((_,i)=>{qtdSel[i]=mesaAtual.pedido[i].qtd;});
+  document.getElementById('titulo-fechamento').textContent='Fechamento — Mesa '+String(mesaAtual.id).padStart(2,'0');
+  document.getElementById('troco-box').style.display='none';
+  document.getElementById('btn-sel-todos').style.display='none';
+  document.getElementById('label-itens-fech').textContent='Consumo da Mesa';
+  const estiloAtivo='flex:1;padding:11px;font-size:13px;font-weight:600;background:var(--card);border:none;color:var(--verde);border-bottom:2px solid var(--verde);cursor:pointer;font-family:var(--font);';
+  const estiloInativo='flex:1;padding:11px;font-size:13px;font-weight:600;background:transparent;border:none;color:var(--txt2);border-bottom:2px solid transparent;cursor:pointer;font-family:var(--font);';
+  document.getElementById('aba-total').style.cssText=estiloAtivo;
+  document.getElementById('aba-parcial').style.cssText=estiloInativo;
+  renderFechamento();tela('fechamento');
+};
+
+function renderFechamento(){
+  const tabela=document.getElementById('tabela-fechamento');
+  tabela.innerHTML='';
+  let sub=0;
+  (mesaAtual.pedido||[]).forEach((it,idx)=>{
+    if(abaFech==='parcial'){
+      const sel=qtdSel[idx]||0;
+      sub+=it.preco*sel;
+      const marcado=sel>0;
+      const r=document.createElement('div');
+      r.className='fech-item-row'+(marcado?' sel':'');
+      r.innerHTML=`
+        <div class="fech-check ${marcado?'on':''}" onclick="toggleItemFech(${idx})">${marcado?'✓':''}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:500;">${it.nome}</div>
+          ${it.obs?`<div style="font-size:10px;color:var(--txt2);">${it.obs}</div>`:''}
+          <div style="font-size:10px;color:var(--txt2);">Disponível: ${it.qtd} × ${fmt(it.preco)}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <button class="fech-qtd-btn" onclick="ajustarQtdFech(${idx},-1)">-</button>
+          <span style="font-size:14px;font-weight:700;min-width:18px;text-align:center;color:${marcado?'var(--verde)':'var(--txt2)'};">${sel}</span>
+          <button class="fech-qtd-btn" onclick="ajustarQtdFech(${idx},1)">+</button>
+        </div>
+        <span style="font-size:13px;font-weight:600;min-width:60px;text-align:right;color:${marcado?'var(--verde)':'var(--txt2)'};">${fmt(it.preco*sel)}</span>`;
+      tabela.appendChild(r);
+    } else {
+      sub+=it.preco*it.qtd;
+      const r=document.createElement('div');
+      r.style.cssText='display:flex;justify-content:space-between;font-size:13px;padding:6px 14px;border-bottom:1px solid var(--border2);';
+      r.innerHTML=`<div><span style="font-weight:500;">${it.nome}</span>${it.obs?`<span style="font-size:11px;color:var(--txt2);"> — ${it.obs}</span>`:''} <span style="color:var(--txt2);">x${it.qtd}</span></div><span style="font-weight:600;">${fmt(it.preco*it.qtd)}</span>`;
+      tabela.appendChild(r);
+    }
+  });
+  document.getElementById('subtotal-fech').textContent=fmt(sub);
+  atualizarTotal(sub);
+  renderPagDiv();
+}
+
+function atualizarTotal(sub){
+  document.getElementById('total-final').textContent=fmt(sub-(sub*(descontoAtual/100)));
+}
+
+window.aplicarDesconto=pct=>{
+  descontoAtual=pct;
+  const sub=subTotalFech();
+  document.getElementById('desconto-info').textContent=pct===0?'Nenhum aplicado':pct>0?pct+'% de desconto':Math.abs(pct)+'% de taxa';
+  atualizarTotal(sub);
+  renderPagDiv();
+};
+window.aplicarDescontoCustom=()=>abrirModal('modal-desconto');
+window.aplicarDescontoCustomConfirm=()=>{const v=parseFloat(document.getElementById('input-desconto-custom').value);if(isNaN(v))return;fecharModal('modal-desconto');window.aplicarDesconto(v);};
+
+// ── Pagamento Dividido ──
+window.addPagDiv=function(tipo){
+  if(pagDiv.find(p=>p.tipo===tipo))return;
+  pagDiv.push({tipo,valor:''});
+  renderPagDiv();
+};
+window.remPagDiv=function(tipo){
+  pagDiv=pagDiv.filter(p=>p.tipo!==tipo);
+  if(!pagDiv.find(p=>p.tipo==='dinheiro'))document.getElementById('troco-box').style.display='none';
+  renderPagDiv();
+};
+window.setPagDivVal=function(tipo,val){
+  const p=pagDiv.find(p=>p.tipo===tipo);if(p)p.valor=val;
+  if(tipo==='dinheiro')calcularTroco();
+  atualizarResumoPag();
+};
+
+function totalPagDiv(){return pagDiv.reduce((s,p)=>s+(parseFloat(p.valor)||0),0);}
+
+function renderPagDiv(){
+  ['dinheiro','cartao','pix'].forEach(t=>{
+    const b=document.getElementById('addpag-'+t);
+    if(b)b.className='add-pag-btn'+(pagDiv.find(p=>p.tipo===t)?' usado':'');
+  });
+  const lista=document.getElementById('pag-div-lista');
+  lista.innerHTML='';
+  const icones={dinheiro:'💵',cartao:'💳',pix:'📲'};
+  const nomes={dinheiro:'Dinheiro',cartao:'Cartão',pix:'Pix'};
+  const bgs={dinheiro:'#1a2e1e',cartao:'#1b3158',pix:'#3a2e0a'};
+  pagDiv.forEach(p=>{
+    const row=document.createElement('div');
+    row.className='pag-div-row';
+    row.innerHTML=`<div style="width:30px;height:30px;border-radius:8px;background:${bgs[p.tipo]};display:flex;align-items:center;justify-content:center;font-size:16px;">${icones[p.tipo]}</div>
+      <span style="font-size:13px;font-weight:600;min-width:58px;">${nomes[p.tipo]}</span>
+      <input class="pag-div-input" type="number" min="0" step="0.01" placeholder="0,00"
+        value="${p.valor}" oninput="setPagDivVal('${p.tipo}',this.value)"/>
+      <button onclick="remPagDiv('${p.tipo}')" style="background:none;border:none;cursor:pointer;color:var(--txt2);font-size:18px;line-height:1;">×</button>`;
+    lista.appendChild(row);
+  });
+  document.getElementById('troco-box').style.display=pagDiv.find(p=>p.tipo==='dinheiro')?'block':'none';
+  atualizarResumoPag();
+}
+
+function atualizarResumoPag(){
+  const sub=subTotalFech();
+  const total=sub-(sub*(descontoAtual/100));
+  const pago=totalPagDiv();
+  const falta=Math.max(0,total-pago);
+  const pct=total>0?Math.min(100,(pago/total)*100):0;
+  document.getElementById('res-pago-div').textContent=fmt(pago);
+  const diffEl=document.getElementById('res-diff-div');
+  if(pago>=total&&pagDiv.length>0){
+    diffEl.textContent=pago-total>0.005?'Troco: '+fmt(pago-total):'✓ Valor exato';
+    diffEl.style.color='var(--verde)';
+  }else{
+    diffEl.textContent='Falta: '+fmt(falta);
+    diffEl.style.color='#cf5b74';
+  }
+  document.getElementById('falta-bar-fill').style.width=pct+'%';
+  const temItens=abaFech==='total'||Object.values(qtdSel).some(q=>q>0);
+  const ok=pagDiv.length>0&&pago>=total&&temItens;
+  const btn=document.getElementById('btn-confirmar-venda');
+  btn.style.opacity=ok?'1':'0.4';
+  btn.style.pointerEvents=ok?'auto':'none';
+  btn.textContent=abaFech==='parcial'?'✓ Confirmar Pagamento Parcial':'✓ Confirmar Pagamento e Liberar Mesa';
+}
+
+window.calcularTroco=function(){
+  const sub=subTotalFech();
+  const total=sub-(sub*(descontoAtual/100));
+  const rec=parseFloat(document.getElementById('valor-recebido').value)||0;
+  const troco=rec-total;
+  document.getElementById('valor-troco').textContent=fmt(troco>=0?troco:0);
+  document.getElementById('valor-troco').style.color=troco>=0?'var(--verde)':'#cf5b74';
+};
+
+window.imprimirConta=async function(){
+  const sub=subTotalFech();
+  const itensImp=abaFech==='parcial'
+    ?(mesaAtual.pedido||[]).filter((_,i)=>(qtdSel[i]||0)>0).map((it,i)=>({nome:it.nome,qtd:qtdSel[i],preco:it.preco,obs:it.obs||''}))
+    :(mesaAtual.pedido||[]).map(it=>({nome:it.nome,qtd:it.qtd,preco:it.preco,obs:it.obs||''}));
+  await enviarParaNotebook('/imprimir/conta',{
+    mesa:mesaAtual.id,desconto:descontoAtual,
+    pagamentos:pagDiv.map(p=>({tipo:p.tipo,valor:parseFloat(p.valor)||0})),
+    data:new Date().toLocaleString('pt-BR'),
+    itens:itensImp,
+    parcial:abaFech==='parcial'
+  });
+};
+
+window.concluirVenda=async function(){
+  if(pagDiv.length===0){alert('Adicione pelo menos uma forma de pagamento.');return;}
+  const sub=subTotalFech();
+  const desc=sub*(descontoAtual/100);
+  const total=sub-desc;
+  const pago=totalPagDiv();
+  if(pago<total){alert('Valor pago menor que o total.');return;}
+
+  if(abaFech==='parcial'){
+    // Remove só os itens pagos, deixa o restante na mesa
+    const novosPedidos=[];
+    (mesaAtual.pedido||[]).forEach((it,i)=>{
+      const qtdPaga=qtdSel[i]||0;
+      const resto=it.qtd-qtdPaga;
+      if(resto>0)novosPedidos.push({...it,qtd:resto});
+    });
+    const venda={id:Date.now(),mesa:mesaAtual.id,
+      hora:new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}),
+      itens:(mesaAtual.pedido||[]).filter((_,i)=>(qtdSel[i]||0)>0).map((it,i)=>({nome:it.nome,qtd:qtdSel[i]||0,preco:it.preco,obs:it.obs||''})),
+      subtotal:sub,desconto:desc,total,
+      pagamentos:pagDiv.map(p=>({tipo:p.tipo,valor:parseFloat(p.valor)||0})),
+      pagamento:pagDiv[0].tipo,parcial:true};
+    await salvarVendaFirebase(venda);
+    await window.imprimirConta();
+    mesaAtual.pedido=novosPedidos;
+    if(!novosPedidos.length){mesaAtual.status='livre';mesaAtual.inicio=null;}
+    await salvarMesaFirebase(mesaAtual);
+    const pagDesc=pagDiv.map(p=>iconePag(p.tipo)+' '+fmt(parseFloat(p.valor)||0)).join(' · ');
+    document.getElementById('ok-msg').textContent=(novosPedidos.length?'Pagamento parcial — mesa continua aberta':'Mesa '+String(mesaAtual.id).padStart(2,'0')+' liberada')+'\n'+fmt(total)+' · '+pagDesc;
+    if(!novosPedidos.length)mesaAtual=null;
+    tela('ok');
+  } else {
+    // Fecha mesa completa
+    const venda={id:Date.now(),mesa:mesaAtual.id,
+      hora:new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}),
+      itens:(mesaAtual.pedido||[]).map(it=>({nome:it.nome,qtd:it.qtd,preco:it.preco,obs:it.obs||''})),
+      subtotal:sub,desconto:desc,total,
+      pagamentos:pagDiv.map(p=>({tipo:p.tipo,valor:parseFloat(p.valor)||0})),
+      pagamento:pagDiv[0].tipo};
+    await salvarVendaFirebase(venda);
+    await window.imprimirConta();
+    mesaAtual.status='livre';mesaAtual.pedido=[];mesaAtual.inicio=null;
+    await salvarMesaFirebase(mesaAtual);
+    const pagDesc=pagDiv.map(p=>iconePag(p.tipo)+' '+fmt(parseFloat(p.valor)||0)).join(' · ');
+    document.getElementById('ok-msg').textContent='Mesa '+String(mesaAtual.id).padStart(2,'0')+' liberada · '+fmt(total)+'\n'+pagDesc;
+    mesaAtual=null;tela('ok');
+  }
+};
+
+// ════════════════════════════════════════════════════════════════
+// LOGIN — nome + senha, salva automático no dispositivo
+// ════════════════════════════════════════════════════════════════
+const SENHA_CORRETA = 'viena2024'; // ← mude aqui para a senha que quiser
+
+window.tentarLogin = function tentarLogin(){
+  const nome = document.getElementById('login-nome').value.trim();
+  const senha = document.getElementById('login-senha').value.trim();
+  if(!nome){ document.getElementById('login-erro').textContent='Digite seu nome.'; return; }
+  if(senha !== SENHA_CORRETA){ document.getElementById('login-erro').textContent='Senha incorreta.'; return; }
+  localStorage.setItem('lv_garcom_nome', nome);
+  localStorage.setItem('lv_garcom_auth', 'ok');
+  document.getElementById('login-screen').style.display='none';
+  iniciarApp();
+}
+
+// Enter no campo de senha faz login
+document.getElementById('login-senha').addEventListener('keydown', e=>{ if(e.key==='Enter') tentarLogin(); });
+document.getElementById('login-nome').addEventListener('keydown', e=>{ if(e.key==='Enter') document.getElementById('login-senha').focus(); });
+
+// ════════════════════════════════════════════════════════════════
+// SYNC FIREBASE
+// ════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════
+// RELÓGIO + BOOT
+// ════════════════════════════════════════════════════════════════
+function tick(){
+  const n=new Date();
+  document.getElementById('clock').textContent=n.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit'})+' — '+n.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  if(mesaAtual)document.getElementById('tempo-mesa').textContent='Aberta há '+tempoMesa(mesaAtual.inicio);
+}
+tick();setInterval(tick,10000);
+
+function iniciarApp(){
+  // ── BOOT IMEDIATO: abre com dados locais, Firebase sincroniza depois ──
+  carregarMesasLocal();
+  if(!mesas.length)inicializarMesas(16);
+  renderMesas();
+  tela('mesas');
+  document.getElementById('loading-screen').classList.add('hide'); // abre AGORA
+
+  // ── SYNC FIREBASE em segundo plano (não bloqueia a tela) ──
+onValue(ref(db,'config/numMesas'),snap=>{
+  const n=snap.val()||16;
+  inicializarMesas(n);
+  if(document.getElementById('screen-mesas').classList.contains('active'))renderMesas();
+});
+
+onValue(ref(db,'mesas'),snap=>{
+  const dados=snap.val();
+  if(dados){
+    Object.values(dados).forEach(m=>{
+      const local=mesas.find(x=>x.id===m.id);
+      if(local){local.status=m.status||'livre';local.inicio=m.inicio||null;local.pedido=m.pedido?Object.values(m.pedido):[];}
+    });
+    salvarMesasLocal();
+    if(document.getElementById('screen-mesas').classList.contains('active'))renderMesas();
+    if(mesaAtual){const at=mesas.find(x=>x.id===mesaAtual.id);if(at)mesaAtual=at;renderCarrinho();}
+  }
+},(err)=>{
+  console.warn('FB offline:', err);
+});
+
+  window.addEventListener('online',()=>{mostrarStatus('✓ Internet restaurada — sincronizando...','online');processarFila();});
+  window.addEventListener('offline',()=>mostrarStatus('⚠ Sem internet — usando rede local','local',0));
+} // fim iniciarApp
+
+// ── Verifica se já está logado (login automático) ──
+if(localStorage.getItem('lv_garcom_auth')==='ok' && localStorage.getItem('lv_garcom_nome')){
+  document.getElementById('login-screen').style.display='none';
+  iniciarApp();
+} else {
+  // Mostra tela de login — esconde loading
+  document.getElementById('loading-screen').classList.add('hide');
+}
+</script>
+</body>
+</html>
