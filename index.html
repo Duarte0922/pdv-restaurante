@@ -396,7 +396,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
     <div id="sub-confirmar-fech" style="font-size:13px;color:var(--txt2);margin-bottom:18px;">Deseja ir para a tela de fechamento e pagamento?</div>
     <div style="display:flex;gap:8px;">
       <button class="btn" onclick="fecharModal('modal-confirmar-fechamento')" style="flex:1;">Cancelar</button>
-      <button class="btn btn-verde" onclick="abrirModal('modal-tipo-fechamento')" style="font-size:13px;padding:9px 14px;font-weight:600;">Fechar Mesa</button>
+      <button class="btn btn-verde" onclick="fecharModal('modal-confirmar-fechamento');_irParaFechamento();" style="flex:1;font-weight:700;">✓ Sim, fechar</button>
     </div>
   </div>
 </div>
@@ -463,18 +463,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
     </div>
     <div id="mm2-lista" style="display:flex;flex-direction:column;gap:6px;"></div>
     <button class="btn" onclick="fecharModal('modal-meiomeio2');abrirModal('modal-meiomeio1')" style="width:100%;margin-top:12px;color:var(--txt2);">← Voltar</button>
-  </div>
-</div>
-<div class="modal-overlay" id="modal-tipo-fechamento">
-  <div class="modal-box" style="text-align:center;">
-    <div style="font-size:36px;margin-bottom:12px;">💰</div>
-    <div style="font-size:16px;font-weight:700;margin-bottom:8px;">Como deseja fechar?</div>
-    <div style="font-size:13px;color:var(--txt2);margin-bottom:18px;">Escolha entre pagar apenas alguns itens ou a conta toda.</div>
-    <div style="display:flex;flex-direction:column;gap:10px;">
-      <button class="btn btn-azul" onclick="fecharModal('modal-tipo-fechamento');mudarAbaFech('parcial');_irParaFechamento();" style="padding:14px;font-weight:700;">🧾 Pagamento Parcial (por item)</button>
-      <button class="btn btn-verde" onclick="fecharModal('modal-tipo-fechamento');mudarAbaFech('total');_irParaFechamento();" style="padding:14px;font-weight:700;">🏁 Fechamento Total</button>
-      <button class="btn" onclick="fecharModal('modal-tipo-fechamento')" style="margin-top:5px;color:var(--txt2);">Cancelar</button>
-    </div>
   </div>
 </div>
 
@@ -1230,112 +1218,53 @@ window.imprimirConta=async function(){
   });
 };
 
-window.concluirVenda = async function() {
-    // 1. Validações Iniciais
-    if (!mesaAtual) return;
-    if (pagDiv.length === 0) {
-        alert('Adicione pelo menos uma forma de pagamento.');
-        return;
-    }
+window.concluirVenda=async function(){
+  if(pagDiv.length===0){alert('Adicione pelo menos uma forma de pagamento.');return;}
+  const sub=subTotalFech();
+  const desc=sub*(descontoAtual/100);
+  const total=sub-desc;
+  const pago=totalPagDiv();
+  if(pago<total){alert('Valor pago menor que o total.');return;}
 
-    const sub = subTotalFech();
-    const desc = sub * (descontoAtual / 100);
-    const total = sub - desc;
-    const pago = totalPagDiv();
-
-    if (pago < (total - 0.01)) { // Tolerância de 1 centavo para dízimas
-        alert('Valor pago (' + fmt(pago) + ') é menor que o total (' + fmt(total) + ').');
-        return;
-    }
-
-    try {
-        const mesaRef = ref(db, 'mesas/' + mesaAtual.id);
-        const agora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-        
-        // Preparar dados da venda para o histórico
-        let itensVendidos = [];
-        let novosPedidos = [];
-
-        if (abaFech === 'parcial') {
-            // Lógica de Pagamento Parcial
-            (mesaAtual.pedido || []).forEach((it, i) => {
-                const qtdPaga = qtdSel[i] || 0;
-                const resto = it.qtd - qtdPaga;
-
-                if (qtdPaga > 0) {
-                    itensVendidos.push({
-                        nome: it.nome,
-                        qtd: qtdPaga,
-                        preco: it.preco,
-                        obs: it.obs || ''
-                    });
-                }
-                if (resto > 0) {
-                    novosPedidos.push({ ...it, qtd: resto });
-                }
-            });
-        } else {
-            // Lógica de Fechamento Total
-            itensVendidos = (mesaAtual.pedido || []).map(it => ({
-                nome: it.nome,
-                qtd: it.qtd,
-                preco: it.preco,
-                obs: it.obs || ''
-            }));
-            novosPedidos = []; // Mesa ficará vazia
-        }
-
-        const venda = {
-            id: Date.now(),
-            mesa: mesaAtual.id,
-            hora: agora,
-            itens: itensVendidos,
-            subtotal: sub,
-            desconto: desc,
-            total: total,
-            pagamentos: pagDiv.map(p => ({ tipo: p.tipo, valor: parseFloat(p.valor) || 0 })),
-            parcial: (abaFech === 'parcial')
-        };
-
-        // 2. Salvar Venda no Firebase (Histórico)
-        await salvarVendaFirebase(venda);
-
-        // 3. Imprimir (se a função existir)
-        if (window.imprimirConta) await window.imprimirConta();
-
-        // 4. Atualizar a Mesa no Firebase
-        if (novosPedidos.length > 0) {
-            // Se ainda tem itens, a mesa continua ocupada
-            await update(mesaRef, {
-                pedido: novosPedidos,
-                status: 'ocupada'
-            });
-            
-            const pagDesc = pagDiv.map(p => iconePag(p.tipo) + ' ' + fmt(parseFloat(p.valor))).join(' · ');
-            document.getElementById('ok-msg').innerText = `Pagamento Parcial Registrado!\nA mesa ${mesaAtual.id} continua aberta com os itens restantes.\nTotal Pago: ${fmt(total)}`;
-        } else {
-            // Se não tem mais itens, libera a mesa
-            await update(mesaRef, {
-                pedido: null,
-                status: 'livre',
-                inicio: null
-            });
-            
-            const pagDesc = pagDiv.map(p => iconePag(p.tipo) + ' ' + fmt(parseFloat(p.valor))).join(' · ');
-            document.getElementById('ok-msg').innerText = `Mesa ${String(mesaAtual.id).padStart(2, '0')} Finalizada!\nTotal: ${fmt(total)}\n${pagDesc}`;
-        }
-
-        // 5. Limpar estados globais e ir para tela de sucesso
-        pagDiv = []; // Limpa pagamentos para a próxima
-        qtdSel = {}; // Limpa seleções parciais
-        if (novosPedidos.length === 0) mesaAtual = null;
-        
-        tela('ok');
-
-    } catch (error) {
-        console.error("Erro ao fechar venda:", error);
-        alert("Erro técnico ao salvar. Verifique sua conexão.");
-    }
+  if(abaFech==='parcial'){
+    // Remove só os itens pagos, deixa o restante na mesa
+    const novosPedidos=[];
+    (mesaAtual.pedido||[]).forEach((it,i)=>{
+      const qtdPaga=qtdSel[i]||0;
+      const resto=it.qtd-qtdPaga;
+      if(resto>0)novosPedidos.push({...it,qtd:resto});
+    });
+    const venda={id:Date.now(),mesa:mesaAtual.id,
+      hora:new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}),
+      itens:(mesaAtual.pedido||[]).filter((_,i)=>(qtdSel[i]||0)>0).map((it,i)=>({nome:it.nome,qtd:qtdSel[i]||0,preco:it.preco,obs:it.obs||''})),
+      subtotal:sub,desconto:desc,total,
+      pagamentos:pagDiv.map(p=>({tipo:p.tipo,valor:parseFloat(p.valor)||0})),
+      pagamento:pagDiv[0].tipo,parcial:true};
+    await salvarVendaFirebase(venda);
+    await window.imprimirConta();
+    mesaAtual.pedido=novosPedidos;
+    if(!novosPedidos.length){mesaAtual.status='livre';mesaAtual.inicio=null;}
+    await salvarMesaFirebase(mesaAtual);
+    const pagDesc=pagDiv.map(p=>iconePag(p.tipo)+' '+fmt(parseFloat(p.valor)||0)).join(' · ');
+    document.getElementById('ok-msg').textContent=(novosPedidos.length?'Pagamento parcial — mesa continua aberta':'Mesa '+String(mesaAtual.id).padStart(2,'0')+' liberada')+'\n'+fmt(total)+' · '+pagDesc;
+    if(!novosPedidos.length)mesaAtual=null;
+    tela('ok');
+  } else {
+    // Fecha mesa completa
+    const venda={id:Date.now(),mesa:mesaAtual.id,
+      hora:new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}),
+      itens:(mesaAtual.pedido||[]).map(it=>({nome:it.nome,qtd:it.qtd,preco:it.preco,obs:it.obs||''})),
+      subtotal:sub,desconto:desc,total,
+      pagamentos:pagDiv.map(p=>({tipo:p.tipo,valor:parseFloat(p.valor)||0})),
+      pagamento:pagDiv[0].tipo};
+    await salvarVendaFirebase(venda);
+    await window.imprimirConta();
+    mesaAtual.status='livre';mesaAtual.pedido=[];mesaAtual.inicio=null;
+    await salvarMesaFirebase(mesaAtual);
+    const pagDesc=pagDiv.map(p=>iconePag(p.tipo)+' '+fmt(parseFloat(p.valor)||0)).join(' · ');
+    document.getElementById('ok-msg').textContent='Mesa '+String(mesaAtual.id).padStart(2,'0')+' liberada · '+fmt(total)+'\n'+pagDesc;
+    mesaAtual=null;tela('ok');
+  }
 };
 
 // ════════════════════════════════════════════════════════════════
