@@ -393,7 +393,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
   <div class="modal-box" style="text-align:center;">
     <div style="font-size:36px;margin-bottom:12px;">🧾</div>
     <div style="font-size:16px;font-weight:700;margin-bottom:8px;" id="msg-confirmar-fech">Fechar Mesa?</div>
-    <div style="font-size:13px;color:var(--txt2);margin-bottom:18px;">Deseja ir para a tela de fechamento e pagamento?</div>
+    <div id="sub-confirmar-fech" style="font-size:13px;color:var(--txt2);margin-bottom:18px;">Deseja ir para a tela de fechamento e pagamento?</div>
     <div style="display:flex;gap:8px;">
       <button class="btn" onclick="fecharModal('modal-confirmar-fechamento')" style="flex:1;">Cancelar</button>
       <button class="btn btn-verde" onclick="fecharModal('modal-confirmar-fechamento');_irParaFechamento();" style="flex:1;font-weight:700;">✓ Sim, fechar</button>
@@ -985,35 +985,20 @@ window.removerItem=idx=>{mesaAtual.pedido.splice(idx,1);salvarMesaFirebase(mesaA
 // ════════════════════════════════════════════════════════════════
 window.enviarCozinha=async function(){
   if(!mesaAtual||!mesaAtual.pedido||!mesaAtual.pedido.length)return;
-  const novos=mesaAtual.pedido.filter(it=>!it.enviadoCozinha);
-  if(!novos.length){document.getElementById('cozinha-msg').textContent='Todos os itens já foram enviados.';abrirModal('modal-cozinha');return;}
-
-  // Separa itens: apenas cozinha vai para comanda (bebidas/bar ficam só no pedido)
-  const itensCozinha=novos.filter(it=>(it.setor||'cozinha')==='cozinha');
-  const itensBebida =novos.filter(it=>(it.setor||'cozinha')==='bar');
-
-  let resultado='firebase';
-  if(itensCozinha.length>0){
-    const codigo=mesaAtual.id+'-'+Date.now().toString().slice(-5);
-    const dados={mesa:mesaAtual.id,codigo,data:new Date().toLocaleString('pt-BR'),
-      itens:itensCozinha.map(it=>({nome:it.nome,qtd:it.qtd,preco:it.preco,obs:it.obs||'',setor:it.setor||''}))};
-    resultado=await enviarParaNotebook('/imprimir/cozinha',dados);
-  }
-
-  // Marca TODOS os novos como enviados (bebidas também saem do "pendente")
-  novos.forEach(it=>{it.enviadoCozinha=true;it.enviadoEm=Date.now();});
+  const todos=mesaAtual.pedido.filter(it=>!it.enviadoCozinha);
+  if(!todos.length){document.getElementById('cozinha-msg').textContent='Todos os itens já foram enviados.';abrirModal('modal-cozinha');return;}
+  const codigo=mesaAtual.id+'-'+Date.now().toString().slice(-5);
+  const dados={mesa:mesaAtual.id,codigo,data:new Date().toLocaleString('pt-BR'),
+    itens:todos.map(it=>({nome:it.nome,qtd:it.qtd,preco:it.preco,obs:it.obs||'',setor:it.setor||''}))};
+  const resultado=await enviarParaNotebook('/imprimir/cozinha',dados);
+  todos.forEach(it=>{it.enviadoCozinha=true;it.enviadoEm=Date.now();});
   salvarMesaFirebase(mesaAtual);renderCarrinho();
-
-  const qtdCoz=itensCozinha.reduce((s,i)=>s+i.qtd,0);
-  const qtdBeb=itensBebida.reduce((s,i)=>s+i.qtd,0);
+  const qtd=todos.reduce((s,i)=>s+i.qtd,0);
   const msgs={firebase:'✓ Enviado via internet!',local:'✓ Enviado pela rede local!',fila:'⏳ Salvo — enviará quando conectar'};
   const icons={firebase:'🔔',local:'📡',fila:'⏳'};
-  document.getElementById('cozinha-icon').textContent=itensCozinha.length?icons[resultado]:'🥤';
-  document.getElementById('cozinha-titulo').textContent=itensCozinha.length?(resultado==='fila'?'Pedido salvo!':'Pedido enviado!'):'Bebidas registradas!';
-  let msg='';
-  if(qtdCoz>0) msg+=qtdCoz+' item(ns) cozinha — '+msgs[resultado];
-  if(qtdBeb>0) msg+=(msg?'\n':'')+qtdBeb+' bebida(s) registrada(s) no pedido';
-  document.getElementById('cozinha-msg').textContent=msg;
+  document.getElementById('cozinha-icon').textContent=icons[resultado];
+  document.getElementById('cozinha-titulo').textContent=resultado==='fila'?'Pedido salvo!':'Pedido enviado!';
+  document.getElementById('cozinha-msg').textContent=qtd+' item(ns) — '+msgs[resultado];
   abrirModal('modal-cozinha');
 };
 
@@ -1068,11 +1053,11 @@ function subTotalFech(){
 window.abrirFechamento=function(){
   if(!mesaAtual||!mesaAtual.pedido||!mesaAtual.pedido.length){
     document.getElementById('msg-confirmar-fech').textContent='⚠ Mesa sem itens';
-    document.getElementById('modal-confirmar-fechamento').querySelector('div[style*="txt2"]').textContent='Não há itens no pedido. Deseja ir assim mesmo para o fechamento?';
+    document.getElementById('sub-confirmar-fech').textContent='Não há itens no pedido. Deseja ir assim mesmo para o fechamento?';
   } else {
     const total=(mesaAtual.pedido||[]).reduce((s,i)=>s+i.preco*i.qtd,0);
     document.getElementById('msg-confirmar-fech').textContent='Fechar Mesa '+String(mesaAtual.id).padStart(2,'0')+'?';
-    document.getElementById('modal-confirmar-fechamento').querySelector('div[style*="txt2"]').textContent='Total: '+fmt(total)+' · Deseja ir para a tela de fechamento e pagamento?';
+    document.getElementById('sub-confirmar-fech').textContent='Total: '+fmt(total)+' · Deseja ir para a tela de fechamento e pagamento?';
   }
   abrirModal('modal-confirmar-fechamento');
 };
@@ -1318,7 +1303,9 @@ onValue(ref(db,'mesas'),snap=>{
     });
     salvarMesasLocal();
     if(document.getElementById('screen-mesas').classList.contains('active'))renderMesas();
-    if(mesaAtual){const at=mesas.find(x=>x.id===mesaAtual.id);if(at)mesaAtual=at;renderCarrinho();}
+    if(mesaAtual&&document.getElementById('screen-pedido').classList.contains('active')){
+      const at=mesas.find(x=>x.id===mesaAtual.id);if(at)mesaAtual=at;renderCarrinho();
+    }
   }
 },(err)=>{
   console.warn('FB offline:', err);
