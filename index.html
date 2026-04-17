@@ -39,7 +39,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
 .header-title{font-size:15px;font-weight:700;}
 .header-sub{font-size:11px;color:var(--txt2);margin-top:1px;}
 
-/* STATUS DUPLO — Firebase + Local */
 #status-wrap{display:flex;gap:6px;align-items:center;flex-shrink:0;}
 .badge{font-size:10px;padding:3px 8px;border-radius:999px;white-space:nowrap;}
 .badge-fb{background:#1a2d3d;color:#5e96ff;}
@@ -71,7 +70,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
   border:1px solid var(--border3);padding:22px 18px;width:100%;max-width:360px;
   box-shadow:0 20px 50px rgba(0,0,0,.5);max-height:92vh;overflow-y:auto;}
 
-/* MESAS */
 #mesa-grid{display:grid;gap:10px;padding:12px 14px;flex:1;overflow-y:auto;align-content:start;}
 @media(max-width:599px){#mesa-grid{grid-template-columns:repeat(3,1fr);}}
 @media(min-width:600px){#mesa-grid{grid-template-columns:repeat(4,1fr);}}
@@ -87,8 +85,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
 .mesa-card.ocupada{background:linear-gradient(180deg,#fff5f7,#ffecef);border-color:#cf5b74;}
 .mesa-card.conta{background:linear-gradient(180deg,#fffbf0,#fff4d6);border-color:#c89a2a;}
 
-/* PEDIDO */
-/* Layout de 3 fatias: header fixo | produtos flex:1 | painel inferior fixo */
 #screen-pedido{display:flex;flex-direction:column;height:100%;}
 #pedido-body{display:flex;flex:1;min-height:0;overflow:hidden;}
 #cat-list{width:82px;background:rgba(20,26,21,.95);border-right:1px solid var(--border2);
@@ -107,7 +103,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
 @media(min-width:900px){#produto-grid{grid-template-columns:repeat(3,1fr);}}
 @media(min-width:1200px){#produto-grid{grid-template-columns:repeat(4,1fr);}}
 
-/* Produto menor para sobrar espaço ao carrinho */
 .prod-card{background:linear-gradient(180deg,#1e2420,#161b17);border:1px solid #2a322c;
   border-radius:12px;padding:8px 8px;cursor:pointer;min-height:64px;
   display:flex;flex-direction:column;justify-content:space-between;transition:transform .1s;}
@@ -116,21 +111,17 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
 .prod-preco{font-size:13px;color:var(--verde);font-weight:700;margin-top:4px;}
 .prod-tamanhos{font-size:10px;color:var(--verde);font-weight:600;margin-top:3px;line-height:1.5;}
 
-/* Painel inferior: altura fixa, nunca some */
 #carrinho-panel{
   background:rgba(20,26,21,.99);
   border-top:1px solid var(--border3);
   flex-shrink:0;
   display:flex;
   flex-direction:column;
-  /* Altura máxima: 40% da tela — o restante fica para os produtos */
   max-height:40vh;
 }
 #carrinho-header{padding:8px 14px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none;flex-shrink:0;}
-/* Lista de itens: scroll interno */
 #carrinho-body{flex:1;min-height:0;overflow-y:auto;padding:0 10px 0;max-height:calc(40vh - 110px);}
 #carrinho-lista{padding:3px 0;}
-/* Botão SEMPRE visível — fica fora do scroll */
 #btn-cozinha-fixo{
   flex-shrink:0;
   margin:6px 10px 8px;
@@ -155,13 +146,12 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
 #screen-ok{align-items:center;justify-content:center;gap:14px;padding:24px;}
 .ok-circle{width:80px;height:80px;border-radius:50%;background:linear-gradient(180deg,#2aa160,#1d7b49);display:flex;align-items:center;justify-content:center;font-size:36px;}
 
-/* FECHAMENTO PARCIAL */
 .fech-item-row{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border2);}
 .fech-item-row.sel{background:rgba(47,179,109,.08);}
 .fech-check{width:24px;height:24px;border-radius:6px;border:2px solid var(--border3);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:13px;}
 .fech-check.on{background:var(--verde);border-color:var(--verde);}
 .fech-qtd-btn{background:#1f2521;border:1px solid #313a33;border-radius:6px;width:26px;height:26px;cursor:pointer;font-size:14px;color:var(--txt);display:flex;align-items:center;justify-content:center;}
-/* PAGAMENTO DIVIDIDO */
+
 .pag-div-row{background:linear-gradient(180deg,#171c18,#131814);border:1px solid #252d28;border-radius:14px;padding:10px 12px;display:flex;align-items:center;gap:10px;margin-bottom:7px;}
 .pag-div-input{flex:1;padding:8px 10px;background:#1a201c;border:1px solid var(--border3);border-radius:10px;color:var(--txt);font-size:16px;font-weight:600;font-family:var(--font);text-align:right;width:100px;}
 .pag-div-input:focus{outline:none;border-color:var(--verde);}
@@ -248,7 +238,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
     <button class="btn btn-azul" onclick="imprimirConta()" style="font-size:13px;padding:9px 14px;">🖨 Conta</button>
   </div>
 
-  <!-- ABAS: Mesa Completa | Fechamento Parcial -->
   <div style="display:flex;border-bottom:1px solid var(--border2);flex-shrink:0;">
     <button id="aba-total" onclick="mudarAbaFech('total')"
       style="flex:1;padding:11px;font-size:13px;font-weight:600;background:var(--card);border:none;color:var(--verde);border-bottom:2px solid var(--verde);cursor:pointer;font-family:var(--font);">
@@ -261,7 +250,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
   </div>
 
   <div class="content">
-    <!-- Itens -->
     <div class="card-section">
       <div class="card-section-header" style="display:flex;justify-content:space-between;align-items:center;">
         <span id="label-itens-fech">Consumo da Mesa</span>
@@ -274,7 +262,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
       </div>
     </div>
 
-    <!-- Desconto -->
     <div class="card-section" style="padding:12px 14px;">
       <div style="font-size:13px;font-weight:600;margin-bottom:10px;">Desconto / Taxa</div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;">
@@ -286,7 +273,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
       <div style="font-size:12px;color:var(--txt2);margin-top:8px;" id="desconto-info">Nenhum aplicado</div>
     </div>
 
-    <!-- Total -->
     <div style="background:linear-gradient(180deg,#1a2e1e,#111912);border:1px solid #2a4a30;border-radius:var(--rad-lg);padding:16px;">
       <div style="display:flex;justify-content:space-between;align-items:center;">
         <span style="font-size:15px;font-weight:600;color:#8ecfaa;">Total a Pagar</span>
@@ -294,7 +280,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
       </div>
     </div>
 
-    <!-- Pagamento dividido -->
     <div class="card-section" style="padding:12px 14px;">
       <div style="font-size:13px;font-weight:600;margin-bottom:4px;">Forma de Pagamento</div>
       <div style="font-size:11px;color:var(--txt2);margin-bottom:10px;">Adicione 1 ou mais formas — pode dividir entre diferentes meios</div>
@@ -309,7 +294,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
         <span>Pago: <span id="res-pago-div" style="color:var(--verde);font-weight:600;">R$ 0,00</span></span>
         <span id="res-diff-div" style="font-weight:600;color:#cf5b74;">Falta: R$ 0,00</span>
       </div>
-      <!-- Troco dinheiro -->
       <div id="troco-box" style="display:none;margin-top:10px;">
         <div style="font-size:12px;color:var(--txt2);margin-bottom:6px;">Troco (dinheiro)</div>
         <div style="display:flex;gap:8px;align-items:center;">
@@ -339,7 +323,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
   <div style="font-size:14px;color:var(--txt2);text-align:center;" id="ok-msg"></div>
   <button class="btn btn-verde" onclick="voltarMesas()" style="padding:12px 28px;font-size:14px;margin-top:10px;">← Voltar ao Salão</button>
 </div>
-</div><!-- #app -->
+</div>
 
 <!-- MODAIS -->
 <div class="modal-overlay" id="modal-tamanho">
@@ -387,8 +371,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
   </div>
 </div>
 
-
-<!-- MODAL CONFIRMAR FECHAMENTO DE MESA -->
 <div class="modal-overlay" id="modal-confirmar-fechamento">
   <div class="modal-box" style="text-align:center;">
     <div style="font-size:36px;margin-bottom:12px;">🧾</div>
@@ -401,7 +383,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
   </div>
 </div>
 
-<!-- MODAL ACRÉSCIMOS PIZZA (borda) -->
 <div class="modal-overlay" id="modal-borda">
   <div class="modal-box">
     <div style="font-size:15px;font-weight:700;margin-bottom:4px;" id="borda-pizza-nome">Pizza</div>
@@ -413,8 +394,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
   </div>
 </div>
 
-
-<!-- MODAL TAMANHO MEIO A MEIO (só G e GG) -->
 <div class="modal-overlay" id="modal-mm-tamanho">
   <div class="modal-box" style="text-align:center;">
     <div style="font-size:28px;margin-bottom:8px;">🍕</div>
@@ -437,7 +416,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
   </div>
 </div>
 
-<!-- MODAL MEIO A MEIO — passo 1: primeiro sabor -->
 <div class="modal-overlay" id="modal-meiomeio1">
   <div class="modal-box" style="max-height:85vh;overflow-y:auto;">
     <div style="font-size:15px;font-weight:700;margin-bottom:4px;">Pizza Meio a Meio</div>
@@ -451,7 +429,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
   </div>
 </div>
 
-<!-- MODAL MEIO A MEIO — passo 2: segundo sabor -->
 <div class="modal-overlay" id="modal-meiomeio2">
   <div class="modal-box" style="max-height:85vh;overflow-y:auto;">
     <div style="font-size:15px;font-weight:700;margin-bottom:2px;">Pizza Meio a Meio</div>
@@ -467,15 +444,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
 </div>
 
 <script type="module">
-// ════════════════════════════════════════════════════════════════
-// ⚙ CONFIGURAÇÃO — troque o IP após instalar no restaurante
-// ════════════════════════════════════════════════════════════════
-const IP_NOTEBOOK = 'http://192.168.1.100:5000'; // ← TROCAR pelo IP real do notebook
-const TIMEOUT_LOCAL = 2000; // ms para tentar IP local
+const IP_NOTEBOOK = 'http://192.168.1.100:5000';
+const TIMEOUT_LOCAL = 2000;
 
-// ════════════════════════════════════════════════════════════════
-// FIREBASE
-// ════════════════════════════════════════════════════════════════
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, set, onValue, push, get, update }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
@@ -490,11 +461,8 @@ const db = getDatabase(initializeApp({
   appId:"1:262025117951:web:384a6ec2567d8a231bccca"
 }));
 
-// ════════════════════════════════════════════════════════════════
-// ESTADO DE CONECTIVIDADE
-// ════════════════════════════════════════════════════════════════
-let fbOnline = false;   // Firebase (internet)
-let localOnline = false; // IP local (rede interna)
+let fbOnline = false;
+let localOnline = false;
 
 function atualizarBadges(){
   const fb = document.getElementById('badge-fb');
@@ -505,7 +473,6 @@ function atualizarBadges(){
   lc.className = 'badge badge-local ' + (localOnline ? 'ok' : 'off');
 }
 
-// Testa IP local a cada 15s
 async function testarLocal(){
   try{
     const r = await fetch(IP_NOTEBOOK+'/ping', {signal: AbortSignal.timeout(TIMEOUT_LOCAL)});
@@ -522,9 +489,6 @@ onValue(ref(db,'.info/connected'), snap=>{
   if(fbOnline){ processarFila(); }
 });
 
-// ════════════════════════════════════════════════════════════════
-// STORAGE LOCAL (offline fallback)
-// ════════════════════════════════════════════════════════════════
 const K = { mesas:'lv_mesas', fila:'lv_fila', caixa:'lv_caixa' };
 const salvarLocal = (k,v) => localStorage.setItem(k, JSON.stringify(v));
 const lerLocal = k => { try{ return JSON.parse(localStorage.getItem(k)); }catch{ return null; } };
@@ -539,11 +503,7 @@ function carregarMesasLocal(){
   if(m && m.length) mesas = m;
 }
 
-// ════════════════════════════════════════════════════════════════
-// ENVIO TRIPLO — Firebase > IP local > fila offline
-// ════════════════════════════════════════════════════════════════
 async function enviarParaNotebook(rota, dados){
-  // 1. Tenta Firebase
   if(fbOnline){
     try{
       const no = rota === '/imprimir/cozinha' ? 'pedidos_cozinha' : 'contas_imprimir';
@@ -551,7 +511,6 @@ async function enviarParaNotebook(rota, dados){
       return 'firebase';
     }catch(e){ console.warn('FB falhou:', e); }
   }
-  // 2. Tenta IP local
   if(localOnline){
     try{
       const r = await fetch(IP_NOTEBOOK+rota, {
@@ -563,7 +522,6 @@ async function enviarParaNotebook(rota, dados){
       if(r.ok) return 'local';
     }catch(e){ console.warn('Local falhou:', e); }
   }
-  // 3. Salva na fila para sincronizar depois
   adicionarFila({rota, dados, timestamp: Date.now()});
   return 'fila';
 }
@@ -588,7 +546,6 @@ async function salvarVendaFirebase(venda){
   }catch{ adicionarFila({tipo:'venda',dados:venda}); }
 }
 
-// Processa fila quando internet volta
 async function processarFila(){
   const fila = lerFila();
   if(!fila.length) return;
@@ -616,16 +573,11 @@ async function processarFila(){
   mostrarStatus(erros.length===0?'✓ Sincronização concluída!':'⚠ '+erros.length+' item(ns) não sincronizado(s)', erros.length===0?'online':'offline');
 }
 
-
-// ════════════════════════════════════════════════════════════════
-// BORDAS DE PIZZA
-// ════════════════════════════════════════════════════════════════
 const BORDAS = {
   'Catupiry':       {M:11, G:13, GG:15},
   'Cheddar/Catupiry':{M:12, G:14, GG:16},
 };
 
-// Chamado após escolher tamanho — abre tela de borda
 function abrirBorda(pizzaNome, tam, preco, catNome){
   itemPendente = {nome:pizzaNome, preco, tamanhoObs:tam, categoria:catNome};
   document.getElementById('borda-pizza-nome').textContent = pizzaNome;
@@ -661,14 +613,9 @@ function confirmarPizzaComBorda(bordaNome, precoBorda){
   itemPendente = null;
 }
 
-// ════════════════════════════════════════════════════════════════
-// PIZZA MEIO A MEIO — versão 2
-// Fluxo: botão no topo → escolhe G/GG → sabor 1 (trad+esp) → sabor 2 → borda
-// ════════════════════════════════════════════════════════════════
 let mmTamanho = null;
 let mmSabor1  = null;
 
-// Abre o modal de tamanho especial para meio a meio (só G e GG)
 window.abrirMeioAMeio = function(){
   mmSabor1 = null; mmTamanho = null;
   abrirModal('modal-mm-tamanho');
@@ -723,19 +670,13 @@ window.filtrarMM2 = function(tipo){
     fecharModal('modal-meiomeio2');
     const total = mmSabor1.metade + it.metade;
     const nome  = '½ '+mmSabor1.nome+' / ½ '+it.nome;
-    // Adiciona ao carrinho
     pushItem({nome, preco:total}, mmTamanho, 'Pizza Trad.');
-    // Abre modal de borda
     itemPendente = {nome, preco:total, tamanhoObs:mmTamanho, categoria:'Pizza Trad.'};
     setTimeout(()=>abrirModal('modal-borda'), 200);
     mmSabor1 = null; mmTamanho = null;
   });
 };
 
-
-// ════════════════════════════════════════════════════════════════
-// CARDÁPIO
-// ════════════════════════════════════════════════════════════════
 const pizzasTrad=['01 - Frango c/ Catupiry','02 - Palmito á Bolonhesa','03 - Palmito c/ Catupiry',
   '04 - Portuguesa','05 - Napolitana','06 - Calabresa','07 - Mussarela','08 - Á Moda',
   '09 - Frango á Bolonhesa','10 - Presunto','11 - Vegetariana','12 - Bacon','13 - Bacon Milho',
@@ -783,22 +724,17 @@ const categorias=[
     {nome:'Polpa Graviola/Cacau/Maracujá/Açaí',preco:8},
   ]},
   {nome:'Aperitivos/Cervejas',icon:'🍺',produtos:[
-    // ── Cervejas ──
     {nome:'Brahma / Skol 600ml',preco:10},{nome:'Kaiser 600ml',preco:8},
     {nome:'Original 600ml',preco:13},{nome:'Spaten / Stella 600ml',preco:14},
     {nome:'Heineken 600ml',preco:16},
-    // ── Vinhos ──
     {nome:'Vinho Taça (Chapinha/Campo Largo/Canção)',preco:22.9},
     {nome:'Vinho Garrafa (Chapinha/Campo Largo/Canção)',preco:22.9},
     {nome:'Vinho Pergola Taça',preco:10.9},{nome:'Vinho Pergola Garrafa',preco:45.9},
-    // ── Whisky ──
     {nome:'White Horse',preco:15},{nome:'Old Eight',preco:8},
     {nome:'Jone Walk Red',preco:17},{nome:'Natu Nobilis',preco:8},
-    // ── Caipirinhas ──
     {nome:'Caip Orlof — Abacaxi',preco:20},{nome:'Caip Orlof — Morango',preco:20},
     {nome:'Caip Orlof — Limão',preco:20},{nome:'Caip Orlof — Maracujá',preco:20},
     {nome:'Caip Orlof — Uva',preco:20},
-    // ── Aperitivos ──
     {nome:'Pinga 51',preco:5},{nome:'Conhaque Pres.',preco:5},
     {nome:'Vodka Orlof',preco:7},{nome:'Seleta',preco:7},{nome:'Vale Verde',preco:13},
     {nome:'Campari',preco:13},{nome:'Pinga da Roça',preco:4},
@@ -810,9 +746,6 @@ const categorias=[
   ]},
 ];
 
-// ════════════════════════════════════════════════════════════════
-// ESTADO
-// ════════════════════════════════════════════════════════════════
 let mesas=[], mesaAtual=null, itemPendente=null, pagSelecionado=null;
 let descontoAtual=0, carrinhoAberto=true;
 
@@ -824,9 +757,6 @@ function inicializarMesas(n){
   mesas=novas;
 }
 
-// ════════════════════════════════════════════════════════════════
-// UTILS
-// ════════════════════════════════════════════════════════════════
 const fmt=v=>'R$ '+Number(v).toFixed(2).replace('.',',');
 const tempoMesa=ts=>{if(!ts)return'';const m=Math.floor((Date.now()-ts)/60000);return m<60?m+' min':Math.floor(m/60)+'h '+(m%60)+'min';};
 const getSetor=cat=>(cat==='Bebidas'||cat==='Cervejas'||cat==='Aperitivos/Cervejas')?'bar':'cozinha';
@@ -843,9 +773,6 @@ function mostrarStatus(msg,tipo,tempo=3000){
   if(tempo>0)setTimeout(()=>b.classList.remove('show'),tempo);
 }
 
-// ════════════════════════════════════════════════════════════════
-// MESAS
-// ════════════════════════════════════════════════════════════════
 function renderMesas(){
   const grid=document.getElementById('mesa-grid');
   grid.innerHTML='';
@@ -882,9 +809,6 @@ function abrirMesa(id){
 window.voltarMesas=()=>{renderMesas();tela('mesas');};
 window.voltarPedido=()=>tela('pedido');
 
-// ════════════════════════════════════════════════════════════════
-// CATEGORIAS / PRODUTOS
-// ════════════════════════════════════════════════════════════════
 function renderCategorias(){
   const list=document.getElementById('cat-list');
   list.innerHTML='';
@@ -902,8 +826,6 @@ function selecionarCat(idx){
   document.getElementById('cat-titulo').textContent=c.icon+' '+c.nome;
   const grid=document.getElementById('produto-grid');
   grid.innerHTML='';
-
-  // Botão Meio a Meio no topo das categorias de pizza
   if(c.pizza){
     const btnMM=document.createElement('div');
     btnMM.style.cssText='grid-column:1/-1;background:linear-gradient(180deg,#1a3564,#102040);border:2px solid var(--azul);border-radius:14px;padding:13px 16px;cursor:pointer;display:flex;align-items:center;gap:10px;margin-bottom:4px;';
@@ -911,7 +833,6 @@ function selecionarCat(idx){
     btnMM.onclick=()=>abrirMeioAMeio();
     grid.appendChild(btnMM);
   }
-
   c.produtos.forEach(p=>{
     const el=document.createElement('div');
     el.className='prod-card';
@@ -922,9 +843,6 @@ function selecionarCat(idx){
   });
 }
 
-// ════════════════════════════════════════════════════════════════
-// CARRINHO
-// ════════════════════════════════════════════════════════════════
 function adicionarItem(p,catNome,carne,pizza){
   if(pizza&&p.tamanhos){itemPendente={...p,categoria:catNome};document.getElementById('modal-pizza-nome').textContent=p.nome;document.getElementById('btn-tam-M').textContent='Média (M) — '+fmt(p.tamanhos.M);document.getElementById('btn-tam-G').textContent='Grande (G) — '+fmt(p.tamanhos.G);document.getElementById('btn-tam-GG').textContent='Gigante (GG) — '+fmt(p.tamanhos.GG);abrirModal('modal-tamanho');return;}
   if(carne){itemPendente={...p,categoria:catNome};document.getElementById('modal-nome-item').textContent=p.nome;abrirModal('modal-ponto');return;}
@@ -932,9 +850,7 @@ function adicionarItem(p,catNome,carne,pizza){
 }
 window.escolherTamanho=tam=>{
   const p=itemPendente;
-  // Salva tamanho pendente para o meio a meio poder ler
   if(p) p._tamPendente=tam;
-  // Abre modal de borda (que pode finalizar sem borda também)
   abrirBorda(p.nome, tam, p.tamanhos[tam], p.categoria);
 };
 window.escolherPonto=ponto=>{fecharModal('modal-ponto');pushItem(itemPendente,ponto,itemPendente.categoria);itemPendente=null;};
@@ -948,7 +864,6 @@ function pushItem(p,obs,catNome){
 }
 window.toggleCarrinho=function(){
   carrinhoAberto=!carrinhoAberto;
-  // Itens somem/aparecem, botão SEMPRE visível
   document.getElementById('carrinho-body').style.display=carrinhoAberto?'block':'none';
   document.getElementById('carrinho-toggle-icon').textContent=carrinhoAberto?'▲':'▼';
 };
@@ -980,9 +895,6 @@ function renderCarrinho(){
 window.ajustarQtd=(idx,d)=>{mesaAtual.pedido[idx].qtd+=d;if(mesaAtual.pedido[idx].qtd<=0)mesaAtual.pedido.splice(idx,1);salvarMesaFirebase(mesaAtual);renderCarrinho();};
 window.removerItem=idx=>{mesaAtual.pedido.splice(idx,1);salvarMesaFirebase(mesaAtual);renderCarrinho();};
 
-// ════════════════════════════════════════════════════════════════
-// COZINHA — envia via Firebase OU IP local OU fila
-// ════════════════════════════════════════════════════════════════
 window.enviarCozinha=async function(){
   if(!mesaAtual||!mesaAtual.pedido||!mesaAtual.pedido.length)return;
   const todos=mesaAtual.pedido.filter(it=>!it.enviadoCozinha);
@@ -1002,12 +914,10 @@ window.enviarCozinha=async function(){
   abrirModal('modal-cozinha');
 };
 
-// ════════════════════════════════════════════════════════════════
-// FECHAMENTO — completo + parcial + pagamento dividido
-// ════════════════════════════════════════════════════════════════
+// ═════ FECHAMENTO ═════
 let abaFech='total';
-let qtdSel={};   // {idx: qtd selecionada} para modo parcial
-let pagDiv=[];   // [{tipo, valor}] pagamentos divididos
+let qtdSel={};
+let pagDiv=[];
 
 window.mudarAbaFech=function(aba){
   abaFech=aba;
@@ -1018,7 +928,6 @@ window.mudarAbaFech=function(aba){
   document.getElementById('btn-sel-todos').style.display=aba==='parcial'?'block':'none';
   document.getElementById('label-itens-fech').textContent=aba==='parcial'?'✔ Selecione os itens a pagar':'Consumo da Mesa';
   if(aba==='total'){
-    // seleciona tudo
     (mesaAtual.pedido||[]).forEach((_,i)=>{qtdSel[i]=mesaAtual.pedido[i].qtd;});
   } else {
     qtdSel={};
@@ -1128,7 +1037,6 @@ window.aplicarDesconto=pct=>{
 window.aplicarDescontoCustom=()=>abrirModal('modal-desconto');
 window.aplicarDescontoCustomConfirm=()=>{const v=parseFloat(document.getElementById('input-desconto-custom').value);if(isNaN(v))return;fecharModal('modal-desconto');window.aplicarDesconto(v);};
 
-// ── Pagamento Dividido ──
 window.addPagDiv=function(tipo){
   if(pagDiv.find(p=>p.tipo===tipo))return;
   pagDiv.push({tipo,valor:''});
@@ -1227,7 +1135,6 @@ window.concluirVenda=async function(){
   if(pago<total){alert('Valor pago menor que o total.');return;}
 
   if(abaFech==='parcial'){
-    // Remove só os itens pagos, deixa o restante na mesa
     const novosPedidos=[];
     (mesaAtual.pedido||[]).forEach((it,i)=>{
       const qtdPaga=qtdSel[i]||0;
@@ -1250,7 +1157,6 @@ window.concluirVenda=async function(){
     if(!novosPedidos.length)mesaAtual=null;
     tela('ok');
   } else {
-    // Fecha mesa completa
     const venda={id:Date.now(),mesa:mesaAtual.id,
       hora:new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}),
       itens:(mesaAtual.pedido||[]).map(it=>({nome:it.nome,qtd:it.qtd,preco:it.preco,obs:it.obs||''})),
@@ -1267,12 +1173,6 @@ window.concluirVenda=async function(){
   }
 };
 
-// ════════════════════════════════════════════════════════════════
-// SYNC FIREBASE
-// ════════════════════════════════════════════════════════════════
-// ════════════════════════════════════════════════════════════════
-// RELÓGIO + BOOT
-// ════════════════════════════════════════════════════════════════
 function tick(){
   const n=new Date();
   document.getElementById('clock').textContent=n.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit'})+' — '+n.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
@@ -1280,14 +1180,12 @@ function tick(){
 }
 tick();setInterval(tick,10000);
 
-// ── BOOT IMEDIATO: abre com dados locais, Firebase sincroniza depois ──
 carregarMesasLocal();
 if(!mesas.length)inicializarMesas(16);
 renderMesas();
 tela('mesas');
-document.getElementById('loading-screen').classList.add('hide'); // abre AGORA
+document.getElementById('loading-screen').classList.add('hide');
 
-// ── SYNC FIREBASE em segundo plano (não bloqueia a tela) ──
 onValue(ref(db,'config/numMesas'),snap=>{
   const n=snap.val()||16;
   inicializarMesas(n);
