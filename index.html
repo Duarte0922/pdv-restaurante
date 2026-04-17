@@ -773,34 +773,39 @@ const categorias=[
     {nome:'Cascudo 400g Molho Especial',preco:23.9},{nome:'Cascudo 400g c/ Batata',preco:30.9},
   ]},
   {nome:'Bebidas',icon:'🥤',produtos:[
-    {nome:'Suco de Caixinha',preco:5},{nome:'Suco 1 Litro',preco:12},
-    {nome:'Refri 1L Guaraná',preco:9},{nome:'Refri 1L Coca-Cola',preco:12},
-    {nome:'Refri 2L Fanta/Guaraná',preco:15},{nome:'Refri 2L Coca-Cola',preco:17},
-    {nome:'Refrigerante Lata',preco:6},
+    // ── Cozinha (preparados na hora) ──
+    {nome:'Suco de Caixinha',preco:5},
+    {nome:'Suco 1 Litro',preco:12},
     {nome:'Polpa Acerola/Abacaxi/Laranja/Morango',preco:7.5},
     {nome:'Polpa Graviola/Cacau/Maracujá/Açaí',preco:8},
+    // ── Bar (prontos de fábrica) ──
+    {nome:'Refri 1L Guaraná',preco:9,bar:true},
+    {nome:'Refri 1L Coca-Cola',preco:12,bar:true},
+    {nome:'Refri 2L Fanta/Guaraná',preco:15,bar:true},
+    {nome:'Refri 2L Coca-Cola',preco:17,bar:true},
+    {nome:'Refrigerante Lata',preco:6,bar:true},
   ]},
   {nome:'Aperitivos/Cervejas',icon:'🍺',produtos:[
-    // ── Cervejas ──
-    {nome:'Brahma / Skol 600ml',preco:10},{nome:'Kaiser 600ml',preco:8},
-    {nome:'Original 600ml',preco:13},{nome:'Spaten / Stella 600ml',preco:14},
-    {nome:'Heineken 600ml',preco:16},
-    // ── Vinhos ──
-    {nome:'Vinho Taça (Chapinha/Campo Largo/Canção)',preco:22.9},
-    {nome:'Vinho Garrafa (Chapinha/Campo Largo/Canção)',preco:22.9},
-    {nome:'Vinho Pergola Taça',preco:10.9},{nome:'Vinho Pergola Garrafa',preco:45.9},
-    // ── Whisky ──
-    {nome:'White Horse',preco:15},{nome:'Old Eight',preco:8},
-    {nome:'Jone Walk Red',preco:17},{nome:'Natu Nobilis',preco:8},
-    // ── Caipirinhas ──
+    // ── Cervejas (bar) ──
+    {nome:'Brahma / Skol 600ml',preco:10,bar:true},{nome:'Kaiser 600ml',preco:8,bar:true},
+    {nome:'Original 600ml',preco:13,bar:true},{nome:'Spaten / Stella 600ml',preco:14,bar:true},
+    {nome:'Heineken 600ml',preco:16,bar:true},
+    // ── Vinhos (bar) ──
+    {nome:'Vinho Taça (Chapinha/Campo Largo/Canção)',preco:22.9,bar:true},
+    {nome:'Vinho Garrafa (Chapinha/Campo Largo/Canção)',preco:22.9,bar:true},
+    {nome:'Vinho Pergola Taça',preco:10.9,bar:true},{nome:'Vinho Pergola Garrafa',preco:45.9,bar:true},
+    // ── Whisky (bar) ──
+    {nome:'White Horse',preco:15,bar:true},{nome:'Old Eight',preco:8,bar:true},
+    {nome:'Jone Walk Red',preco:17,bar:true},{nome:'Natu Nobilis',preco:8,bar:true},
+    // ── Caipirinhas (cozinha — preparadas na hora) ──
     {nome:'Caip Orlof — Abacaxi',preco:20},{nome:'Caip Orlof — Morango',preco:20},
     {nome:'Caip Orlof — Limão',preco:20},{nome:'Caip Orlof — Maracujá',preco:20},
     {nome:'Caip Orlof — Uva',preco:20},
-    // ── Aperitivos ──
-    {nome:'Pinga 51',preco:5},{nome:'Conhaque Pres.',preco:5},
-    {nome:'Vodka Orlof',preco:7},{nome:'Seleta',preco:7},{nome:'Vale Verde',preco:13},
-    {nome:'Campari',preco:13},{nome:'Pinga da Roça',preco:4},
-    {nome:'Conhaque Dumek',preco:11},{nome:'Salinas',preco:7},{nome:'Rum Bacardi',preco:10},
+    // ── Aperitivos (bar) ──
+    {nome:'Pinga 51',preco:5,bar:true},{nome:'Conhaque Pres.',preco:5,bar:true},
+    {nome:'Vodka Orlof',preco:7,bar:true},{nome:'Seleta',preco:7,bar:true},{nome:'Vale Verde',preco:13,bar:true},
+    {nome:'Campari',preco:13,bar:true},{nome:'Pinga da Roça',preco:4,bar:true},
+    {nome:'Conhaque Dumek',preco:11,bar:true},{nome:'Salinas',preco:7,bar:true},{nome:'Rum Bacardi',preco:10,bar:true},
   ]},
   {nome:'Espaguete',icon:'🍝',produtos:[
     {nome:'Espaguete na Chapa — Pequeno',preco:19.9},
@@ -827,7 +832,7 @@ function inicializarMesas(n){
 // ════════════════════════════════════════════════════════════════
 const fmt=v=>'R$ '+Number(v).toFixed(2).replace('.',',');
 const tempoMesa=ts=>{if(!ts)return'';const m=Math.floor((Date.now()-ts)/60000);return m<60?m+' min':Math.floor(m/60)+'h '+(m%60)+'min';};
-const getSetor=cat=>(cat==='Bebidas'||cat==='Cervejas'||cat==='Aperitivos/Cervejas')?'bar':'cozinha';
+const getSetor=(cat,bar)=>bar?'bar':'cozinha';
 const nomePag=p=>({dinheiro:'Dinheiro',cartao:'Cartão',pix:'Pix'}[p]||'—');
 const iconePag=p=>({dinheiro:'💵',cartao:'💳',pix:'📲'}[p]||'❓');
 const corPag=p=>({dinheiro:'#2fb36d',cartao:'#5e96ff',pix:'#c89a2a'}[p]||'#acb5ac');
@@ -940,7 +945,7 @@ function pushItem(p,obs,catNome){
   const cat=catNome||p.categoria||'';
   const ex=mesaAtual.pedido.find(i=>i.nome===p.nome&&i.obs===obs&&!i.enviadoCozinha);
   if(ex)ex.qtd++;
-  else mesaAtual.pedido.push({nome:p.nome,preco:p.preco,qtd:1,obs,categoria:cat,setor:getSetor(cat),enviadoCozinha:false,criadoEm:Date.now()});
+  else mesaAtual.pedido.push({nome:p.nome,preco:p.preco,qtd:1,obs,categoria:cat,setor:getSetor(cat,p.bar),enviadoCozinha:false,criadoEm:Date.now()});
   salvarMesaFirebase(mesaAtual);renderCarrinho();
   if(!carrinhoAberto)toggleCarrinho();
 }
