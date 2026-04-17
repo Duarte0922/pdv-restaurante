@@ -1049,9 +1049,8 @@ window.ajustarQtdFech=function(idx,delta){
 function subTotalFech(){
   return (mesaAtual.pedido||[]).reduce((s,it,i)=>s+it.preco*(abaFech==='parcial'?(qtdSel[i]||0):it.qtd),0);
 }
-
 window.abrirFechamento=function(){
-  console.log('🔍 abrirFechamento chamado'); // ← Linha de teste
+  console.log('🔍 abrirFechamento chamado');
   if(!mesaAtual||!mesaAtual.pedido||!mesaAtual.pedido.length){
     document.getElementById('msg-confirmar-fech').textContent='⚠ Mesa sem itens';
     const subEl = document.getElementById('sub-confirmar-fech');
@@ -1065,24 +1064,50 @@ window.abrirFechamento=function(){
   abrirModal('modal-confirmar-fechamento');
 };
 
-window._irParaFechamento=function(){
-  console.log('🔍 _irParaFechamento chamado'); // ← Linha de teste
+window.irParaFechamento=function(){
+  console.log('🔍 irParaFechamento chamado');
+
   try{
-    descontoAtual=0; pagDiv=[]; abaFech='total';
-    (mesaAtual.pedido||[]).forEach((_,i)=>{qtdSel[i]=mesaAtual.pedido[i].qtd;});
+    descontoAtual=0;
+    pagDiv=[];
+    abaFech='total';
+    qtdSel={};
+
+    (mesaAtual.pedido||[]).forEach((_,i)=>{
+      qtdSel[i]=mesaAtual.pedido[i].qtd;
+    });
+
     document.getElementById('titulo-fechamento').textContent='Fechamento — Mesa '+String(mesaAtual.id).padStart(2,'0');
     document.getElementById('troco-box').style.display='none';
     document.getElementById('btn-sel-todos').style.display='none';
     document.getElementById('label-itens-fech').textContent='Consumo da Mesa';
+
     const estiloAtivo='flex:1;padding:11px;font-size:13px;font-weight:600;background:var(--card);border:none;color:var(--verde);border-bottom:2px solid var(--verde);cursor:pointer;font-family:var(--font);';
     const estiloInativo='flex:1;padding:11px;font-size:13px;font-weight:600;background:transparent;border:none;color:var(--txt2);border-bottom:2px solid transparent;cursor:pointer;font-family:var(--font);';
+
     document.getElementById('aba-total').style.cssText=estiloAtivo;
     document.getElementById('aba-parcial').style.cssText=estiloInativo;
+
+    // 🔥 FORÇA TROCA DE TELA (CORREÇÃO PRINCIPAL)
+    document.querySelectorAll('.tela').forEach(t=>{
+      t.style.display='none';
+    });
+
+    const telaFech = document.getElementById('fechamento');
+
+    if(!telaFech){
+      alert('❌ Tela de fechamento não encontrada');
+      return;
+    }
+
+    telaFech.style.display='block';
+
     renderFechamento();
-    tela('fechamento');
+
     console.log('✅ Fechamento aberto com sucesso');
+
   }catch(e){
-    console.error('❌ Erro em _irParaFechamento:', e);
+    console.error('❌ Erro em irParaFechamento:', e);
     alert('Erro ao abrir fechamento: '+e.message);
   }
 };
@@ -1136,8 +1161,15 @@ window.aplicarDesconto=pct=>{
   atualizarTotal(sub);
   renderPagDiv();
 };
+
 window.aplicarDescontoCustom=()=>abrirModal('modal-desconto');
-window.aplicarDescontoCustomConfirm=()=>{const v=parseFloat(document.getElementById('input-desconto-custom').value);if(isNaN(v))return;fecharModal('modal-desconto');window.aplicarDesconto(v);};
+
+window.aplicarDescontoCustomConfirm=()=>{
+  const v=parseFloat(document.getElementById('input-desconto-custom').value);
+  if(isNaN(v))return;
+  fecharModal('modal-desconto');
+  window.aplicarDesconto(v);
+};
 
 // ── Pagamento Dividido ──
 window.addPagDiv=function(tipo){
@@ -1145,40 +1177,54 @@ window.addPagDiv=function(tipo){
   pagDiv.push({tipo,valor:''});
   renderPagDiv();
 };
+
 window.remPagDiv=function(tipo){
   pagDiv=pagDiv.filter(p=>p.tipo!==tipo);
   if(!pagDiv.find(p=>p.tipo==='dinheiro'))document.getElementById('troco-box').style.display='none';
   renderPagDiv();
 };
+
 window.setPagDivVal=function(tipo,val){
-  const p=pagDiv.find(p=>p.tipo===tipo);if(p)p.valor=val;
+  const p=pagDiv.find(p=>p.tipo===tipo);
+  if(p)p.valor=val;
   if(tipo==='dinheiro')calcularTroco();
   atualizarResumoPag();
 };
 
-function totalPagDiv(){return pagDiv.reduce((s,p)=>s+(parseFloat(p.valor)||0),0);}
+function totalPagDiv(){
+  return pagDiv.reduce((s,p)=>s+(parseFloat(p.valor)||0),0);
+}
 
 function renderPagDiv(){
   ['dinheiro','cartao','pix'].forEach(t=>{
     const b=document.getElementById('addpag-'+t);
     if(b)b.className='add-pag-btn'+(pagDiv.find(p=>p.tipo===t)?' usado':'');
   });
+
   const lista=document.getElementById('pag-div-lista');
   lista.innerHTML='';
+
   const icones={dinheiro:'💵',cartao:'💳',pix:'📲'};
   const nomes={dinheiro:'Dinheiro',cartao:'Cartão',pix:'Pix'};
   const bgs={dinheiro:'#1a2e1e',cartao:'#1b3158',pix:'#3a2e0a'};
+
   pagDiv.forEach(p=>{
     const row=document.createElement('div');
     row.className='pag-div-row';
-    row.innerHTML=`<div style="width:30px;height:30px;border-radius:8px;background:${bgs[p.tipo]};display:flex;align-items:center;justify-content:center;font-size:16px;">${icones[p.tipo]}</div>
+
+    row.innerHTML=`
+      <div style="width:30px;height:30px;border-radius:8px;background:${bgs[p.tipo]};display:flex;align-items:center;justify-content:center;font-size:16px;">${icones[p.tipo]}</div>
       <span style="font-size:13px;font-weight:600;min-width:58px;">${nomes[p.tipo]}</span>
       <input class="pag-div-input" type="number" min="0" step="0.01" placeholder="0,00"
         value="${p.valor}" oninput="setPagDivVal('${p.tipo}',this.value)"/>
       <button onclick="remPagDiv('${p.tipo}')" style="background:none;border:none;cursor:pointer;color:var(--txt2);font-size:18px;line-height:1;">×</button>`;
+
     lista.appendChild(row);
   });
-  document.getElementById('troco-box').style.display=pagDiv.find(p=>p.tipo==='dinheiro')?'block':'none';
+
+  document.getElementById('troco-box').style.display=
+    pagDiv.find(p=>p.tipo==='dinheiro')?'block':'none';
+
   atualizarResumoPag();
 }
 
