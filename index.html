@@ -352,16 +352,18 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
     <button class="btn" onclick="fecharModal('modal-tamanho')" style="width:100%;margin-top:12px;color:var(--txt2);">Cancelar</button>
   </div>
 </div>
-<div class="modal-overlay" id="modal-ponto">
+<div class="modal-overlay" id="modal-obs">
   <div class="modal-box">
-    <div style="font-size:16px;font-weight:600;margin-bottom:4px;" id="modal-nome-item">Item</div>
-    <div style="font-size:12px;color:var(--txt2);margin-bottom:14px;">Ponto da carne:</div>
+    <div style="font-size:16px;font-weight:600;margin-bottom:4px;" id="modal-obs-nome">Item</div>
+    <div style="font-size:12px;color:var(--txt2);margin-bottom:14px;">Observação (opcional):</div>
+    <textarea id="input-obs" rows="3" placeholder="Ex: sem cebola, bem passado, mais bacon..."
+      style="width:100%;padding:12px;background:#1a201c;border:1px solid var(--border3);border-radius:12px;
+      color:var(--txt);font-size:14px;font-family:var(--font);resize:none;margin-bottom:10px;"></textarea>
     <div style="display:flex;flex-direction:column;gap:8px;">
-      <button class="btn" onclick="escolherPonto('Mal passado')" style="text-align:left;padding:14px 16px;font-size:14px;">🩸 Mal passado</button>
-      <button class="btn" onclick="escolherPonto('Ao ponto')"    style="text-align:left;padding:14px 16px;font-size:14px;">🥩 Ao ponto</button>
-      <button class="btn" onclick="escolherPonto('Bem passado')" style="text-align:left;padding:14px 16px;font-size:14px;">🔥 Bem passado</button>
+      <button class="btn btn-verde" onclick="confirmarObs()" style="padding:14px;font-size:14px;font-weight:700;">✓ Confirmar</button>
+      <button class="btn" onclick="confirmarObsSem()" style="padding:14px;font-size:14px;color:var(--txt2);">Sem observação</button>
+      <button class="btn" onclick="fecharModal('modal-obs')" style="padding:10px;font-size:13px;color:var(--txt2);">Cancelar</button>
     </div>
-    <button class="btn" onclick="fecharModal('modal-ponto')" style="width:100%;margin-top:12px;color:var(--txt2);">Cancelar</button>
   </div>
 </div>
 <div class="modal-overlay" id="modal-cozinha">
@@ -384,7 +386,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
     </div>
   </div>
 </div>
-
 
 <!-- MODAL CONFIRMAR FECHAMENTO DE MESA -->
 <div class="modal-overlay" id="modal-confirmar-fechamento">
