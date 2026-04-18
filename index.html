@@ -927,17 +927,28 @@ function selecionarCat(idx){
 // ════════════════════════════════════════════════════════════════
 function adicionarItem(p,catNome,carne,pizza){
   if(pizza&&p.tamanhos){itemPendente={...p,categoria:catNome};document.getElementById('modal-pizza-nome').textContent=p.nome;document.getElementById('btn-tam-M').textContent='Média (M) — '+fmt(p.tamanhos.M);document.getElementById('btn-tam-G').textContent='Grande (G) — '+fmt(p.tamanhos.G);document.getElementById('btn-tam-GG').textContent='Gigante (GG) — '+fmt(p.tamanhos.GG);abrirModal('modal-tamanho');return;}
-  if(carne){itemPendente={...p,categoria:catNome};document.getElementById('modal-nome-item').textContent=p.nome;abrirModal('modal-ponto');return;}
-  pushItem(p,'',catNome);
+  // Todo produto não-pizza abre modal de observação
+  itemPendente={...p,categoria:catNome};
+  document.getElementById('modal-obs-nome').textContent=p.nome;
+  document.getElementById('input-obs').value='';
+  abrirModal('modal-obs');
 }
 window.escolherTamanho=tam=>{
   const p=itemPendente;
-  // Salva tamanho pendente para o meio a meio poder ler
   if(p) p._tamPendente=tam;
-  // Abre modal de borda (que pode finalizar sem borda também)
   abrirBorda(p.nome, tam, p.tamanhos[tam], p.categoria);
 };
-window.escolherPonto=ponto=>{fecharModal('modal-ponto');pushItem(itemPendente,ponto,itemPendente.categoria);itemPendente=null;};
+window.confirmarObs=function(){
+  const obs=document.getElementById('input-obs').value.trim();
+  fecharModal('modal-obs');
+  pushItem(itemPendente,obs,itemPendente.categoria);
+  itemPendente=null;
+};
+window.confirmarObsSem=function(){
+  fecharModal('modal-obs');
+  pushItem(itemPendente,'',itemPendente.categoria);
+  itemPendente=null;
+};
 function pushItem(p,obs,catNome){
   const cat=catNome||p.categoria||'';
   const ex=mesaAtual.pedido.find(i=>i.nome===p.nome&&i.obs===obs&&!i.enviadoCozinha);
@@ -948,7 +959,6 @@ function pushItem(p,obs,catNome){
 }
 window.toggleCarrinho=function(){
   carrinhoAberto=!carrinhoAberto;
-  // Itens somem/aparecem, botão SEMPRE visível
   document.getElementById('carrinho-body').style.display=carrinhoAberto?'block':'none';
   document.getElementById('carrinho-toggle-icon').textContent=carrinhoAberto?'▲':'▼';
 };
@@ -979,7 +989,6 @@ function renderCarrinho(){
 }
 window.ajustarQtd=(idx,d)=>{mesaAtual.pedido[idx].qtd+=d;if(mesaAtual.pedido[idx].qtd<=0)mesaAtual.pedido.splice(idx,1);salvarMesaFirebase(mesaAtual);renderCarrinho();};
 window.removerItem=idx=>{mesaAtual.pedido.splice(idx,1);salvarMesaFirebase(mesaAtual);renderCarrinho();};
-
 // ════════════════════════════════════════════════════════════════
 // COZINHA — envia via Firebase OU IP local OU fila
 // ════════════════════════════════════════════════════════════════
