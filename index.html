@@ -984,7 +984,7 @@ window.removerItem=idx=>{mesaAtual.pedido.splice(idx,1);salvarMesaFirebase(mesaA
 // ════════════════════════════════════════════════════════════════
 window.enviarCozinha=async function(){
   if(!mesaAtual||!mesaAtual.pedido||!mesaAtual.pedido.length)return;
-  const todos=mesaAtual.pedido.filter(it=>!it.enviadoCozinha);
+  const todos=mesaAtual.pedido.filter(it=>!it.enviadoCozinha && it.setor!=='bar');
   if(!todos.length){document.getElementById('cozinha-msg').textContent='Todos os itens já foram enviados.';abrirModal('modal-cozinha');return;}
   const codigo=mesaAtual.id+'-'+Date.now().toString().slice(-5);
   const dados={mesa:mesaAtual.id,codigo,data:new Date().toLocaleString('pt-BR'),
