@@ -721,10 +721,9 @@ window.filtrarMM2 = function(tipo){
     fecharModal('modal-meiomeio2');
     const total = mmSabor1.metade + it.metade;
     const nome  = '½ '+mmSabor1.nome+' / ½ '+it.nome;
-    // Define pendente — pushItem será feito pela borda (semBorda ou confirmarPizzaComBorda)
-    itemPendente = {nome, preco:total, tamanhoObs:mmTamanho, categoria:'Pizza Trad.'};
+    const tam   = mmTamanho;
     mmSabor1 = null; mmTamanho = null;
-    setTimeout(()=>abrirModal('modal-borda'), 200);
+    setTimeout(()=>abrirBorda(nome, tam, total, 'Pizza Trad.'), 200);
   });
 };
 
