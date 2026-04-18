@@ -648,17 +648,45 @@ window.semBorda = function(){
   fecharModal('modal-borda');
   const p = itemPendente;
   if(!p) return;
-  pushItem({nome:p.nome, preco:p.preco}, p.tamanhoObs, p.categoria);
-  itemPendente = null;
+  itemPendente._obsBase = p.tamanhoObs;
+  itemPendente._precoFinal = p.preco;
+  document.getElementById('modal-obs-nome').textContent = p.nome;
+  document.getElementById('input-obs').value = '';
+  setTimeout(()=>abrirModal('modal-obs'), 150);
 };
 
 function confirmarPizzaComBorda(bordaNome, precoBorda){
   const p = itemPendente;
   if(!p) return;
-  const obsCompleta = p.tamanhoObs + ' + ' + bordaNome;
-  pushItem({nome:p.nome, preco:p.preco + precoBorda}, obsCompleta, p.categoria);
-  itemPendente = null;
+  itemPendente._obsBase = p.tamanhoObs + ' + ' + bordaNome;
+  itemPendente._precoFinal = p.preco + precoBorda;
+  document.getElementById('modal-obs-nome').textContent = p.nome;
+  document.getElementById('input-obs').value = '';
+  setTimeout(()=>abrirModal('modal-obs'), 150);
 }
+
+window.confirmarObs = function(){
+  const obs = document.getElementById('input-obs').value.trim();
+  fecharModal('modal-obs');
+  const p = itemPendente;
+  if(!p){ itemPendente = null; return; }
+  const obsFinal = p._obsBase
+    ? (obs ? p._obsBase + ' — ' + obs : p._obsBase)
+    : obs;
+  const preco = p._precoFinal !== undefined ? p._precoFinal : p.preco;
+  pushItem({nome:p.nome, preco}, obsFinal, p.categoria);
+  itemPendente = null;
+};
+
+window.confirmarObsSem = function(){
+  fecharModal('modal-obs');
+  const p = itemPendente;
+  if(!p){ itemPendente = null; return; }
+  const obsFinal = p._obsBase || '';
+  const preco = p._precoFinal !== undefined ? p._precoFinal : p.preco;
+  pushItem({nome:p.nome, preco}, obsFinal, p.categoria);
+  itemPendente = null;
+};
 
 // ════════════════════════════════════════════════════════════════
 // PIZZA MEIO A MEIO — versão 2
@@ -667,7 +695,6 @@ function confirmarPizzaComBorda(bordaNome, precoBorda){
 let mmTamanho = null;
 let mmSabor1  = null;
 
-// Abre o modal de tamanho especial para meio a meio (só G e GG)
 window.abrirMeioAMeio = function(){
   mmSabor1 = null; mmTamanho = null;
   abrirModal('modal-mm-tamanho');
@@ -727,7 +754,6 @@ window.filtrarMM2 = function(tipo){
     setTimeout(()=>abrirBorda(nome, tam, total, 'Pizza Trad.'), 200);
   });
 };
-
 // ════════════════════════════════════════════════════════════════
 // CARDÁPIO
 // ════════════════════════════════════════════════════════════════
