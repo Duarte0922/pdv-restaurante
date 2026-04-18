@@ -1144,6 +1144,10 @@ window.addPagDiv=function(tipo){
   if(pagDiv.find(p=>p.tipo===tipo))return;
   pagDiv.push({tipo,valor:''});
   renderPagDiv();
+  setTimeout(()=>{
+    const lista=document.getElementById('pag-div-lista');
+    lista.scrollIntoView({behavior:'smooth',block:'center'});
+  },100);
 };
 
 window.remPagDiv=function(tipo){
