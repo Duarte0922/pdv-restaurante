@@ -292,20 +292,25 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
       </div>
     </div>
 
-    <!-- Pagamento dividido -->
+<!-- Pagamento dividido -->
     <div class="card-section" style="padding:12px 14px;">
       <div style="font-size:13px;font-weight:600;margin-bottom:4px;">Forma de Pagamento</div>
-      <div style="font-size:11px;color:var(--txt2);margin-bottom:10px;">Adicione 1 ou mais formas — pode dividir entre diferentes meios</div>
-      <div style="display:flex;gap:6px;margin-bottom:10px;">
+      <div style="font-size:11px;color:var(--txt2);margin-bottom:8px;">Adicione 1 ou mais formas — pode dividir entre diferentes meios</div>
+      <!-- Botões sempre visíveis no topo -->
+      <div style="display:flex;gap:6px;margin-bottom:10px;position:sticky;top:0;z-index:10;background:rgba(20,26,21,.99);padding:4px 0;">
         <button class="add-pag-btn" id="addpag-dinheiro" onclick="addPagDiv('dinheiro')">💵 + Dinheiro</button>
         <button class="add-pag-btn" id="addpag-cartao"   onclick="addPagDiv('cartao')">💳 + Cartão</button>
         <button class="add-pag-btn" id="addpag-pix"      onclick="addPagDiv('pix')">📲 + Pix</button>
       </div>
+      <!-- Resumo fixo logo abaixo dos botões — sempre visível -->
+      <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:700;padding:8px 4px;margin-bottom:8px;border-bottom:1px solid var(--border2);">
+        <span style="color:var(--txt2);">Total: <span id="total-ref-pag" style="color:var(--verde);">R$ 0,00</span></span>
+        <span id="res-diff-div" style="color:#cf5b74;">Falta: R$ 0,00</span>
+      </div>
       <div id="pag-div-lista"></div>
       <div class="falta-bar"><div class="falta-bar-fill" id="falta-bar-fill" style="width:0%"></div></div>
-      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--txt2);">
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--txt2);margin-top:4px;">
         <span>Pago: <span id="res-pago-div" style="color:var(--verde);font-weight:600;">R$ 0,00</span></span>
-        <span id="res-diff-div" style="font-weight:600;color:#cf5b74;">Falta: R$ 0,00</span>
       </div>
       <!-- Troco dinheiro -->
       <div id="troco-box" style="display:none;margin-top:10px;">
@@ -321,7 +326,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
         </div>
       </div>
     </div>
-
     <button class="btn btn-verde" id="btn-confirmar-venda" onclick="concluirVenda()"
       style="padding:16px;font-size:15px;font-weight:700;border-radius:18px;opacity:.4;pointer-events:none;">
       ✓ Confirmar Pagamento e Liberar Mesa
@@ -1269,15 +1273,26 @@ function atualizarResumoPag(){
   const pago=totalPagDiv();
   const falta=Math.max(0,total-pago);
   const pct=total>0?Math.min(100,(pago/total)*100):0;
+  // Atualiza total de referência sempre visível
+  const elRef=document.getElementById('total-ref-pag');
+  if(elRef) elRef.textContent=fmt(total);
   document.getElementById('res-pago-div').textContent=fmt(pago);
   const diffEl=document.getElementById('res-diff-div');
   if(pago>=total&&pagDiv.length>0){
-    diffEl.textContent=pago-total>0.005?'Troco: '+fmt(pago-total):'✓ Valor exato';
+    diffEl.textContent=pago-total>0.005?'Troco: '+fmt(pago-total):'✓ Pago';
     diffEl.style.color='var(--verde)';
   }else{
     diffEl.textContent='Falta: '+fmt(falta);
     diffEl.style.color='#cf5b74';
   }
+  document.getElementById('falta-bar-fill').style.width=pct+'%';
+  const temItens=abaFech==='total'||Object.values(qtdSel).some(q=>q>0);
+  const ok=pagDiv.length>0&&pago>=total&&temItens;
+  const btn=document.getElementById('btn-confirmar-venda');
+  btn.style.opacity=ok?'1':'0.4';
+  btn.style.pointerEvents=ok?'auto':'none';
+  btn.textContent=abaFech==='parcial'?'✓ Confirmar Pagamento Parcial':'✓ Confirmar Pagamento e Liberar Mesa';
+}
   document.getElementById('falta-bar-fill').style.width=pct+'%';
   const temItens=abaFech==='total'||Object.values(qtdSel).some(q=>q>0);
   const ok=pagDiv.length>0&&pago>=total&&temItens;
