@@ -583,7 +583,17 @@ async function salvarVendaFirebase(venda){
     await set(ref(db,`caixa/${hoje}/vendas/v${Date.now()}`), venda);
     const snap = await get(ref(db,`caixa/${hoje}`));
     const atual = snap.val()||{};
-    await update(ref(db,`caixa/${hoje}`),{[venda.pagamento]:(atual[venda.pagamento]||0)+venda.total, data:hoje});
+    // Soma cada forma de pagamento separadamente
+    const atualizacao = {data:hoje};
+    const pagamentos = venda.pagamentos && venda.pagamentos.length
+      ? venda.pagamentos
+      : [{tipo:venda.pagamento, valor:venda.total}];
+    pagamentos.forEach(p=>{
+      const tipo = p.tipo;
+      const valor = parseFloat(p.valor)||0;
+      atualizacao[tipo] = (atual[tipo]||0) + valor;
+    });
+    await update(ref(db,`caixa/${hoje}`), atualizacao);
   }catch{ adicionarFila({tipo:'venda',dados:venda}); }
 }
 
