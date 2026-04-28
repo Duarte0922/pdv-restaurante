@@ -1293,14 +1293,6 @@ function atualizarResumoPag(){
   btn.style.pointerEvents=ok?'auto':'none';
   btn.textContent=abaFech==='parcial'?'✓ Confirmar Pagamento Parcial':'✓ Confirmar Pagamento e Liberar Mesa';
 }
-  document.getElementById('falta-bar-fill').style.width=pct+'%';
-  const temItens=abaFech==='total'||Object.values(qtdSel).some(q=>q>0);
-  const ok=pagDiv.length>0&&pago>=total&&temItens;
-  const btn=document.getElementById('btn-confirmar-venda');
-  btn.style.opacity=ok?'1':'0.4';
-  btn.style.pointerEvents=ok?'auto':'none';
-  btn.textContent=abaFech==='parcial'?'✓ Confirmar Pagamento Parcial':'✓ Confirmar Pagamento e Liberar Mesa';
-}
 
 window.calcularTroco=function(){
   const sub=subTotalFech();
