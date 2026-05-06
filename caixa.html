@@ -275,21 +275,56 @@ input[type=number]{background:#1a201c;border:1px solid var(--border3);border-rad
 </div>
 
 <script type="module">
+// 1. Imports
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, set, onValue, update, remove, push, get, query, orderByChild, equalTo, onChildAdded }
+import { getDatabase, ref, set, onValue, update, remove, push, get, query, orderByChild, equalTo, onChildAdded } 
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, setPersistence, browserLocalPersistence } 
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-const FB={
-  apiKey:"AIzaSyAXMDwp1-VT3FdBMHkihTPESWL8smJLZcc",
-  authDomain:"pdv-restaurante-a7b75.firebaseapp.com",
-  databaseURL:"https://pdv-restaurante-a7b75-default-rtdb.firebaseio.com",
-  projectId:"pdv-restaurante-a7b75",
-  storageBucket:"pdv-restaurante-a7b75.firebasestorage.app",
-  messagingSenderId:"262025117951",
-  appId:"1:262025117951:web:384a6ec2567d8a231bccca"
+// 2. Configuração e Inicialização
+const FB = {
+  apiKey: "AIzaSyAXMDwp1-VT3FdBMHkihTPESWL8smJLZcc",
+  authDomain: "pdv-restaurante-a7b75.firebaseapp.com",
+  databaseURL: "https://pdv-restaurante-a7b75-default-rtdb.firebaseio.com",
+  projectId: "pdv-restaurante-a7b75",
+  storageBucket: "pdv-restaurante-a7b75.firebasestorage.app",
+  messagingSenderId: "262025117951",
+  appId: "1:262025117951:web:384a6ec2567d8a231bccca"
 };
-const db=getDatabase(initializeApp(FB));
 
+const app = initializeApp(FB);
+const db = getDatabase(app);
+const auth = getAuth(app);
+
+// 3. Configura Persistência (Lembrar login)
+setPersistence(auth, browserLocalPersistence);
+
+// 4. Lógica de Login e Monitoramento
+window.fazerLogin = function(tipo) {
+    const email = tipo === 'garcom' ? 'garcom@luar.com' : 'caixa@luar.com';
+    const senha = '123456'; 
+
+    signInWithEmailAndPassword(auth, email, senha)
+        .then(() => console.log("Conectado como " + tipo))
+        .catch((error) => alert("Erro ao conectar: " + error.message));
+};
+
+onAuthStateChanged(auth, (user) => {
+    const appElement = document.getElementById('app');
+    const loginScreen = document.getElementById('login-screen');
+
+    if (user) {
+        // Login automático se a sessão persistir
+        if(appElement) appElement.style.display = 'flex';
+        if(loginScreen) loginScreen.style.display = 'none';
+    } else {
+        if(appElement) appElement.style.display = 'none';
+        if(loginScreen) loginScreen.style.display = 'flex';
+    }
+});
+
+// 5. Seus Utilitários
 const fmt=v=>'R$ '+Number(v).toFixed(2).replace('.',',');
 const nomePag=p=>({dinheiro:'Dinheiro',cartao:'Cartão',pix:'Pix'}[p]||'—');
 const iconePag=p=>({dinheiro:'💵',cartao:'💳',pix:'📲'}[p]||'❓');
