@@ -653,6 +653,7 @@ window.confirmarFecharCaixa = () => {
   abrirModal('modal-fechar-caixa');
 };
 
+// ── CONTROLE DE FECHAMENTO ──
 window.resetFechamentoCaixa = function(){
   fcTipo = null; fcPagamento = null;
   ['total','parcial'].forEach(t => {
@@ -677,7 +678,6 @@ window.resetFechamentoCaixa = function(){
 
 window.selecionarTipoFechamento = function(tipo){
   fcTipo = tipo;
-  // Highlight tipo
   const estilos = {
     total:   {border:'var(--verde)',   bg:'linear-gradient(180deg,#1a2e1e,#111912)'},
     parcial: {border:'#c89a2a',        bg:'linear-gradient(180deg,#2e2208,#1a1305)'},
@@ -690,7 +690,6 @@ window.selecionarTipoFechamento = function(tipo){
     el.style.background  = t===tipo ? s.bg : (t==='total'?'linear-gradient(180deg,#1a2e1e,#111912)':'linear-gradient(180deg,#1f1c0d,#151208)');
     el.style.opacity     = t===tipo ? '1' : '0.6';
   });
-  // Mostra input parcial se necessário
   const parcEl = document.getElementById('fc-parcial-valor');
   if(parcEl) parcEl.style.display = tipo==='parcial' ? 'block' : 'none';
   atualizarResumoFC();
@@ -708,11 +707,6 @@ window.togglePagFC = function(pag){
     el.style.background  = ativo ? bgs[p].replace('0d1f','1a2e').replace('0f1829','1b3158').replace('1f1c0d','2e2208') : bgs[p];
     el.style.opacity     = ativo ? '1' : '0.55';
   });
-  // Garante que o selecionado fique totalmente visível
-  if(fcPagamento){
-    const sel = document.getElementById('fc-btn-'+fcPagamento);
-    if(sel) sel.style.opacity='1';
-  }
   atualizarResumoFC();
 };
 
@@ -737,23 +731,11 @@ function atualizarResumoFC(){
   confirmBtn.style.pointerEvents = pronto ? 'auto' : 'none';
 }
 
-// Listener para input parcial
-document.addEventListener('DOMContentLoaded', ()=>{
-  const inp = document.getElementById('fc-valor-parcial');
-  if(inp) inp.addEventListener('input', atualizarResumoFC);
-});
-// fallback se DOM já carregou
-setTimeout(()=>{
-  const inp = document.getElementById('fc-valor-parcial');
-  if(inp && !inp._fcListener){ inp._fcListener=true; inp.addEventListener('input', atualizarResumoFC); }
-},300);
-
 window.confirmarFechamentoCaixa = async function(){
   if(!fcTipo||!fcPagamento){alert('Selecione tipo e forma de pagamento.');return;}
   if(fcTipo==='parcial'){
     const v=parseFloat(document.getElementById('fc-valor-parcial').value)||0;
     if(v<=0){alert('Informe um valor parcial maior que zero.');return;}
-    // Registra entrada parcial no Firebase sem apagar o caixa
     const chave='p'+Date.now();
     try{
       await update(ref(db,'caixa/'+hoje),{[fcPagamento]:(caixaHoje[fcPagamento]||0)+v});
@@ -761,10 +743,9 @@ window.confirmarFechamentoCaixa = async function(){
     }catch(e){alert('Erro ao registrar. Verifique a conexão.');}
     fecharModal('modal-fechar-caixa');
     resetFechamentoCaixa();
-    alert('✓ Entrada parcial de R$ '+v.toFixed(2).replace('.',',')+' via '+fcPagamento+' registrada!');
+    alert('✓ Entrada parcial registrada!');
   } else {
-    // Fecha caixa total
-    if(!confirm('Fechar o caixa do dia? Esta ação apaga o histórico local.')) return;
+    if(!confirm('Fechar o caixa do dia?')) return;
     try{await remove(ref(db,'caixa/'+hoje));}catch{}
     fecharModal('modal-fechar-caixa');
     resetFechamentoCaixa();
@@ -773,7 +754,6 @@ window.confirmarFechamentoCaixa = async function(){
   }
 };
 
-// ── IMPRIMIR CAIXA HOJE ──────────────────────────────────────────
 window.imprimirCaixaHoje=function(){
   const c=caixaHoje;
   const vendas=c.vendas?Object.values(c.vendas):[];
@@ -800,30 +780,59 @@ window.imprimirCaixaHoje=function(){
   setTimeout(()=>{popup.print();popup.close();},400);
 };
 
-// ── FIREBASE SYNC ─────────────────────────────────────────────────
-onValue(ref(db,'mesas'),(snap)=>{
-  const dados=snap.val();
-  if(!dados)return;
-  mesas=Object.values(dados).sort((a,b)=>a.id-b.id);
+// ── FIREBASE SYNC (VERSÃO FINAL ÚNICA) ────────────────────────
+
+// 1. Monitor de Configuração (Número de Mesas)
+onValue(ref(db, 'config/numMesas'), (snap) => {
+  const n = snap.val() || 16;
+  if (n !== mesas.length) {
+    console.log("Sincronizando número de mesas para: " + n);
+    mesas = Array.from({ length: n }, (_, i) => ({
+      id: i + 1,
+      status: 'livre',
+      inicio: null,
+      pedido: []
+    }));
+    renderMesasCaixa();
+  }
+});
+
+// 2. Monitor de Dados das Mesas (Ocupação e Pedidos)
+onValue(ref(db, 'mesas'), (snap) => {
+  const dados = snap.val();
+  if (!dados) return;
+  Object.values(dados).forEach(m => {
+    const local = mesas.find(x => x.id === m.id);
+    if (local) {
+      local.status = m.status || 'livre';
+      local.inicio = m.inicio || null;
+      local.pedido = m.pedido ? Object.values(m.pedido) : [];
+    }
+  });
   renderMesasCaixa();
 });
 
-onValue(ref(db,'caixa/'+hoje),(snap)=>{
-  const dados=snap.val()||{dinheiro:0,cartao:0,pix:0,vendas:{}};
-  caixaHoje=dados;
+// 3. Monitor do Caixa do Dia (Financeiro)
+onValue(ref(db, 'caixa/' + hoje), (snap) => {
+  const dados = snap.val() || { dinheiro: 0, cartao: 0, pix: 0, vendas: {} };
+  caixaHoje = dados;
   renderCaixaHoje(dados);
 });
 
-onValue(ref(db,'.info/connected'),(snap)=>{
-  const el=document.getElementById('sync-indicator');
-  const on=!!snap.val();
-  el.textContent=on?'● Online':'◌ Offline';
-  el.style.background=on?'var(--verde-bg)':'#3a1a1a';
-  el.style.color=on?'var(--verde)':'#ff8080';
+// 4. Monitor de Status da Conexão (Badge Online)
+onValue(ref(db, '.info/connected'), (snap) => {
+  const el = document.getElementById('sync-indicator');
+  const on = !!snap.val();
+  if (el) {
+    el.textContent = on ? '● Online' : '○ Offline';
+    el.style.background = on ? 'var(--verde-bg)' : '#3a1a1a';
+    el.style.color = on ? 'var(--verde)' : '#ff8080';
+  }
 });
 
-// Mostra tela
+// 5. ATIVAÇÃO FINAL DA TELA
 document.getElementById('screen-main').classList.add('active');
+
 </script>
 </body>
 </html>
