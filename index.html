@@ -471,44 +471,85 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
 
 <script type="module">
 // ════════════════════════════════════════════════════════════════
-// ⚙ CONFIGURAÇÃO — troque o IP após instalar no restaurante
-// ════════════════════════════════════════════════════════════════
-const IP_NOTEBOOK = 'http://192.168.1.100:5000'; // ← TROCAR pelo IP real do notebook
-const TIMEOUT_LOCAL = 2000; // ms para tentar IP local
-
-// ════════════════════════════════════════════════════════════════
-// FIREBASE
+// 1. IMPORTS (DATABASE + AUTH)
 // ════════════════════════════════════════════════════════════════
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, set, onValue, push, get, update }
+import { getDatabase, ref, set, onValue, push, get, update } 
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-
-const db = getDatabase(initializeApp({
-  apiKey:"AIzaSyAXMDwp1-VT3FdBMHkihTPESWL8smJLZcc",
-  authDomain:"pdv-restaurante-a7b75.firebaseapp.com",
-  databaseURL:"https://pdv-restaurante-a7b75-default-rtdb.firebaseio.com",
-  projectId:"pdv-restaurante-a7b75",
-  storageBucket:"pdv-restaurante-a7b75.firebasestorage.app",
-  messagingSenderId:"262025117951",
-  appId:"1:262025117951:web:384a6ec2567d8a231bccca"
-}));
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, setPersistence, browserLocalPersistence } 
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 // ════════════════════════════════════════════════════════════════
-// ESTADO DE CONECTIVIDADE
+// 2. CONFIGURAÇÃO E INICIALIZAÇÃO
 // ════════════════════════════════════════════════════════════════
-let fbOnline = false;   // Firebase (internet)
-let localOnline = false; // IP local (rede interna)
+const FB_CONFIG = {
+  apiKey: "AIzaSyAXMDwp1-VT3FdBMHkihTPESWL8smJLZcc",
+  authDomain: "pdv-restaurante-a7b75.firebaseapp.com",
+  databaseURL: "https://pdv-restaurante-a7b75-default-rtdb.firebaseio.com",
+  projectId: "pdv-restaurante-a7b75",
+  storageBucket: "pdv-restaurante-a7b75.firebasestorage.app",
+  messagingSenderId: "262025117951",
+  appId: "1:262025117951:web:384a6ec2567d8a231bccca"
+};
+
+const app = initializeApp(FB_CONFIG);
+const db = getDatabase(app);
+const auth = getAuth(app);
+
+// 3. SEGURANÇA E PERSISTÊNCIA (Lembrar login no tablet)
+setPersistence(auth, browserLocalPersistence);
+
+window.fazerLoginGarcom = function() {
+    signInWithEmailAndPassword(auth, "garcom@luar.com", "123456")
+        .then(() => console.log("Acesso liberado!"))
+        .catch((error) => alert("Erro ao conectar: " + error.message));
+};
+
+// Monitor de Acesso (Trava a tela se não estiver logado)
+onAuthStateChanged(auth, (user) => {
+    const overlay = document.getElementById('garcom-auth-overlay');
+    if (user) {
+        if(overlay) overlay.remove();
+        console.log("Sessão ativa.");
+    } else {
+        if(!overlay) {
+            const html = `
+            <div id="garcom-auth-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:#0c100d;z-index:10000;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;font-family:sans-serif;padding:20px;text-align:center;">
+                <div style="font-size:60px;margin-bottom:20px;">🌙</div>
+                <h2 style="margin-bottom:10px;">Sistema Luar do Viena</h2>
+                <p style="color:#acb5ac;margin-bottom:30px;font-size:14px;">Terminal Garçom</p>
+                <button onclick="fazerLoginGarcom()" style="padding:20px 40px;background:linear-gradient(180deg,#2aa160,#1d7b49);color:white;border:none;border-radius:18px;font-size:18px;font-weight:bold;box-shadow:0 8px 20px rgba(0,0,0,0.4);cursor:pointer;width:100%;max-width:280px;">LIBERAR DISPOSITIVO</button>
+            </div>`;
+            document.body.insertAdjacentHTML('afterbegin', html);
+        }
+    }
+});
+
+// ════════════════════════════════════════════════════════════════
+// ⚙ CONFIGURAÇÃO LOCAL (Sua lógica original de rede)
+// ════════════════════════════════════════════════════════════════
+const IP_NOTEBOOK = 'http://192.168.1.100:5000'; 
+const TIMEOUT_LOCAL = 2000; 
+
+// ════════════════════════════════════════════════════════════════
+// ESTADO DE CONECTIVIDADE (Sua lógica de badges e monitoramento)
+// ════════════════════════════════════════════════════════════════
+let fbOnline = false;   
+let localOnline = false; 
 
 function atualizarBadges(){
   const fb = document.getElementById('badge-fb');
   const lc = document.getElementById('badge-local');
-  fb.textContent = fbOnline ? '✓ Firebase' : '✗ Firebase';
-  fb.className = 'badge badge-fb ' + (fbOnline ? 'ok' : 'off');
-  lc.textContent = localOnline ? '✓ Rede local' : '✗ Rede local';
-  lc.className = 'badge badge-local ' + (localOnline ? 'ok' : 'off');
+  if(fb) {
+    fb.textContent = fbOnline ? '✓ Firebase' : '✗ Firebase';
+    fb.className = 'badge badge-fb ' + (fbOnline ? 'ok' : 'off');
+  }
+  if(lc) {
+    lc.textContent = localOnline ? '✓ Rede local' : '✗ Rede local';
+    lc.className = 'badge badge-local ' + (localOnline ? 'ok' : 'off');
+  }
 }
 
-// Testa IP local a cada 15s
 async function testarLocal(){
   try{
     const r = await fetch(IP_NOTEBOOK+'/ping', {signal: AbortSignal.timeout(TIMEOUT_LOCAL)});
@@ -516,17 +557,18 @@ async function testarLocal(){
   }catch{ localOnline = false; }
   atualizarBadges();
 }
+
 testarLocal();
 setInterval(testarLocal, 15000);
 
 onValue(ref(db,'.info/connected'), snap=>{
   fbOnline = !!snap.val();
   atualizarBadges();
-  if(fbOnline){ processarFila(); }
+  if(fbOnline && typeof processarFila === 'function'){ processarFila(); }
 });
 
 // ════════════════════════════════════════════════════════════════
-// STORAGE LOCAL (offline fallback)
+// STORAGE LOCAL (Seu código original de fallback)
 // ════════════════════════════════════════════════════════════════
 const K = { mesas:'lv_mesas', fila:'lv_fila', caixa:'lv_caixa' };
 const salvarLocal = (k,v) => localStorage.setItem(k, JSON.stringify(v));
@@ -536,12 +578,15 @@ function lerFila(){ return lerLocal(K.fila)||[]; }
 function salvarFila(q){ salvarLocal(K.fila, q); }
 function adicionarFila(op){ const q=lerFila(); q.push(op); salvarFila(q); }
 
-function salvarMesasLocal(){ salvarLocal(K.mesas, mesas); }
-function carregarMesasLocal(){
-  const m = lerLocal(K.mesas);
-  if(m && m.length) mesas = m;
-}
+// Garante que as funções de salvamento de mesas continuem globais
+window.salvarMesasLocal = function() { 
+  if(typeof mesas !== 'undefined') salvarLocal(K.mesas, mesas); 
+};
 
+window.carregarMesasLocal = function() {
+  const m = lerLocal(K.mesas);
+  if(m && m.length && typeof mesas !== 'undefined') mesas = m;
+};
 // ════════════════════════════════════════════════════════════════
 // ENVIO TRIPLO — Firebase > IP local > fila offline
 // ════════════════════════════════════════════════════════════════
