@@ -1472,52 +1472,102 @@ window.abrirModalParcial=function(){
 
     const row=document.createElement('div');
 
-    row.style.cssText=`
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:10px;
-      padding:12px;
-      border-bottom:1px solid #2a322c;
-    `;
+row.style.cssText=`
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  padding:12px;
+  border-bottom:1px solid #2a322c;
+`;
 
-    row.innerHTML=`
-      <div style="flex:1;">
-        <div style="font-size:14px;font-weight:600;">
-          ${it.nome}
-        </div>
+row.innerHTML=`
+  <div style="flex:1;">
+    <div style="font-size:14px;font-weight:600;">
+      ${it.nome}
+    </div>
 
-        <div style="font-size:11px;color:#aaa;">
-          ${fmt(it.preco)} × ${it.qtd}
-        </div>
-      </div>
+    <div style="font-size:11px;color:#aaa;">
+      ${fmt(it.preco)} × ${it.qtd}
+    </div>
+  </div>
 
-      <div style="display:flex;align-items:center;gap:6px;">
-        <button class="fech-qtd-btn"
-          onclick="ajustarQtdFech(${idx},-1)">
-          -
-        </button>
+  <div style="display:flex;align-items:center;gap:10px;">
 
-        <span style="
-          min-width:20px;
-          text-align:center;
-          font-weight:700;
-        ">
-          ${sel}
-        </span>
+    <button
+      style="
+        width:42px;
+        height:42px;
+        border-radius:12px;
+        border:1px solid var(--border3);
+        background:#1f2621;
+        color:#fff;
+        font-size:22px;
+        font-weight:700;
+        cursor:pointer;
+      "
+      onclick="ajustarQtdFech(${idx},-1)">
+      -
+    </button>
 
-        <button class="fech-qtd-btn"
-          onclick="ajustarQtdFech(${idx},1)">
-          +
-        </button>
-      </div>
-    `;
+    <span style="
+      min-width:24px;
+      text-align:center;
+      font-weight:700;
+      font-size:18px;
+    ">
+      ${sel}
+    </span>
+
+    <button
+      style="
+        width:42px;
+        height:42px;
+        border-radius:12px;
+        border:1px solid var(--border3);
+        background:#1f2621;
+        color:#fff;
+        font-size:22px;
+        font-weight:700;
+        cursor:pointer;
+      "
+      onclick="ajustarQtdFech(${idx},1)">
+      +
+    </button>
+
+  </div>
+`;
 
     lista.appendChild(row);
   });
 
   abrirModal('modal-fechamento-parcial');
-};
+}; 
+
+function ajustarQtdFech(idx,delta){
+
+  const item = mesaAtual.pedido[idx];
+
+  if(!item) return;
+
+  if(qtdSel[idx] == null){
+    qtdSel[idx] = item.qtd;
+  }
+
+  qtdSel[idx] += delta;
+
+  if(qtdSel[idx] < 0){
+    qtdSel[idx] = 0;
+  }
+
+  if(qtdSel[idx] > item.qtd){
+    qtdSel[idx] = item.qtd;
+  }
+
+  abrirModalParcial();
+
+  renderFechamento();
+}
 
 </script>
 
