@@ -252,7 +252,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
       style="flex:1;padding:11px;font-size:13px;font-weight:600;background:var(--card);border:none;color:var(--verde);border-bottom:2px solid var(--verde);cursor:pointer;font-family:var(--font);">
       Mesa Completa
     </button>
-    <button id="aba-parcial" onclick="mudarAbaFech('parcial')"
+    <button id="aba-parcial" onclick="abrirModalParcial()">
       style="flex:1;padding:11px;font-size:13px;font-weight:600;background:transparent;border:none;color:var(--txt2);border-bottom:2px solid transparent;cursor:pointer;font-family:var(--font);">
       🧾 Fechamento Parcial
     </button>
@@ -1457,6 +1457,109 @@ onValue(ref(db,'mesas'),snap=>{
 
 window.addEventListener('online',()=>{mostrarStatus('✓ Internet restaurada — sincronizando...','online');processarFila();});
 window.addEventListener('offline',()=>mostrarStatus('⚠ Sem internet — usando rede local','local',0));
+
+window.abrirModalParcial=function(){
+
+  abaFech='parcial';
+
+  const lista=document.getElementById('lista-parcial-modal');
+
+  lista.innerHTML='';
+
+  (mesaAtual.pedido||[]).forEach((it,idx)=>{
+
+    const sel=qtdSel[idx]||0;
+
+    const row=document.createElement('div');
+
+    row.style.cssText=`
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      padding:12px;
+      border-bottom:1px solid #2a322c;
+    `;
+
+    row.innerHTML=`
+      <div style="flex:1;">
+        <div style="font-size:14px;font-weight:600;">
+          ${it.nome}
+        </div>
+
+        <div style="font-size:11px;color:#aaa;">
+          ${fmt(it.preco)} × ${it.qtd}
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:6px;">
+        <button class="fech-qtd-btn"
+          onclick="ajustarQtdFech(${idx},-1)">
+          -
+        </button>
+
+        <span style="
+          min-width:20px;
+          text-align:center;
+          font-weight:700;
+        ">
+          ${sel}
+        </span>
+
+        <button class="fech-qtd-btn"
+          onclick="ajustarQtdFech(${idx},1)">
+          +
+        </button>
+      </div>
+    `;
+
+    lista.appendChild(row);
+  });
+
+  abrirModal('modal-fechamento-parcial');
+};
+
 </script>
+
+<!-- MODAL FECHAMENTO PARCIAL -->
+<div class="modal-overlay" id="modal-fechamento-parcial">
+
+  <div class="modal-box" style="max-width:600px;width:100%;">
+
+    <div style="
+      font-size:18px;
+      font-weight:700;
+      margin-bottom:12px;
+    ">
+      🧾 Selecionar Itens
+    </div>
+
+    <div id="lista-parcial-modal"
+      style="
+        max-height:60vh;
+        overflow-y:auto;
+      ">
+    </div>
+
+    <button
+      class="btn btn-verde"
+      style="
+        width:100%;
+        margin-top:14px;
+        padding:14px;
+        font-size:15px;
+        font-weight:700;
+      "
+      onclick="
+        fecharModal('modal-fechamento-parcial');
+        renderFechamento();
+      ">
+      ✓ OK
+    </button>
+
+  </div>
+
+</div>
+
 </body>
 </html>
