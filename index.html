@@ -273,15 +273,10 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
     </div>
 
     <!-- Desconto -->
-    <div class="card-section" style="padding:12px 14px;">
-      <div style="font-size:13px;font-weight:600;margin-bottom:10px;">Desconto / Taxa</div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;">
-        <button class="btn" onclick="aplicarDesconto(10)" style="font-size:12px;">-10%</button>
-        <button class="btn" onclick="aplicarDesconto(-10)" style="font-size:12px;">+10% taxa</button>
-        <button class="btn" onclick="aplicarDescontoCustom()" style="font-size:12px;">Outro %</button>
-        <button class="btn" onclick="aplicarDesconto(0)" style="font-size:12px;">Limpar</button>
-      </div>
-      <div style="font-size:12px;color:var(--txt2);margin-top:8px;" id="desconto-info">Nenhum aplicado</div>
+    <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
+    <button class="add-pag-btn" id="addpag-dinheiro" onclick="addPagDiv('dinheiro')" style="flex:1;min-width:80px;">💵 Dinheiro</button>
+    <button class="add-pag-btn" id="addpag-cartao"   onclick="addPagDiv('cartao')"   style="flex:1;min-width:80px;">💳 Cartão</button>
+    <button class="add-pag-btn" id="addpag-pix"      onclick="addPagDiv('pix')"      style="flex:1;min-width:80px;">📲 Pix</button>
     </div>
 
     <!-- Total -->
@@ -297,7 +292,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
       <div style="font-size:13px;font-weight:600;margin-bottom:4px;">Forma de Pagamento</div>
       <div style="font-size:11px;color:var(--txt2);margin-bottom:8px;">Adicione 1 ou mais formas — pode dividir entre diferentes meios</div>
       <!-- Botões sempre visíveis no topo -->
-      <div style="display:flex;gap:6px;margin-bottom:10px;position:sticky;top:0;z-index:10;background:rgba(20,26,21,.99);padding:4px 0;">
+      <div style="display:flex;gap:6px;margin-bottom:10px;">
         <button class="add-pag-btn" id="addpag-dinheiro" onclick="addPagDiv('dinheiro')">💵 + Dinheiro</button>
         <button class="add-pag-btn" id="addpag-cartao"   onclick="addPagDiv('cartao')">💳 + Cartão</button>
         <button class="add-pag-btn" id="addpag-pix"      onclick="addPagDiv('pix')">📲 + Pix</button>
@@ -1144,9 +1139,22 @@ window.toggleItemFech=function(idx){
   renderFechamento();
 };
 
-window.ajustarQtdFech=function(idx,delta){
-  const max=mesaAtual.pedido[idx].qtd;
-  qtdSel[idx]=Math.min(max,Math.max(0,(qtdSel[idx]||0)+delta));
+window.ajustarQtdFech = function(idx, delta){
+  const item = mesaAtual.pedido[idx];
+  if(!item) return;
+  if(qtdSel[idx] == null) qtdSel[idx] = 0;
+  qtdSel[idx] += delta;
+  if(qtdSel[idx] < 0) qtdSel[idx] = 0;
+  if(qtdSel[idx] > item.qtd) qtdSel[idx] = item.qtd;
+
+  // Atualiza a linha específica dentro do modal aberto
+  const lista = document.getElementById('lista-parcial-modal');
+  if(lista && lista.children[idx]){
+    const span = lista.children[idx].querySelector('span[style*="min-width:24px"]');
+    if(span) span.textContent = qtdSel[idx];
+  }
+
+  // Atualiza a tela de fechamento (totais)
   renderFechamento();
 };
 
@@ -1544,30 +1552,6 @@ row.innerHTML=`
   abrirModal('modal-fechamento-parcial');
 }; 
 
-function ajustarQtdFech(idx,delta){
-
-  const item = mesaAtual.pedido[idx];
-
-  if(!item) return;
-
-  if(qtdSel[idx] == null){
-    qtdSel[idx] = item.qtd;
-  }
-
-  qtdSel[idx] += delta;
-
-  if(qtdSel[idx] < 0){
-    qtdSel[idx] = 0;
-  }
-
-  if(qtdSel[idx] > item.qtd){
-    qtdSel[idx] = item.qtd;
-  }
-
-  abrirModalParcial();
-
-  renderFechamento();
-}
 
 </script>
 
