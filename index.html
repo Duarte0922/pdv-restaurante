@@ -139,38 +139,14 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
 .tag-novo{background:#3a2e0a;color:#c9a427;border-radius:999px;font-size:10px;padding:2px 7px;}
 .qtd-btn{background:#1f2521;border:1px solid #313a33;border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:16px;color:var(--txt);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 
-/* Espaço no fundo da tela para o botão de confirmar não cobrir nada */
-#screen-fechamento .content {
-  flex: 1;
-  overflow-y: auto;
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding-bottom: 300px; /* Aumentado para dar folga total */
-}
+#screen-fechamento .content{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px;padding-bottom:180px;}
+.card-section{background:rgba(20,26,21,.96);border:1px solid var(--border2);border-radius:var(--rad-lg);overflow:hidden;}
+.card-section-header{padding:10px 14px;border-bottom:1px solid var(--border2);font-size:13px;font-weight:600;}
+.pag-btn{flex:1;display:flex;flex-direction:column;align-items:center;padding:14px 6px;gap:6px;font-size:12px;border-radius:18px;}
+.pag-icon{font-size:24px;}
+#screen-ok{align-items:center;justify-content:center;gap:14px;padding:24px;}
+.ok-circle{width:80px;height:80px;border-radius:50%;background:linear-gradient(180deg,#2aa160,#1d7b49);display:flex;align-items:center;justify-content:center;font-size:36px;}
 
-/* Estilo dos botões superiores (sempre visíveis) */
-.add-pag-btn {
-  flex: 1;
-  min-width: 80px;
-  padding: 12px 6px;
-  border: 1px solid var(--border3);
-  border-radius: 12px;
-  background: linear-gradient(180deg, #232a25, #171c18);
-  color: var(--txt);
-  font-family: var(--font);
-  font-size: 13px;
-  cursor: pointer;
-  transition: opacity 0.2s;
-}
-
-/* Estado quando o pagamento já foi adicionado à lista */
-.add-pag-btn.usado {
-  opacity: 0.3;
-  pointer-events: none; /* Impede clicar duas vezes no mesmo */
-  filter: grayscale(1);
-}
 /* FECHAMENTO PARCIAL */
 .fech-item-row{display:flex;align-items:center;gap:10px;padding:14px 14px;border-bottom:1px solid var(--border2);min-height:64px;}
 .fech-item-row.sel{background:rgba(47,179,109,.08);}
@@ -1161,6 +1137,7 @@ window.aplicarDescontoCustomConfirm=()=>{
 };
 
 // ── Pagamento Dividido ──
+// ── Pagamento Dividido ──
 window.addPagDiv=function(tipo){
   if(pagDiv.find(p=>p.tipo===tipo))return;
   pagDiv.push({tipo,valor:''});
@@ -1191,43 +1168,11 @@ function totalPagDiv(){
   return pagDiv.reduce((s,p)=>s+(parseFloat(p.valor)||0),0);
 }
 
-function renderPagDiv() {
-  // Gerencia a opacidade dos botões superiores sem removê-los
-  ['dinheiro', 'cartao', 'pix'].forEach(t => {
-    const b = document.getElementById('addpag-' + t);
-    if (b) {
-      const jaAdicionado = pagDiv.find(p => p.tipo === t);
-      if (jaAdicionado) {
-        b.classList.add('usado'); // Fica semitransparente via CSS
-      } else {
-        b.classList.remove('usado');
-      }
-    }
+function renderPagDiv(){
+  ['dinheiro','cartao','pix'].forEach(t=>{
+    const b=document.getElementById('addpag-'+t);
+    if(b)b.className='add-pag-btn'+(pagDiv.find(p=>p.tipo===t)?' usado':'');
   });
-
-  const lista = document.getElementById('pag-div-lista');
-  lista.innerHTML = ''; 
-
-  const icones = { dinheiro: '💵', cartao: '💳', pix: '📲' };
-  const nomes = { dinheiro: 'Dinheiro', cartao: 'Cartão', pix: 'Pix' };
-
-  pagDiv.forEach(p => {
-    const row = document.createElement('div');
-    row.className = 'pag-div-row';
-    row.innerHTML = `
-      <div style="width:30px;font-size:16px;">${icones[p.tipo]}</div>
-      <span style="font-size:13px;font-weight:600;min-width:65px;">${nomes[p.tipo]}</span>
-      <input class="pag-div-input" type="number" step="0.01"
-        value="${p.valor}" oninput="setPagDivVal('${p.tipo}',this.value)" 
-        placeholder="0,00" style="flex:1; text-align:right;">
-      <button onclick="remPagDiv('${p.tipo}')" style="background:none; border:none; color:#cf5b74; font-size:22px; cursor:pointer;">×</button>
-    `;
-    lista.appendChild(row);
-  });
-
-  document.getElementById('troco-box').style.display = pagDiv.find(p => p.tipo === 'dinheiro') ? 'block' : 'none';
-  atualizarResumoPag();
-}
 
   const lista=document.getElementById('pag-div-lista');
   lista.innerHTML='';
@@ -1364,14 +1309,10 @@ function renderModalParcial(){
   });
 }
 
-function toggleItemParcialModal(idx) {
+function toggleItemParcialModal(idx){
   const it = mesaAtual.pedido[idx];
-  // Se estiver marcado, desmarca (0). Se estiver desmarcado, marca o total (it.qtd).
   qtdSel[idx] = (qtdSel[idx] && qtdSel[idx] > 0) ? 0 : it.qtd;
-  
-  // CORREÇÃO: Faz o valor mudar no fundo da tela enquanto você marca as caixinhas
   renderModalParcial();
-  renderFechamento(); 
 }
 
 window.toggleTodosParcialModal = function(){
