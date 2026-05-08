@@ -39,7 +39,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
 .header-title{font-size:15px;font-weight:700;}
 .header-sub{font-size:11px;color:var(--txt2);margin-top:1px;}
 
-/* STATUS DUPLO — Firebase + Local */
 #status-wrap{display:flex;gap:6px;align-items:center;flex-shrink:0;}
 .badge{font-size:10px;padding:3px 8px;border-radius:999px;white-space:nowrap;}
 .badge-fb{background:#1a2d3d;color:#5e96ff;}
@@ -105,7 +104,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
 @media(min-width:900px){#produto-grid{grid-template-columns:repeat(3,1fr);}}
 @media(min-width:1200px){#produto-grid{grid-template-columns:repeat(4,1fr);}}
 
-/* Produto menor para sobrar espaço ao carrinho */
 .prod-card{background:linear-gradient(180deg,#1e2420,#161b17);border:1px solid #2a322c;
   border-radius:12px;padding:8px 8px;cursor:pointer;min-height:64px;
   display:flex;flex-direction:column;justify-content:space-between;transition:transform .1s;}
@@ -114,21 +112,17 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
 .prod-preco{font-size:13px;color:var(--verde);font-weight:700;margin-top:4px;}
 .prod-tamanhos{font-size:10px;color:var(--verde);font-weight:600;margin-top:3px;line-height:1.5;}
 
-/* Painel inferior: altura fixa, nunca some */
 #carrinho-panel{
   background:rgba(20,26,21,.99);
   border-top:1px solid var(--border3);
   flex-shrink:0;
   display:flex;
   flex-direction:column;
-  /* Altura máxima: 40% da tela — o restante fica para os produtos */
   max-height:40vh;
 }
 #carrinho-header{padding:8px 14px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none;flex-shrink:0;}
-/* Lista de itens: scroll interno */
 #carrinho-body{flex:1;min-height:0;overflow-y:auto;padding:0 10px 0;max-height:calc(40vh - 110px);}
 #carrinho-lista{padding:3px 0;}
-/* Botão SEMPRE visível — fica fora do scroll */
 #btn-cozinha-fixo{
   flex-shrink:0;
   margin:6px 10px 8px;
@@ -145,14 +139,38 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
 .tag-novo{background:#3a2e0a;color:#c9a427;border-radius:999px;font-size:10px;padding:2px 7px;}
 .qtd-btn{background:#1f2521;border:1px solid #313a33;border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:16px;color:var(--txt);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 
-#screen-fechamento .content{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px;padding-bottom:90px;}
-.card-section{background:rgba(20,26,21,.96);border:1px solid var(--border2);border-radius:var(--rad-lg);overflow:hidden;}
-.card-section-header{padding:10px 14px;border-bottom:1px solid var(--border2);font-size:13px;font-weight:600;}
-.pag-btn{flex:1;display:flex;flex-direction:column;align-items:center;padding:14px 6px;gap:6px;font-size:12px;border-radius:18px;}
-.pag-icon{font-size:24px;}
-#screen-ok{align-items:center;justify-content:center;gap:14px;padding:24px;}
-.ok-circle{width:80px;height:80px;border-radius:50%;background:linear-gradient(180deg,#2aa160,#1d7b49);display:flex;align-items:center;justify-content:center;font-size:36px;}
+/* Espaço no fundo da tela para o botão de confirmar não cobrir nada */
+#screen-fechamento .content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-bottom: 300px; /* Aumentado para dar folga total */
+}
 
+/* Estilo dos botões superiores (sempre visíveis) */
+.add-pag-btn {
+  flex: 1;
+  min-width: 80px;
+  padding: 12px 6px;
+  border: 1px solid var(--border3);
+  border-radius: 12px;
+  background: linear-gradient(180deg, #232a25, #171c18);
+  color: var(--txt);
+  font-family: var(--font);
+  font-size: 13px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+/* Estado quando o pagamento já foi adicionado à lista */
+.add-pag-btn.usado {
+  opacity: 0.3;
+  pointer-events: none; /* Impede clicar duas vezes no mesmo */
+  filter: grayscale(1);
+}
 /* FECHAMENTO PARCIAL */
 .fech-item-row{display:flex;align-items:center;gap:10px;padding:14px 14px;border-bottom:1px solid var(--border2);min-height:64px;}
 .fech-item-row.sel{background:rgba(47,179,109,.08);}
@@ -168,6 +186,12 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
 .add-pag-btn.usado{opacity:.3;pointer-events:none;}
 .falta-bar{height:4px;border-radius:2px;background:#1e2820;margin:6px 0 4px;overflow:hidden;}
 .falta-bar-fill{height:100%;border-radius:2px;background:var(--verde);transition:width .3s;}
+
+/* MODAL PARCIAL — checkbox style */
+.parcial-item-row{display:flex;align-items:center;gap:12px;padding:14px 12px;border-bottom:1px solid #2a322c;cursor:pointer;}
+.parcial-item-row.sel{background:rgba(47,179,109,.08);}
+.parcial-check{width:28px;height:28px;border-radius:8px;border:2px solid var(--border3);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:15px;transition:all .12s;}
+.parcial-check.on{background:var(--verde);border-color:var(--verde);}
 </style>
 </head>
 <body>
@@ -246,7 +270,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
     <button class="btn btn-azul" onclick="imprimirConta()" style="font-size:13px;padding:9px 14px;">🖨 Conta</button>
   </div>
 
-  <!-- ABAS: Mesa Completa | Fechamento Parcial -->
   <div style="display:flex;border-bottom:1px solid var(--border2);flex-shrink:0;">
     <button id="aba-total" onclick="mudarAbaFech('total')"
       style="flex:1;padding:11px;font-size:13px;font-weight:600;background:var(--card);border:none;color:var(--verde);border-bottom:2px solid var(--verde);cursor:pointer;font-family:var(--font);">
@@ -273,10 +296,15 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
     </div>
 
     <!-- Desconto -->
-    <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
-    <button class="add-pag-btn" id="addpag-dinheiro" onclick="addPagDiv('dinheiro')" style="flex:1;min-width:80px;">💵 Dinheiro</button>
-    <button class="add-pag-btn" id="addpag-cartao"   onclick="addPagDiv('cartao')"   style="flex:1;min-width:80px;">💳 Cartão</button>
-    <button class="add-pag-btn" id="addpag-pix"      onclick="addPagDiv('pix')"      style="flex:1;min-width:80px;">📲 Pix</button>
+    <div class="card-section" style="padding:12px 14px;">
+      <div style="font-size:13px;font-weight:600;margin-bottom:10px;">Desconto / Taxa</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <button class="btn" onclick="aplicarDesconto(10)" style="font-size:12px;">-10%</button>
+        <button class="btn" onclick="aplicarDesconto(-10)" style="font-size:12px;">+10% taxa</button>
+        <button class="btn" onclick="aplicarDescontoCustom()" style="font-size:12px;">Outro %</button>
+        <button class="btn" onclick="aplicarDesconto(0)" style="font-size:12px;">Limpar</button>
+      </div>
+      <div style="font-size:12px;color:var(--txt2);margin-top:8px;" id="desconto-info">Nenhum aplicado</div>
     </div>
 
     <!-- Total -->
@@ -287,26 +315,30 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
       </div>
     </div>
 
-<!-- Pagamento dividido -->
+    <!-- Pagamento dividido — ÚNICO bloco, sem duplicata -->
     <div class="card-section" style="padding:12px 14px;">
       <div style="font-size:13px;font-weight:600;margin-bottom:4px;">Forma de Pagamento</div>
-      <div style="font-size:11px;color:var(--txt2);margin-bottom:8px;">Adicione 1 ou mais formas — pode dividir entre diferentes meios</div>
-      <!-- Botões sempre visíveis no topo -->
-      <div style="display:flex;gap:6px;margin-bottom:10px;">
-        <button class="add-pag-btn" id="addpag-dinheiro" onclick="addPagDiv('dinheiro')">💵 + Dinheiro</button>
-        <button class="add-pag-btn" id="addpag-cartao"   onclick="addPagDiv('cartao')">💳 + Cartão</button>
-        <button class="add-pag-btn" id="addpag-pix"      onclick="addPagDiv('pix')">📲 + Pix</button>
+      <div style="font-size:11px;color:var(--txt2);margin-bottom:10px;">Adicione 1 ou mais formas — pode dividir entre diferentes meios</div>
+
+      <!-- Botões de forma de pagamento -->
+      <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;">
+        <button class="add-pag-btn" id="addpag-dinheiro" onclick="addPagDiv('dinheiro')" style="flex:1;min-width:80px;">💵 Dinheiro</button>
+        <button class="add-pag-btn" id="addpag-cartao"   onclick="addPagDiv('cartao')"   style="flex:1;min-width:80px;">💳 Cartão</button>
+        <button class="add-pag-btn" id="addpag-pix"      onclick="addPagDiv('pix')"      style="flex:1;min-width:80px;">📲 Pix</button>
       </div>
-      <!-- Resumo fixo logo abaixo dos botões — sempre visível -->
+
+      <!-- Resumo -->
       <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:700;padding:8px 4px;margin-bottom:8px;border-bottom:1px solid var(--border2);">
         <span style="color:var(--txt2);">Total: <span id="total-ref-pag" style="color:var(--verde);">R$ 0,00</span></span>
         <span id="res-diff-div" style="color:#cf5b74;">Falta: R$ 0,00</span>
       </div>
+
       <div id="pag-div-lista"></div>
       <div class="falta-bar"><div class="falta-bar-fill" id="falta-bar-fill" style="width:0%"></div></div>
       <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--txt2);margin-top:4px;">
         <span>Pago: <span id="res-pago-div" style="color:var(--verde);font-weight:600;">R$ 0,00</span></span>
       </div>
+
       <!-- Troco dinheiro -->
       <div id="troco-box" style="display:none;margin-top:10px;">
         <div style="font-size:12px;color:var(--txt2);margin-bottom:6px;">Troco (dinheiro)</div>
@@ -321,6 +353,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
         </div>
       </div>
     </div>
+
     <button class="btn btn-verde" id="btn-confirmar-venda" onclick="concluirVenda()"
       style="padding:16px;font-size:15px;font-weight:700;border-radius:18px;opacity:.4;pointer-events:none;">
       ✓ Confirmar Pagamento e Liberar Mesa
@@ -386,7 +419,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
   </div>
 </div>
 
-<!-- MODAL CONFIRMAR FECHAMENTO DE MESA -->
 <div class="modal-overlay" id="modal-confirmar-fechamento">
   <div class="modal-box" style="text-align:center;">
     <div style="font-size:36px;margin-bottom:12px;">🧾</div>
@@ -399,7 +431,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
   </div>
 </div>
 
-<!-- MODAL ACRÉSCIMOS PIZZA (borda) -->
 <div class="modal-overlay" id="modal-borda">
   <div class="modal-box">
     <div style="font-size:15px;font-weight:700;margin-bottom:4px;" id="borda-pizza-nome">Pizza</div>
@@ -411,31 +442,23 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
   </div>
 </div>
 
-
-<!-- MODAL TAMANHO MEIO A MEIO (só G e GG) -->
 <div class="modal-overlay" id="modal-mm-tamanho">
   <div class="modal-box" style="text-align:center;">
     <div style="font-size:28px;margin-bottom:8px;">🍕</div>
     <div style="font-size:16px;font-weight:700;margin-bottom:4px;">Pizza Meio a Meio</div>
     <div style="font-size:12px;color:var(--txt2);margin-bottom:18px;">Selecione o tamanho:</div>
     <div style="display:flex;flex-direction:column;gap:10px;">
-      <button class="btn btn-azul" onclick="escolherTamMM('G')"
-        style="padding:15px;font-size:15px;font-weight:700;">
-        Grande (G)<br>
-        <span style="font-size:12px;font-weight:400;color:#aad4ff;">Trad. R$ 52,90 · Esp. R$ 57,90 (cada metade = ½)</span>
+      <button class="btn btn-azul" onclick="escolherTamMM('G')" style="padding:15px;font-size:15px;font-weight:700;">
+        Grande (G)<br><span style="font-size:12px;font-weight:400;color:#aad4ff;">Trad. R$ 52,90 · Esp. R$ 57,90 (cada metade = ½)</span>
       </button>
-      <button class="btn btn-azul" onclick="escolherTamMM('GG')"
-        style="padding:15px;font-size:15px;font-weight:700;">
-        Gigante (GG)<br>
-        <span style="font-size:12px;font-weight:400;color:#aad4ff;">Trad. R$ 61,90 · Esp. R$ 76,90 (cada metade = ½)</span>
+      <button class="btn btn-azul" onclick="escolherTamMM('GG')" style="padding:15px;font-size:15px;font-weight:700;">
+        Gigante (GG)<br><span style="font-size:12px;font-weight:400;color:#aad4ff;">Trad. R$ 61,90 · Esp. R$ 76,90 (cada metade = ½)</span>
       </button>
     </div>
-    <button class="btn" onclick="fecharModal('modal-mm-tamanho')"
-      style="width:100%;margin-top:14px;color:var(--txt2);">Cancelar</button>
+    <button class="btn" onclick="fecharModal('modal-mm-tamanho')" style="width:100%;margin-top:14px;color:var(--txt2);">Cancelar</button>
   </div>
 </div>
 
-<!-- MODAL MEIO A MEIO — passo 1: primeiro sabor -->
 <div class="modal-overlay" id="modal-meiomeio1">
   <div class="modal-box" style="max-height:85vh;overflow-y:auto;">
     <div style="font-size:15px;font-weight:700;margin-bottom:4px;">Pizza Meio a Meio</div>
@@ -449,7 +472,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
   </div>
 </div>
 
-<!-- MODAL MEIO A MEIO — passo 2: segundo sabor -->
 <div class="modal-overlay" id="modal-meiomeio2">
   <div class="modal-box" style="max-height:85vh;overflow-y:auto;">
     <div style="font-size:15px;font-weight:700;margin-bottom:2px;">Pizza Meio a Meio</div>
@@ -464,19 +486,26 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
   </div>
 </div>
 
+<!-- MODAL FECHAMENTO PARCIAL — com checkboxes -->
+<div class="modal-overlay" id="modal-fechamento-parcial">
+  <div class="modal-box" style="max-width:500px;width:100%;padding:16px 14px;">
+    <div style="font-size:17px;font-weight:700;margin-bottom:4px;">🧾 Selecionar Itens</div>
+    <div style="font-size:11px;color:var(--txt2);margin-bottom:12px;">Toque para selecionar os itens que serão pagos agora</div>
+    <div id="lista-parcial-modal" style="max-height:55vh;overflow-y:auto;border-radius:12px;border:1px solid var(--border2);overflow:hidden;"></div>
+    <div style="display:flex;gap:8px;margin-top:12px;">
+      <button class="btn" onclick="toggleTodosParcialModal()" style="flex:1;font-size:12px;">☑ Todos</button>
+      <button class="btn btn-verde" onclick="fecharModal('modal-fechamento-parcial');renderFechamento();" style="flex:2;font-size:14px;font-weight:700;padding:13px;">✓ OK</button>
+    </div>
+  </div>
+</div>
+
 <script type="module">
-// ════════════════════════════════════════════════════════════════
-// 1. IMPORTS (DATABASE + AUTH)
-// ════════════════════════════════════════════════════════════════
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, set, onValue, push, get, update } 
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, setPersistence, browserLocalPersistence } 
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-// ════════════════════════════════════════════════════════════════
-// 2. CONFIGURAÇÃO E INICIALIZAÇÃO
-// ════════════════════════════════════════════════════════════════
 const FB_CONFIG = {
   apiKey: "AIzaSyAXMDwp1-VT3FdBMHkihTPESWL8smJLZcc",
   authDomain: "pdv-restaurante-a7b75.firebaseapp.com",
@@ -491,7 +520,6 @@ const app = initializeApp(FB_CONFIG);
 const db = getDatabase(app);
 const auth = getAuth(app);
 
-// 3. SEGURANÇA E PERSISTÊNCIA (Lembrar login no tablet)
 setPersistence(auth, browserLocalPersistence);
 
 window.fazerLoginGarcom = function() {
@@ -500,12 +528,10 @@ window.fazerLoginGarcom = function() {
         .catch((error) => alert("Erro ao conectar: " + error.message));
 };
 
-// Monitor de Acesso (Trava a tela se não estiver logado)
 onAuthStateChanged(auth, (user) => {
     const overlay = document.getElementById('garcom-auth-overlay');
     if (user) {
         if(overlay) overlay.remove();
-        console.log("Sessão ativa.");
     } else {
         if(!overlay) {
             const html = `
@@ -520,39 +546,23 @@ onAuthStateChanged(auth, (user) => {
     }
 });
 
-// ════════════════════════════════════════════════════════════════
-// ⚙ CONFIGURAÇÃO LOCAL (Sua lógica original de rede)
-// ════════════════════════════════════════════════════════════════
 const IP_NOTEBOOK = 'http://192.168.1.100:5000'; 
 const TIMEOUT_LOCAL = 2000; 
-
-// ════════════════════════════════════════════════════════════════
-// ESTADO DE CONECTIVIDADE (Sua lógica de badges e monitoramento)
-// ════════════════════════════════════════════════════════════════
 let fbOnline = false;   
 let localOnline = false; 
 
 function atualizarBadges(){
   const fb = document.getElementById('badge-fb');
   const lc = document.getElementById('badge-local');
-  if(fb) {
-    fb.textContent = fbOnline ? '✓ Firebase' : '✗ Firebase';
-    fb.className = 'badge badge-fb ' + (fbOnline ? 'ok' : 'off');
-  }
-  if(lc) {
-    lc.textContent = localOnline ? '✓ Rede local' : '✗ Rede local';
-    lc.className = 'badge badge-local ' + (localOnline ? 'ok' : 'off');
-  }
+  if(fb){ fb.textContent = fbOnline ? '✓ Firebase' : '✗ Firebase'; fb.className = 'badge badge-fb ' + (fbOnline ? 'ok' : 'off'); }
+  if(lc){ lc.textContent = localOnline ? '✓ Rede local' : '✗ Rede local'; lc.className = 'badge badge-local ' + (localOnline ? 'ok' : 'off'); }
 }
 
 async function testarLocal(){
-  try{
-    const r = await fetch(IP_NOTEBOOK+'/ping', {signal: AbortSignal.timeout(TIMEOUT_LOCAL)});
-    localOnline = r.ok;
-  }catch{ localOnline = false; }
+  try{ const r = await fetch(IP_NOTEBOOK+'/ping', {signal: AbortSignal.timeout(TIMEOUT_LOCAL)}); localOnline = r.ok; }
+  catch{ localOnline = false; }
   atualizarBadges();
 }
-
 testarLocal();
 setInterval(testarLocal, 15000);
 
@@ -562,31 +572,17 @@ onValue(ref(db,'.info/connected'), snap=>{
   if(fbOnline && typeof processarFila === 'function'){ processarFila(); }
 });
 
-// ════════════════════════════════════════════════════════════════
-// STORAGE LOCAL (Seu código original de fallback)
-// ════════════════════════════════════════════════════════════════
 const K = { mesas:'lv_mesas', fila:'lv_fila', caixa:'lv_caixa' };
 const salvarLocal = (k,v) => localStorage.setItem(k, JSON.stringify(v));
 const lerLocal = k => { try{ return JSON.parse(localStorage.getItem(k)); }catch{ return null; } };
-
 function lerFila(){ return lerLocal(K.fila)||[]; }
 function salvarFila(q){ salvarLocal(K.fila, q); }
 function adicionarFila(op){ const q=lerFila(); q.push(op); salvarFila(q); }
 
-// Garante que as funções de salvamento de mesas continuem globais
-window.salvarMesasLocal = function() { 
-  if(typeof mesas !== 'undefined') salvarLocal(K.mesas, mesas); 
-};
+window.salvarMesasLocal = function() { if(typeof mesas !== 'undefined') salvarLocal(K.mesas, mesas); };
+window.carregarMesasLocal = function() { const m = lerLocal(K.mesas); if(m && m.length && typeof mesas !== 'undefined') mesas = m; };
 
-window.carregarMesasLocal = function() {
-  const m = lerLocal(K.mesas);
-  if(m && m.length && typeof mesas !== 'undefined') mesas = m;
-};
-// ════════════════════════════════════════════════════════════════
-// ENVIO TRIPLO — Firebase > IP local > fila offline
-// ════════════════════════════════════════════════════════════════
 async function enviarParaNotebook(rota, dados){
-  // 1. Tenta Firebase
   if(fbOnline){
     try{
       const no = rota === '/imprimir/cozinha' ? 'pedidos_cozinha' : 'contas_imprimir';
@@ -594,19 +590,12 @@ async function enviarParaNotebook(rota, dados){
       return 'firebase';
     }catch(e){ console.warn('FB falhou:', e); }
   }
-  // 2. Tenta IP local
   if(localOnline){
     try{
-      const r = await fetch(IP_NOTEBOOK+rota, {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify(dados),
-        signal: AbortSignal.timeout(TIMEOUT_LOCAL)
-      });
+      const r = await fetch(IP_NOTEBOOK+rota, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(dados), signal: AbortSignal.timeout(TIMEOUT_LOCAL) });
       if(r.ok) return 'local';
     }catch(e){ console.warn('Local falhou:', e); }
   }
-  // 3. Salva na fila para sincronizar depois
   adicionarFila({rota, dados, timestamp: Date.now()});
   return 'fila';
 }
@@ -627,21 +616,13 @@ async function salvarVendaFirebase(venda){
     await set(ref(db,`caixa/${hoje}/vendas/v${Date.now()}`), venda);
     const snap = await get(ref(db,`caixa/${hoje}`));
     const atual = snap.val()||{};
-    // Soma cada forma de pagamento separadamente
     const atualizacao = {data:hoje};
-    const pagamentos = venda.pagamentos && venda.pagamentos.length
-      ? venda.pagamentos
-      : [{tipo:venda.pagamento, valor:venda.total}];
-    pagamentos.forEach(p=>{
-      const tipo = p.tipo;
-      const valor = parseFloat(p.valor)||0;
-      atualizacao[tipo] = (atual[tipo]||0) + valor;
-    });
+    const pagamentos = venda.pagamentos && venda.pagamentos.length ? venda.pagamentos : [{tipo:venda.pagamento, valor:venda.total}];
+    pagamentos.forEach(p=>{ atualizacao[p.tipo] = (atual[p.tipo]||0) + (parseFloat(p.valor)||0); });
     await update(ref(db,`caixa/${hoje}`), atualizacao);
   }catch{ adicionarFila({tipo:'venda',dados:venda}); }
 }
 
-// Processa fila quando internet volta
 async function processarFila(){
   const fila = lerFila();
   if(!fila.length) return;
@@ -669,16 +650,9 @@ async function processarFila(){
   mostrarStatus(erros.length===0?'✓ Sincronização concluída!':'⚠ '+erros.length+' item(ns) não sincronizado(s)', erros.length===0?'online':'offline');
 }
 
+// ── BORDAS ──
+const BORDAS = { 'Catupiry':{M:11,G:13,GG:15}, 'Cheddar/Catupiry':{M:12,G:14,GG:16} };
 
-// ════════════════════════════════════════════════════════════════
-// BORDAS DE PIZZA
-// ════════════════════════════════════════════════════════════════
-const BORDAS = {
-  'Catupiry':       {M:11, G:13, GG:15},
-  'Cheddar/Catupiry':{M:12, G:14, GG:16},
-};
-
-// Chamado após escolher tamanho — abre tela de borda
 function abrirBorda(pizzaNome, tam, preco, catNome){
   itemPendente = {nome:pizzaNome, preco, tamanhoObs:tam, categoria:catNome};
   document.getElementById('borda-pizza-nome').textContent = pizzaNome;
@@ -700,8 +674,7 @@ function abrirBorda(pizzaNome, tam, preco, catNome){
 
 window.semBorda = function(){
   fecharModal('modal-borda');
-  const p = itemPendente;
-  if(!p) return;
+  const p = itemPendente; if(!p) return;
   itemPendente._obsBase = p.tamanhoObs;
   itemPendente._precoFinal = p.preco;
   document.getElementById('modal-obs-nome').textContent = p.nome;
@@ -710,8 +683,7 @@ window.semBorda = function(){
 };
 
 function confirmarPizzaComBorda(bordaNome, precoBorda){
-  const p = itemPendente;
-  if(!p) return;
+  const p = itemPendente; if(!p) return;
   itemPendente._obsBase = p.tamanhoObs + ' + ' + bordaNome;
   itemPendente._precoFinal = p.preco + precoBorda;
   document.getElementById('modal-obs-nome').textContent = p.nome;
@@ -722,11 +694,8 @@ function confirmarPizzaComBorda(bordaNome, precoBorda){
 window.confirmarObs = function(){
   const obs = document.getElementById('input-obs').value.trim();
   fecharModal('modal-obs');
-  const p = itemPendente;
-  if(!p){ itemPendente = null; return; }
-  const obsFinal = p._obsBase
-    ? (obs ? p._obsBase + ' — ' + obs : p._obsBase)
-    : obs;
+  const p = itemPendente; if(!p){ itemPendente=null; return; }
+  const obsFinal = p._obsBase ? (obs ? p._obsBase+' — '+obs : p._obsBase) : obs;
   const preco = p._precoFinal !== undefined ? p._precoFinal : p.preco;
   pushItem({nome:p.nome, preco}, obsFinal, p.categoria);
   itemPendente = null;
@@ -734,46 +703,26 @@ window.confirmarObs = function(){
 
 window.confirmarObsSem = function(){
   fecharModal('modal-obs');
-  const p = itemPendente;
-  if(!p){ itemPendente = null; return; }
+  const p = itemPendente; if(!p){ itemPendente=null; return; }
   const obsFinal = p._obsBase || '';
   const preco = p._precoFinal !== undefined ? p._precoFinal : p.preco;
   pushItem({nome:p.nome, preco}, obsFinal, p.categoria);
   itemPendente = null;
 };
 
-// ════════════════════════════════════════════════════════════════
-// PIZZA MEIO A MEIO — versão 2
-// Fluxo: botão no topo → escolhe G/GG → sabor 1 (trad+esp) → sabor 2 → borda
-// ════════════════════════════════════════════════════════════════
-let mmTamanho = null;
-let mmSabor1  = null;
+// ── MEIO A MEIO ──
+let mmTamanho = null, mmSabor1 = null;
 
-window.abrirMeioAMeio = function(){
-  mmSabor1 = null; mmTamanho = null;
-  abrirModal('modal-mm-tamanho');
-};
+window.abrirMeioAMeio = function(){ mmSabor1=null; mmTamanho=null; abrirModal('modal-mm-tamanho'); };
+window.escolherTamMM = function(tam){ mmTamanho=tam; fecharModal('modal-mm-tamanho'); filtrarMM1('trad'); abrirModal('modal-meiomeio1'); };
 
-window.escolherTamMM = function(tam){
-  mmTamanho = tam;
-  fecharModal('modal-mm-tamanho');
-  filtrarMM1('trad');
-  abrirModal('modal-meiomeio1');
-};
-
-function listarPizzasMM(lista, tam){
-  return lista.map(p=>({nome:p.nome, metade:p.tamanhos[tam]/2, catNome:'Pizza Trad.'}));
-}
-function listarPizzasMMEsp(lista, tam){
-  return lista.map(p=>({nome:p.nome, metade:p.tamanhos[tam]/2, catNome:'Pizza Esp.'}));
-}
+function listarPizzasMM(lista, tam){ return lista.map(p=>({nome:p.nome, metade:p.tamanhos[tam]/2, catNome:'Pizza Trad.'})); }
+function listarPizzasMMEsp(lista, tam){ return lista.map(p=>({nome:p.nome, metade:p.tamanhos[tam]/2, catNome:'Pizza Esp.'})); }
 
 function renderListaMM(containerId, tipo, onClickFn){
   const container = document.getElementById(containerId);
   container.innerHTML = '';
-  const itens = tipo==='trad'
-    ? listarPizzasMM(pizzasTrad, mmTamanho)
-    : listarPizzasMMEsp(pizzasEsp, mmTamanho);
+  const itens = tipo==='trad' ? listarPizzasMM(pizzasTrad, mmTamanho) : listarPizzasMMEsp(pizzasEsp, mmTamanho);
   itens.forEach(it=>{
     const btn = document.createElement('button');
     btn.className = 'btn';
@@ -790,9 +739,7 @@ window.filtrarMM1 = function(tipo){
   renderListaMM('mm1-lista', tipo, (it)=>{
     mmSabor1 = it;
     document.getElementById('mm2-sabor1-info').textContent = '1º: '+it.nome+' ('+fmt(it.metade)+')';
-    fecharModal('modal-meiomeio1');
-    filtrarMM2('trad');
-    abrirModal('modal-meiomeio2');
+    fecharModal('modal-meiomeio1'); filtrarMM2('trad'); abrirModal('modal-meiomeio2');
   });
 };
 
@@ -808,6 +755,7 @@ window.filtrarMM2 = function(tipo){
     setTimeout(()=>abrirBorda(nome, tam, total, 'Pizza Trad.'), 200);
   });
 };
+
 // ════════════════════════════════════════════════════════════════
 // CARDÁPIO
 // ════════════════════════════════════════════════════════════════
@@ -890,29 +838,22 @@ const categorias=[
   ]},
 ];
 
-// ════════════════════════════════════════════════════════════════
-// ESTADO
-// ════════════════════════════════════════════════════════════════
+
+// ── ESTADO ──
 let mesas=[], mesaAtual=null, itemPendente=null, pagSelecionado=null;
 let descontoAtual=0, carrinhoAberto=true;
+let abaFech='total', qtdSel={}, pagDiv=[];
 
 function inicializarMesas(n){
-  const novas=Array.from({length:n},(_,i)=>{
-    const ex=mesas.find(m=>m.id===i+1);
-    return ex||{id:i+1,status:'livre',inicio:null,pedido:[]};
-  });
+  const novas=Array.from({length:n},(_,i)=>{ const ex=mesas.find(m=>m.id===i+1); return ex||{id:i+1,status:'livre',inicio:null,pedido:[]}; });
   mesas=novas;
 }
 
-// ════════════════════════════════════════════════════════════════
-// UTILS
-// ════════════════════════════════════════════════════════════════
+// ── UTILS ──
 const fmt=v=>'R$ '+Number(v).toFixed(2).replace('.',',');
 const tempoMesa=ts=>{if(!ts)return'';const m=Math.floor((Date.now()-ts)/60000);return m<60?m+' min':Math.floor(m/60)+'h '+(m%60)+'min';};
 const getSetor=(cat,bar)=>bar?'bar':'cozinha';
-const nomePag=p=>({dinheiro:'Dinheiro',cartao:'Cartão',pix:'Pix'}[p]||'—');
 const iconePag=p=>({dinheiro:'💵',cartao:'💳',pix:'📲'}[p]||'❓');
-const corPag=p=>({dinheiro:'#2fb36d',cartao:'#5e96ff',pix:'#c89a2a'}[p]||'#acb5ac');
 function tela(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('screen-'+id).classList.add('active');window.scrollTo(0,0);}
 const abrirModal=id=>document.getElementById(id).classList.add('open');
 const fecharModal=id=>document.getElementById(id).classList.remove('open');
@@ -923,17 +864,13 @@ function mostrarStatus(msg,tipo,tempo=3000){
   if(tempo>0)setTimeout(()=>b.classList.remove('show'),tempo);
 }
 
-// ════════════════════════════════════════════════════════════════
-// MESAS
-// ════════════════════════════════════════════════════════════════
+// ── MESAS ──
 function renderMesas(){
   const grid=document.getElementById('mesa-grid');
   grid.innerHTML='';
   let liv=0,ocu=0,con=0;
   mesas.forEach(m=>{
-    if(m.status==='livre')liv++;
-    else if(m.status==='ocupada')ocu++;
-    else con++;
+    if(m.status==='livre')liv++; else if(m.status==='ocupada')ocu++; else con++;
     const total=(m.pedido||[]).reduce((s,i)=>s+i.preco*i.qtd,0);
     const el=document.createElement('div');
     el.className='mesa-card '+m.status;
@@ -962,12 +899,9 @@ function abrirMesa(id){
 window.voltarMesas=()=>{renderMesas();tela('mesas');};
 window.voltarPedido=()=>tela('pedido');
 
-// ════════════════════════════════════════════════════════════════
-// CATEGORIAS / PRODUTOS
-// ════════════════════════════════════════════════════════════════
+// ── CATEGORIAS ──
 function renderCategorias(){
-  const list=document.getElementById('cat-list');
-  list.innerHTML='';
+  const list=document.getElementById('cat-list'); list.innerHTML='';
   categorias.forEach((c,i)=>{
     const el=document.createElement('div');
     el.className='cat-btn'+(i===0?' ativo':'');
@@ -980,10 +914,7 @@ function renderCategorias(){
 function selecionarCat(idx){
   const c=categorias[idx];
   document.getElementById('cat-titulo').textContent=c.icon+' '+c.nome;
-  const grid=document.getElementById('produto-grid');
-  grid.innerHTML='';
-
-  // Botão Meio a Meio no topo das categorias de pizza
+  const grid=document.getElementById('produto-grid'); grid.innerHTML='';
   if(c.pizza){
     const btnMM=document.createElement('div');
     btnMM.style.cssText='grid-column:1/-1;background:linear-gradient(180deg,#1a3564,#102040);border:2px solid var(--azul);border-radius:14px;padding:13px 16px;cursor:pointer;display:flex;align-items:center;gap:10px;margin-bottom:4px;';
@@ -991,10 +922,8 @@ function selecionarCat(idx){
     btnMM.onclick=()=>abrirMeioAMeio();
     grid.appendChild(btnMM);
   }
-
   c.produtos.forEach(p=>{
-    const el=document.createElement('div');
-    el.className='prod-card';
+    const el=document.createElement('div'); el.className='prod-card';
     const ph=p.tamanhos?`<div class="prod-tamanhos">M ${fmt(p.tamanhos.M)}<br>G ${fmt(p.tamanhos.G)}<br>GG ${fmt(p.tamanhos.GG)}</div>`:`<div class="prod-preco">${fmt(p.preco)}</div>`;
     el.innerHTML=`<div class="prod-nome">${p.nome}</div>${ph}`;
     el.onclick=()=>adicionarItem(p,c.nome,c.carne,c.pizza);
@@ -1002,43 +931,24 @@ function selecionarCat(idx){
   });
 }
 
-// ════════════════════════════════════════════════════════════════
-// CARRINHO
-// ════════════════════════════════════════════════════════════════
+// ── CARRINHO ──
 function adicionarItem(p,catNome,carne,pizza){
-  if(pizza&&p.tamanhos){itemPendente={...p,categoria:catNome};document.getElementById('modal-pizza-nome').textContent=p.nome;document.getElementById('btn-tam-M').textContent='Média (M) — '+fmt(p.tamanhos.M);document.getElementById('btn-tam-G').textContent='Grande (G) — '+fmt(p.tamanhos.G);document.getElementById('btn-tam-GG').textContent='Gigante (GG) — '+fmt(p.tamanhos.GG);abrirModal('modal-tamanho');return;}
-  // Itens de bar (prontos) vão direto, sem observação
+  if(pizza&&p.tamanhos){
+    itemPendente={...p,categoria:catNome};
+    document.getElementById('modal-pizza-nome').textContent=p.nome;
+    document.getElementById('btn-tam-M').textContent='Média (M) — '+fmt(p.tamanhos.M);
+    document.getElementById('btn-tam-G').textContent='Grande (G) — '+fmt(p.tamanhos.G);
+    document.getElementById('btn-tam-GG').textContent='Gigante (GG) — '+fmt(p.tamanhos.GG);
+    abrirModal('modal-tamanho'); return;
+  }
   if(p.bar){ pushItem(p,'',catNome); return; }
-  // Produtos da cozinha abrem modal de observação
   itemPendente={...p,categoria:catNome};
   document.getElementById('modal-obs-nome').textContent=p.nome;
   document.getElementById('input-obs').value='';
   abrirModal('modal-obs');
 }
-window.escolherTamanho=tam=>{
-  const p=itemPendente;
-  if(p) p._tamPendente=tam;
-  abrirBorda(p.nome, tam, p.tamanhos[tam], p.categoria);
-};
-window.confirmarObs=function(){
-  const obs=document.getElementById('input-obs').value.trim();
-  fecharModal('modal-obs');
-  const p=itemPendente;
-  if(!p){itemPendente=null;return;}
-  const obsFinal=p._obsBase?(obs?p._obsBase+' — '+obs:p._obsBase):obs;
-  const preco=p._precoFinal!==undefined?p._precoFinal:p.preco;
-  pushItem({nome:p.nome,preco},obsFinal,p.categoria);
-  itemPendente=null;
-};
-window.confirmarObsSem=function(){
-  fecharModal('modal-obs');
-  const p=itemPendente;
-  if(!p){itemPendente=null;return;}
-  const obsFinal=p._obsBase||'';
-  const preco=p._precoFinal!==undefined?p._precoFinal:p.preco;
-  pushItem({nome:p.nome,preco},obsFinal,p.categoria);
-  itemPendente=null;
-};
+window.escolherTamanho=tam=>{ const p=itemPendente; if(p) p._tamPendente=tam; abrirBorda(p.nome, tam, p.tamanhos[tam], p.categoria); };
+
 function pushItem(p,obs,catNome){
   const cat=catNome||p.categoria||'';
   const ex=mesaAtual.pedido.find(i=>i.nome===p.nome&&i.obs===obs&&!i.enviadoCozinha);
@@ -1079,16 +989,14 @@ function renderCarrinho(){
 }
 window.ajustarQtd=(idx,d)=>{mesaAtual.pedido[idx].qtd+=d;if(mesaAtual.pedido[idx].qtd<=0)mesaAtual.pedido.splice(idx,1);salvarMesaFirebase(mesaAtual);renderCarrinho();};
 window.removerItem=idx=>{mesaAtual.pedido.splice(idx,1);salvarMesaFirebase(mesaAtual);renderCarrinho();};
-// ════════════════════════════════════════════════════════════════
-// COZINHA — envia via Firebase OU IP local OU fila
-// ════════════════════════════════════════════════════════════════
+
+// ── COZINHA ──
 window.enviarCozinha=async function(){
   if(!mesaAtual||!mesaAtual.pedido||!mesaAtual.pedido.length)return;
   const todos=mesaAtual.pedido.filter(it=>!it.enviadoCozinha && it.setor!=='bar');
   if(!todos.length){document.getElementById('cozinha-msg').textContent='Todos os itens já foram enviados.';abrirModal('modal-cozinha');return;}
   const codigo=mesaAtual.id+'-'+Date.now().toString().slice(-5);
-  const dados={mesa:mesaAtual.id,codigo,data:new Date().toLocaleString('pt-BR'),
-    itens:todos.map(it=>({nome:it.nome,qtd:it.qtd,preco:it.preco,obs:it.obs||'',setor:it.setor||''}))};
+  const dados={mesa:mesaAtual.id,codigo,data:new Date().toLocaleString('pt-BR'),itens:todos.map(it=>({nome:it.nome,qtd:it.qtd,preco:it.preco,obs:it.obs||'',setor:it.setor||''}))};
   const resultado=await enviarParaNotebook('/imprimir/cozinha',dados);
   todos.forEach(it=>{it.enviadoCozinha=true;it.enviadoEm=Date.now();});
   salvarMesaFirebase(mesaAtual);renderCarrinho();
@@ -1101,29 +1009,26 @@ window.enviarCozinha=async function(){
   abrirModal('modal-cozinha');
 };
 
-// ════════════════════════════════════════════════════════════════
-// FECHAMENTO — completo + parcial + pagamento dividido
-// ════════════════════════════════════════════════════════════════
-let abaFech='total';
-let qtdSel={};   // {idx: qtd selecionada} para modo parcial
-let pagDiv=[];   // [{tipo, valor}] pagamentos divididos
+// ── FECHAMENTO ──
+window.ajustarQtdFech = function(idx, delta) {
+  const item = mesaAtual.pedido[idx];
+  if (!item) return;
+  
+  if (qtdSel[idx] == null) qtdSel[idx] = 0;
+  
+  let novaQtd = qtdSel[idx] + delta;
+  if (novaQtd < 0) novaQtd = 0;
+  if (novaQtd > item.qtd) novaQtd = item.qtd;
+  
+  qtdSel[idx] = novaQtd;
 
-window.mudarAbaFech=function(aba){
-  abaFech=aba;
-  const estiloAtivo='flex:1;padding:11px;font-size:13px;font-weight:600;background:var(--card);border:none;color:var(--verde);border-bottom:2px solid var(--verde);cursor:pointer;font-family:var(--font);';
-  const estiloInativo='flex:1;padding:11px;font-size:13px;font-weight:600;background:transparent;border:none;color:var(--txt2);border-bottom:2px solid transparent;cursor:pointer;font-family:var(--font);';
-  document.getElementById('aba-total').style.cssText  =aba==='total'  ?estiloAtivo:estiloInativo;
-  document.getElementById('aba-parcial').style.cssText=aba==='parcial'?estiloAtivo:estiloInativo;
-  document.getElementById('btn-sel-todos').style.display=aba==='parcial'?'block':'none';
-  document.getElementById('label-itens-fech').textContent=aba==='parcial'?'✔ Selecione os itens a pagar':'Consumo da Mesa';
-  if(aba==='total'){
-    // seleciona tudo
-    (mesaAtual.pedido||[]).forEach((_,i)=>{qtdSel[i]=mesaAtual.pedido[i].qtd;});
-  } else {
-    qtdSel={};
+  // CORREÇÃO: Atualiza os cálculos de dinheiro na hora
+  renderFechamento(); 
+  
+  // Atualiza a lista visual do modal se ele estiver aberto
+  if (document.getElementById('modal-fechamento-parcial').classList.contains('open')) {
+    renderModalParcial();
   }
-  pagDiv=[];
-  renderFechamento();
 };
 
 window.toggleTodosFech=function(){
@@ -1139,28 +1044,39 @@ window.toggleItemFech=function(idx){
   renderFechamento();
 };
 
+// ── ajustarQtdFech — versão única, sem duplicata ──
 window.ajustarQtdFech = function(idx, delta){
   const item = mesaAtual.pedido[idx];
   if(!item) return;
+  
+  // 1. Garante que a variável de quantidade selecionada existe
   if(qtdSel[idx] == null) qtdSel[idx] = 0;
-  qtdSel[idx] += delta;
-  if(qtdSel[idx] < 0) qtdSel[idx] = 0;
-  if(qtdSel[idx] > item.qtd) qtdSel[idx] = item.qtd;
+  
+  // 2. Altera a quantidade com base no clique (+1 ou -1)
+  let novaQtd = qtdSel[idx] + delta;
+  
+  // 3. Aplica travas para não selecionar menos que 0 ou mais que o total da mesa
+  if(novaQtd < 0) novaQtd = 0;
+  if(novaQtd > item.qtd) novaQtd = item.qtd;
+  
+  qtdSel[idx] = novaQtd;
 
-  // Atualiza a linha específica dentro do modal aberto
-  const lista = document.getElementById('lista-parcial-modal');
-  if(lista && lista.children[idx]){
-    const span = lista.children[idx].querySelector('span[style*="min-width:24px"]');
-    if(span) span.textContent = qtdSel[idx];
-  }
-
-  // Atualiza a tela de fechamento (totais)
+  // 4. ATUALIZAÇÃO VISUAL (A parte que faltava no 15)
+  // Re-renderiza a tela de fechamento para recalcular subtotal e total final
   renderFechamento();
+  
+  // 5. Atualiza o número dentro do modal que estiver aberto
+  const listaModal = document.getElementById('lista-parcial-modal');
+  if(listaModal) {
+    renderModalParcial(); // Se estiver no modal de checkboxes do 15, chama a função de desenho dele
+  }
 };
+
 
 function subTotalFech(){
   return (mesaAtual.pedido||[]).reduce((s,it,i)=>s+it.preco*(abaFech==='parcial'?(qtdSel[i]||0):it.qtd),0);
 }
+
 window.abrirFechamento=function(){
   if(!mesaAtual||!mesaAtual.pedido||!mesaAtual.pedido.length){
     document.getElementById('msg-confirmar-fech').textContent='⚠ Mesa sem itens';
@@ -1232,22 +1148,14 @@ function atualizarTotal(sub){
 window.aplicarDesconto=pct=>{
   descontoAtual=pct;
   const sub=subTotalFech();
-
-  document.getElementById('desconto-info').textContent=
-    pct===0?'Nenhum aplicado':
-    pct>0?pct+'% de desconto':
-    Math.abs(pct)+'% de taxa';
-
+  document.getElementById('desconto-info').textContent=pct===0?'Nenhum aplicado':pct>0?pct+'% de desconto':Math.abs(pct)+'% de taxa';
   atualizarTotal(sub);
   renderPagDiv();
 };
-
 window.aplicarDescontoCustom=()=>abrirModal('modal-desconto');
-
 window.aplicarDescontoCustomConfirm=()=>{
   const v=parseFloat(document.getElementById('input-desconto-custom').value);
   if(isNaN(v))return;
-
   fecharModal('modal-desconto');
   window.aplicarDesconto(v);
 };
@@ -1263,13 +1171,10 @@ window.addPagDiv=function(tipo){
   },100);
 };
 
+
 window.remPagDiv=function(tipo){
   pagDiv=pagDiv.filter(p=>p.tipo!==tipo);
-
-  if(!pagDiv.find(p=>p.tipo==='dinheiro')){
-    document.getElementById('troco-box').style.display='none';
-  }
-
+  if(!pagDiv.find(p=>p.tipo==='dinheiro')) document.getElementById('troco-box').style.display='none';
   renderPagDiv();
 };
 
@@ -1326,18 +1231,12 @@ function atualizarResumoPag(){
   const pago=totalPagDiv();
   const falta=Math.max(0,total-pago);
   const pct=total>0?Math.min(100,(pago/total)*100):0;
-  // Atualiza total de referência sempre visível
   const elRef=document.getElementById('total-ref-pag');
   if(elRef) elRef.textContent=fmt(total);
   document.getElementById('res-pago-div').textContent=fmt(pago);
   const diffEl=document.getElementById('res-diff-div');
-  if(pago>=total&&pagDiv.length>0){
-    diffEl.textContent=pago-total>0.005?'Troco: '+fmt(pago-total):'✓ Pago';
-    diffEl.style.color='var(--verde)';
-  }else{
-    diffEl.textContent='Falta: '+fmt(falta);
-    diffEl.style.color='#cf5b74';
-  }
+  if(pago>=total&&pagDiv.length>0){ diffEl.textContent=pago-total>0.005?'Troco: '+fmt(pago-total):'✓ Pago'; diffEl.style.color='var(--verde)'; }
+  else { diffEl.textContent='Falta: '+fmt(falta); diffEl.style.color='#cf5b74'; }
   document.getElementById('falta-bar-fill').style.width=pct+'%';
   const temItens=abaFech==='total'||Object.values(qtdSel).some(q=>q>0);
   const ok=pagDiv.length>0&&pago>=total&&temItens;
@@ -1361,13 +1260,7 @@ window.imprimirConta=async function(){
   const itensImp=abaFech==='parcial'
     ?(mesaAtual.pedido||[]).filter((_,i)=>(qtdSel[i]||0)>0).map((it,i)=>({nome:it.nome,qtd:qtdSel[i],preco:it.preco,obs:it.obs||''}))
     :(mesaAtual.pedido||[]).map(it=>({nome:it.nome,qtd:it.qtd,preco:it.preco,obs:it.obs||''}));
-  await enviarParaNotebook('/imprimir/conta',{
-    mesa:mesaAtual.id,desconto:descontoAtual,
-    pagamentos:pagDiv.map(p=>({tipo:p.tipo,valor:parseFloat(p.valor)||0})),
-    data:new Date().toLocaleString('pt-BR'),
-    itens:itensImp,
-    parcial:abaFech==='parcial'
-  });
+  await enviarParaNotebook('/imprimir/conta',{mesa:mesaAtual.id,desconto:descontoAtual,pagamentos:pagDiv.map(p=>({tipo:p.tipo,valor:parseFloat(p.valor)||0})),data:new Date().toLocaleString('pt-BR'),itens:itensImp,parcial:abaFech==='parcial'});
 };
 
 window.concluirVenda=async function(){
@@ -1377,21 +1270,12 @@ window.concluirVenda=async function(){
   const total=sub-desc;
   const pago=totalPagDiv();
   if(pago<total){alert('Valor pago menor que o total.');return;}
-
   if(abaFech==='parcial'){
-    // Remove só os itens pagos, deixa o restante na mesa
     const novosPedidos=[];
-    (mesaAtual.pedido||[]).forEach((it,i)=>{
-      const qtdPaga=qtdSel[i]||0;
-      const resto=it.qtd-qtdPaga;
-      if(resto>0)novosPedidos.push({...it,qtd:resto});
-    });
-    const venda={id:Date.now(),mesa:mesaAtual.id,
-      hora:new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}),
+    (mesaAtual.pedido||[]).forEach((it,i)=>{ const qtdPaga=qtdSel[i]||0; const resto=it.qtd-qtdPaga; if(resto>0)novosPedidos.push({...it,qtd:resto}); });
+    const venda={id:Date.now(),mesa:mesaAtual.id,hora:new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}),
       itens:(mesaAtual.pedido||[]).filter((_,i)=>(qtdSel[i]||0)>0).map((it,i)=>({nome:it.nome,qtd:qtdSel[i]||0,preco:it.preco,obs:it.obs||''})),
-      subtotal:sub,desconto:desc,total,
-      pagamentos:pagDiv.map(p=>({tipo:p.tipo,valor:parseFloat(p.valor)||0})),
-      pagamento:pagDiv[0].tipo,parcial:true};
+      subtotal:sub,desconto:desc,total,pagamentos:pagDiv.map(p=>({tipo:p.tipo,valor:parseFloat(p.valor)||0})),pagamento:pagDiv[0].tipo,parcial:true};
     await salvarVendaFirebase(venda);
     await window.imprimirConta();
     mesaAtual.pedido=novosPedidos;
@@ -1402,13 +1286,9 @@ window.concluirVenda=async function(){
     if(!novosPedidos.length)mesaAtual=null;
     tela('ok');
   } else {
-    // Fecha mesa completa
-    const venda={id:Date.now(),mesa:mesaAtual.id,
-      hora:new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}),
+    const venda={id:Date.now(),mesa:mesaAtual.id,hora:new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}),
       itens:(mesaAtual.pedido||[]).map(it=>({nome:it.nome,qtd:it.qtd,preco:it.preco,obs:it.obs||''})),
-      subtotal:sub,desconto:desc,total,
-      pagamentos:pagDiv.map(p=>({tipo:p.tipo,valor:parseFloat(p.valor)||0})),
-      pagamento:pagDiv[0].tipo};
+      subtotal:sub,desconto:desc,total,pagamentos:pagDiv.map(p=>({tipo:p.tipo,valor:parseFloat(p.valor)||0})),pagamento:pagDiv[0].tipo};
     await salvarVendaFirebase(venda);
     await window.imprimirConta();
     mesaAtual.status='livre';mesaAtual.pedido=[];mesaAtual.inicio=null;
@@ -1419,12 +1299,57 @@ window.concluirVenda=async function(){
   }
 };
 
-// ════════════════════════════════════════════════════════════════
-// SYNC FIREBASE
-// ════════════════════════════════════════════════════════════════
-// ════════════════════════════════════════════════════════════════
-// RELÓGIO + BOOT
-// ════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════
+// MODAL PARCIAL — com checkboxes (igual à tela principal)
+// ══════════════════════════════════════════════════
+window.abrirModalParcial = function(){
+  abaFech = 'parcial';
+  renderModalParcial();
+  abrirModal('modal-fechamento-parcial');
+};
+
+function renderModalParcial(){
+  const lista = document.getElementById('lista-parcial-modal');
+  lista.innerHTML = '';
+  (mesaAtual.pedido||[]).forEach((it, idx)=>{
+    const sel = qtdSel[idx] || 0;
+    const marcado = sel > 0;
+    const row = document.createElement('div');
+    row.className = 'parcial-item-row' + (marcado ? ' sel' : '');
+    row.onclick = () => toggleItemParcialModal(idx);
+    row.innerHTML = `
+      <div class="parcial-check ${marcado ? 'on' : ''}">${marcado ? '✓' : ''}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:14px;font-weight:600;line-height:1.3;">${it.nome}</div>
+        ${it.obs ? `<div style="font-size:10px;color:var(--txt2);">${it.obs}</div>` : ''}
+        <div style="font-size:11px;color:var(--txt2);margin-top:2px;">${it.qtd} × ${fmt(it.preco)}</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0;">
+        <div style="font-size:14px;font-weight:700;color:${marcado?'var(--verde)':'var(--txt2)'};">${fmt(it.preco * sel)}</div>
+        <div style="font-size:10px;color:var(--txt2);">${marcado ? sel+' un.' : 'não selecionado'}</div>
+      </div>`;
+    lista.appendChild(row);
+  });
+}
+
+function toggleItemParcialModal(idx) {
+  const it = mesaAtual.pedido[idx];
+  // Se estiver marcado, desmarca (0). Se estiver desmarcado, marca o total (it.qtd).
+  qtdSel[idx] = (qtdSel[idx] && qtdSel[idx] > 0) ? 0 : it.qtd;
+  
+  // CORREÇÃO: Faz o valor mudar no fundo da tela enquanto você marca as caixinhas
+  renderModalParcial();
+  renderFechamento(); 
+}
+
+window.toggleTodosParcialModal = function(){
+  const todos = mesaAtual.pedido || [];
+  const algumDesmarcado = todos.some((_,i) => !qtdSel[i] || qtdSel[i] === 0);
+  todos.forEach((_,i) => { qtdSel[i] = algumDesmarcado ? todos[i].qtd : 0; });
+  renderModalParcial();
+};
+
+// ── RELÓGIO + BOOT ──
 function tick(){
   const n=new Date();
   document.getElementById('clock').textContent=n.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit'})+' — '+n.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
@@ -1432,168 +1357,27 @@ function tick(){
 }
 tick();setInterval(tick,10000);
 
-// ── BOOT IMEDIATO: abre com dados locais, Firebase sincroniza depois ──
 carregarMesasLocal();
 if(!mesas.length)inicializarMesas(16);
 renderMesas();
 tela('mesas');
-document.getElementById('loading-screen').classList.add('hide'); // abre AGORA
+document.getElementById('loading-screen').classList.add('hide');
 
-// ── SYNC FIREBASE em segundo plano (não bloqueia a tela) ──
-onValue(ref(db,'config/numMesas'),snap=>{
-  const n=snap.val()||16;
-  inicializarMesas(n);
-  if(document.getElementById('screen-mesas').classList.contains('active'))renderMesas();
-});
+onValue(ref(db,'config/numMesas'),snap=>{ const n=snap.val()||16; inicializarMesas(n); if(document.getElementById('screen-mesas').classList.contains('active'))renderMesas(); });
 
 onValue(ref(db,'mesas'),snap=>{
   const dados=snap.val();
   if(dados){
-    Object.values(dados).forEach(m=>{
-      const local=mesas.find(x=>x.id===m.id);
-      if(local){local.status=m.status||'livre';local.inicio=m.inicio||null;local.pedido=m.pedido?Object.values(m.pedido):[];}
-    });
+    Object.values(dados).forEach(m=>{ const local=mesas.find(x=>x.id===m.id); if(local){local.status=m.status||'livre';local.inicio=m.inicio||null;local.pedido=m.pedido?Object.values(m.pedido):[];} });
     salvarMesasLocal();
     if(document.getElementById('screen-mesas').classList.contains('active'))renderMesas();
-    if(mesaAtual&&document.getElementById('screen-pedido').classList.contains('active')){
-      const at=mesas.find(x=>x.id===mesaAtual.id);if(at)mesaAtual=at;renderCarrinho();
-    }
+    if(mesaAtual&&document.getElementById('screen-pedido').classList.contains('active')){ const at=mesas.find(x=>x.id===mesaAtual.id);if(at)mesaAtual=at;renderCarrinho(); }
   }
-},(err)=>{
-  console.warn('FB offline:', err);
-});
+},(err)=>{ console.warn('FB offline:', err); });
 
 window.addEventListener('online',()=>{mostrarStatus('✓ Internet restaurada — sincronizando...','online');processarFila();});
 window.addEventListener('offline',()=>mostrarStatus('⚠ Sem internet — usando rede local','local',0));
 
-window.abrirModalParcial=function(){
-
-  abaFech='parcial';
-
-  const lista=document.getElementById('lista-parcial-modal');
-
-  lista.innerHTML='';
-
-  (mesaAtual.pedido||[]).forEach((it,idx)=>{
-
-    const sel=qtdSel[idx]||0;
-
-    const row=document.createElement('div');
-
-row.style.cssText=`
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:10px;
-  padding:12px;
-  border-bottom:1px solid #2a322c;
-`;
-
-row.innerHTML=`
-  <div style="flex:1;">
-    <div style="font-size:14px;font-weight:600;">
-      ${it.nome}
-    </div>
-
-    <div style="font-size:11px;color:#aaa;">
-      ${fmt(it.preco)} × ${it.qtd}
-    </div>
-  </div>
-
-  <div style="display:flex;align-items:center;gap:10px;">
-
-    <button
-      style="
-        width:42px;
-        height:42px;
-        border-radius:12px;
-        border:1px solid var(--border3);
-        background:#1f2621;
-        color:#fff;
-        font-size:22px;
-        font-weight:700;
-        cursor:pointer;
-      "
-      onclick="ajustarQtdFech(${idx},-1)">
-      -
-    </button>
-
-    <span style="
-      min-width:24px;
-      text-align:center;
-      font-weight:700;
-      font-size:18px;
-    ">
-      ${sel}
-    </span>
-
-    <button
-      style="
-        width:42px;
-        height:42px;
-        border-radius:12px;
-        border:1px solid var(--border3);
-        background:#1f2621;
-        color:#fff;
-        font-size:22px;
-        font-weight:700;
-        cursor:pointer;
-      "
-      onclick="ajustarQtdFech(${idx},1)">
-      +
-    </button>
-
-  </div>
-`;
-
-    lista.appendChild(row);
-  });
-
-  abrirModal('modal-fechamento-parcial');
-}; 
-
-
 </script>
-
-<!-- MODAL FECHAMENTO PARCIAL -->
-<div class="modal-overlay" id="modal-fechamento-parcial">
-
-  <div class="modal-box" style="max-width:600px;width:100%;">
-
-    <div style="
-      font-size:18px;
-      font-weight:700;
-      margin-bottom:12px;
-    ">
-      🧾 Selecionar Itens
-    </div>
-
-    <div id="lista-parcial-modal"
-      style="
-        max-height:60vh;
-        overflow-y:auto;
-      ">
-    </div>
-
-    <button
-      class="btn btn-verde"
-      style="
-        width:100%;
-        margin-top:14px;
-        padding:14px;
-        font-size:15px;
-        font-weight:700;
-      "
-      onclick="
-        fecharModal('modal-fechamento-parcial');
-        renderFechamento();
-      ">
-      ✓ OK
-    </button>
-
-  </div>
-
-</div>
-
 </body>
 </html>
