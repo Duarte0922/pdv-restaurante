@@ -163,52 +163,74 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
 .falta-bar{height:4px;border-radius:2px;background:#1e2820;margin:6px 0 4px;overflow:hidden;}
 .falta-bar-fill{height:100%;border-radius:2px;background:var(--verde);transition:width .3s;}
 
-/* ✅ CORREÇÃO: Reduz tamanho do Total e libera espaço para Pagamento */
-#screen-fechamento .content > div:nth-child(3) {
-  padding: 18px 20px !important; /* Reduz padding vertical */
-  margin-bottom: 6px !important;
-}
-#screen-fechamento .content > div:nth-child(3) span:last-child {
-  font-size: 22px !important; /* Reduz de 32px para 22px */
-}
-#screen-fechamento .content > div:nth-child(3) span:first-child {
-  font-size: 12px !important;
-}
-
-/* ✅ Aumenta área de scroll para mostrar os botões de pagamento */
-#screen-fechamento .content {
-  padding-bottom: 260px !important; /* Garante que o rodapé não tape */
-}
-
-/* ✅ Compacta a seção de Formas de Pagamento */
+/* ✅ GARANTIR QUE BOTÕES DE PAGAMENTO APAREÇAM */
 #screen-fechamento .card-section:nth-child(4) {
-  padding: 10px 12px !important;
-  margin-top: 4px !important;
-}
-#screen-fechamento .card-section:nth-child(4) > div:first-child {
-  font-size: 12px !important;
-  margin-bottom: 6px !important;
-}
-#screen-fechamento .card-section:nth-child(4) > div:nth-child(2) {
-  font-size: 10px !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  padding: 8px 12px !important;
+  margin-top: 6px !important;
   margin-bottom: 8px !important;
 }
 
-/* ✅ Botões de pagamento menores */
-.add-pag-btn {
-  padding: 8px 4px !important;
-  font-size: 12px !important;
-  border-radius: 10px !important;
+/* ✅ BOTÕES DE FORMA DE PAGAMENTO VISÍVEIS */
+#screen-fechamento .card-section:nth-child(4) > div:nth-child(3) {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 6px !important;
+  margin-bottom: 10px !important;
 }
 
-/* ✅ Botão Confirmar mais compacto */
+#screen-fechamento .add-pag-btn {
+  display: inline-flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  min-height: 36px !important;
+  flex: 1 !important;
+  min-width: 80px !important;
+}
+
+/* ✅ LISTA DE PAGAMENTOS DIVIDIDOS */
+#pag-div-lista {
+  display: block !important;
+  min-height: 20px !important;
+  margin: 8px 0 !important;
+}
+
+/* ✅ RESUMO DO PAGAMENTO */
+#screen-fechamento .card-section:nth-child(4) > div:nth-child(4) {
+  display: flex !important;
+  visibility: visible !important;
+}
+
+/* ✅ BARRA DE PROGRESSO */
+.falta-bar {
+  display: block !important;
+  height: 4px !important;
+  margin: 6px 0 !important;
+}
+
+/* ✅ TROCO */
+#troco-box {
+  display: none !important; /* Só aparece quando selecionar dinheiro */
+}
+
+/* ✅ BOTÃO CONFIRMAR */
 #btn-confirmar-venda {
-  padding: 14px !important;
-  font-size: 13px !important;
-  margin-top: 6px !important;
-  border-radius: 14px !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 0.4 !important; /* Desabilitado até pagar */
+  pointer-events: none !important;
+  margin-top: 8px !important;
+  margin-bottom: 10px !important;
 }
 
+/* ✅ AUMENTAR ÁREA DE SCROLL */
+#screen-fechamento .content {
+  padding-bottom: 280px !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+}
 /* MODAL PARCIAL — checkbox style */
 .parcial-item-row{display:flex;align-items:center;gap:12px;padding:14px 12px;border-bottom:1px solid #2a322c;cursor:pointer;}
 .parcial-item-row.sel{background:rgba(47,179,109,.08);}
