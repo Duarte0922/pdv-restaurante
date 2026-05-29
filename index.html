@@ -470,7 +470,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
     <div id="lista-parcial-modal" style="max-height:55vh;overflow-y:auto;border-radius:12px;border:1px solid var(--border2);overflow:hidden;"></div>
     <div style="display:flex;gap:8px;margin-top:12px;">
       <button class="btn" onclick="toggleTodosParcialModal()" style="flex:1;font-size:12px;">☑ Todos</button>
-      <button class="btn btn-verde" onclick="fecharModal('modal-fechamento-parcial');renderFechamento();" style="flex:2;font-size:14px;font-weight:700;padding:13px;">✓ OK</button>
+      <button class="btn btn-verde" onclick="confirmarSelecaoParcial()" style="flex:2;font-size:14px;font-weight:700;padding:13px;">✓ OK</button>
     </div>
   </div>
 </div>
@@ -887,6 +887,19 @@ function renderCategorias(){
   });
   selecionarCat(0);
 }
+window.mudarAbaFech = function(aba){
+  abaFech = aba;
+  const estiloAtivo = 'flex:1;padding:11px;font-size:13px;font-weight:600;background:var(--card);border:none;color:var(--verde);border-bottom:2px solid var(--verde);cursor:pointer;font-family:var(--font);';
+  const estiloInativo = 'flex:1;padding:11px;font-size:13px;font-weight:600;background:transparent;border:none;color:var(--txt2);border-bottom:2px solid transparent;cursor:pointer;font-family:var(--font);';
+  document.getElementById('aba-total').style.cssText = aba==='total' ? estiloAtivo : estiloInativo;
+  document.getElementById('aba-parcial').style.cssText = aba==='parcial' ? estiloAtivo : estiloInativo;
+  document.getElementById('btn-sel-todos').style.display = aba==='parcial' ? 'inline' : 'none';
+  document.getElementById('label-itens-fech').textContent = aba==='parcial' ? 'Itens Selecionados (Parcial)' : 'Consumo da Mesa';
+  if(aba==='total'){
+    (mesaAtual.pedido||[]).forEach((_,i)=>{ qtdSel[i] = mesaAtual.pedido[i].qtd; });
+  }
+  renderFechamento();
+}
 function selecionarCat(idx){
   const c=categorias[idx];
   document.getElementById('cat-titulo').textContent=c.icon+' '+c.nome;
@@ -1232,14 +1245,30 @@ window.calcularTroco=function(){
   document.getElementById('valor-troco').style.color=troco>=0?'var(--verde)':'#cf5b74';
 };
 
-window.imprimirConta=async function(){
-  const sub=subTotalFech();
-  const itensImp=abaFech==='parcial'
-    ?(mesaAtual.pedido||[]).filter((_,i)=>(qtdSel[i]||0)>0).map((it,i)=>({nome:it.nome,qtd:qtdSel[i],preco:it.preco,obs:it.obs||''}))
-    :(mesaAtual.pedido||[]).map(it=>({nome:it.nome,qtd:it.qtd,preco:it.preco,obs:it.obs||''}));
-  await enviarParaNotebook('/imprimir/conta',{mesa:mesaAtual.id,desconto:descontoAtual,pagamentos:pagDiv.map(p=>({tipo:p.tipo,valor:parseFloat(p.valor)||0})),data:new Date().toLocaleString('pt-BR'),itens:itensImp,parcial:abaFech==='parcial'});
-};
-
+window.imprimirConta = async function(){
+  const sub = subTotalFech();
+  let itensImp;
+  if(abaFech === 'parcial'){
+    // CORREÇÃO: usa forEach para manter o índice original
+    itensImp = [];
+    (mesaAtual.pedido||[]).forEach((it, idx) => {
+      const q = qtdSel[idx] || 0;
+      if(q > 0) {
+        itensImp.push({nome:it.nome, qtd:q, preco:it.preco, obs:it.obs||''});
+      }
+    });
+  } else {
+    itensImp = (mesaAtual.pedido||[]).map(it=>({nome:it.nome,qtd:it.qtd,preco:it.preco,obs:it.obs||''}));
+  }
+  await enviarParaNotebook('/imprimir/conta',{
+    mesa:mesaAtual.id,
+    desconto:descontoAtual,
+    pagamentos:pagDiv.map(p=>({tipo:p.tipo,valor:parseFloat(p.valor)||0})),
+    data:new Date().toLocaleString('pt-BR'),
+    itens:itensImp,
+    parcial:abaFech==='parcial'
+  });
+}
 window.concluirVenda=async function(){
   if(pagDiv.length===0){alert('Adicione pelo menos uma forma de pagamento.');return;}
   const sub=subTotalFech();
