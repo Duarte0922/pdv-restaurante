@@ -214,9 +214,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
         <div class="header-sub" id="tempo-mesa"></div>
       </div>
     </div>
-
-    <button class="btn btn-verde" onclick="confirmarModalParcial('modal-fechamento-parcial');renderFechamento();" ...>✓ OK</button>
-
+    <button class="btn btn-verde" onclick="confirmarModalParcial()" ...>✓ OK</button>
   </div>
   <div id="pedido-body">
     <div id="cat-list"></div>
@@ -1245,24 +1243,12 @@ window.calcularTroco=function(){
   document.getElementById('valor-troco').style.color=troco>=0?'var(--verde)':'#cf5b74';
 };
 
-window.imprimirConta = async function(){
-  const sub = subTotalFech();
-  let itensImp;
-  if(abaFech === 'parcial'){
-    // CORREÇÃO: usa o índice ORIGINAL do pedido, não do filter
-    itensImp = [];
-    (mesaAtual.pedido||[]).forEach((it, idx) => {
-      const q = qtdSel[idx] || 0;
-      if(q > 0) itensImp.push({nome:it.nome, qtd:q, preco:it.preco, obs:it.obs||''});
-    });
-  } else {
-    itensImp = (mesaAtual.pedido||[]).map(it=>({nome:it.nome, qtd:it.qtd, preco:it.preco, obs:it.obs||''}));
-  }
-  await enviarParaNotebook('/imprimir/conta',{
-    mesa:mesaAtual.id, desconto:descontoAtual,
-    pagamentos:pagDiv.map(p=>({tipo:p.tipo, valor:parseFloat(p.valor)||0})),
-    data:new Date().toLocaleString('pt-BR'), itens:itensImp, parcial:abaFech==='parcial'
-  });
+window.imprimirConta=async function(){
+  const sub=subTotalFech();
+  const itensImp=abaFech==='parcial'
+    ?(mesaAtual.pedido||[]).filter((_,i)=>(qtdSel[i]||0)>0).map((it,i)=>({nome:it.nome,qtd:qtdSel[i],preco:it.preco,obs:it.obs||''}))
+    :(mesaAtual.pedido||[]).map(it=>({nome:it.nome,qtd:it.qtd,preco:it.preco,obs:it.obs||''}));
+  await enviarParaNotebook('/imprimir/conta',{mesa:mesaAtual.id,desconto:descontoAtual,pagamentos:pagDiv.map(p=>({tipo:p.tipo,valor:parseFloat(p.valor)||0})),data:new Date().toLocaleString('pt-BR'),itens:itensImp,parcial:abaFech==='parcial'});
 };
 
 window.concluirVenda=async function(){
