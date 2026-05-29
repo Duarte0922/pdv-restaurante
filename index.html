@@ -163,6 +163,52 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
 .falta-bar{height:4px;border-radius:2px;background:#1e2820;margin:6px 0 4px;overflow:hidden;}
 .falta-bar-fill{height:100%;border-radius:2px;background:var(--verde);transition:width .3s;}
 
+/* ✅ CORREÇÃO: Reduz tamanho do Total e libera espaço para Pagamento */
+#screen-fechamento .content > div:nth-child(3) {
+  padding: 10px 14px !important; /* Reduz padding vertical */
+  margin-bottom: 6px !important;
+}
+#screen-fechamento .content > div:nth-child(3) span:last-child {
+  font-size: 22px !important; /* Reduz de 32px para 22px */
+}
+#screen-fechamento .content > div:nth-child(3) span:first-child {
+  font-size: 12px !important;
+}
+
+/* ✅ Aumenta área de scroll para mostrar os botões de pagamento */
+#screen-fechamento .content {
+  padding-bottom: 260px !important; /* Garante que o rodapé não tape */
+}
+
+/* ✅ Compacta a seção de Formas de Pagamento */
+#screen-fechamento .card-section:nth-child(4) {
+  padding: 10px 12px !important;
+  margin-top: 4px !important;
+}
+#screen-fechamento .card-section:nth-child(4) > div:first-child {
+  font-size: 12px !important;
+  margin-bottom: 6px !important;
+}
+#screen-fechamento .card-section:nth-child(4) > div:nth-child(2) {
+  font-size: 10px !important;
+  margin-bottom: 8px !important;
+}
+
+/* ✅ Botões de pagamento menores */
+.add-pag-btn {
+  padding: 8px 4px !important;
+  font-size: 12px !important;
+  border-radius: 10px !important;
+}
+
+/* ✅ Botão Confirmar mais compacto */
+#btn-confirmar-venda {
+  padding: 14px !important;
+  font-size: 13px !important;
+  margin-top: 6px !important;
+  border-radius: 14px !important;
+}
+
 /* MODAL PARCIAL — checkbox style */
 .parcial-item-row{display:flex;align-items:center;gap:12px;padding:14px 12px;border-bottom:1px solid #2a322c;cursor:pointer;}
 .parcial-item-row.sel{background:rgba(47,179,109,.08);}
