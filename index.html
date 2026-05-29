@@ -1092,6 +1092,18 @@ window._irParaFechamento=function(){
   renderFechamento();tela('fechamento');
 };
 
+// ✅ CORREÇÃO 1: Função toggleItemParcialModal (COM window. e atualizando total)
+window.toggleItemParcialModal = function(idx){
+  const it = mesaAtual.pedido[idx];
+  qtdSel[idx] = (qtdSel[idx] && qtdSel[idx] > 0) ? 0 : it.qtd;
+  renderModalParcial();
+  // ✅ ATUALIZA O TOTAL EM TEMPO REAL AO DESMARCAR
+  const sub = subTotalFech();
+  document.getElementById('subtotal-fech').textContent = fmt(sub);
+  atualizarTotal(sub);
+  atualizarResumoPag();
+}
+
 function renderFechamento(){
   const tabela=document.getElementById('tabela-fechamento');
   tabela.innerHTML='';
@@ -1338,18 +1350,35 @@ function renderModalParcial(){
   });
 }
 
-function toggleItemParcialModal(idx){
-  const it = mesaAtual.pedido[idx];
-  qtdSel[idx] = (qtdSel[idx] && qtdSel[idx] > 0) ? 0 : it.qtd;
-  renderModalParcial();
-}
-
+// ✅ CORREÇÃO 2: toggleTodosParcialModal (COM window. e atualizando total)
 window.toggleTodosParcialModal = function(){
   const todos = mesaAtual.pedido || [];
   const algumDesmarcado = todos.some((_,i) => !qtdSel[i] || qtdSel[i] === 0);
   todos.forEach((_,i) => { qtdSel[i] = algumDesmarcado ? todos[i].qtd : 0; });
   renderModalParcial();
-};
+  // ✅ ATUALIZA O TOTAL
+  const sub = subTotalFech();
+  document.getElementById('subtotal-fech').textContent = fmt(sub);
+  atualizarTotal(sub);
+  atualizarResumoPag();
+}
+
+// ✅ CORREÇÃO 3: confirmarSelecaoParcial (FUNÇÃO QUE FALTAVA!)
+window.confirmarSelecaoParcial = function(){
+  fecharModal('modal-fechamento-parcial');
+  abaFech = 'parcial';
+  
+  // Atualiza visual das abas
+  const estiloAtivo = 'flex:1;padding:11px;font-size:13px;font-weight:600;background:var(--card);border:none;color:var(--verde);border-bottom:2px solid var(--verde);cursor:pointer;font-family:var(--font);';
+  const estiloInativo = 'flex:1;padding:11px;font-size:13px;font-weight:600;background:transparent;border:none;color:var(--txt2);border-bottom:2px solid transparent;cursor:pointer;font-family:var(--font);';
+  document.getElementById('aba-total').style.cssText = estiloInativo;
+  document.getElementById('aba-parcial').style.cssText = estiloAtivo;
+  
+  document.getElementById('btn-sel-todos').style.display = 'inline';
+  document.getElementById('label-itens-fech').textContent = 'Itens Selecionados (Parcial)';
+  
+  renderFechamento();
+}
 
 // ── RELÓGIO + BOOT ──
 function tick(){
