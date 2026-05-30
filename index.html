@@ -198,8 +198,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
 #screen-fechamento .content .card-section:last-of-type,
 #screen-fechamento .content > div:has(.add-pag-btn) {
   padding-top: 14px !important;
-  padding-bottom: 50px !important;  /* 👈 Altura extra na base interna para acomodar os textos de saldo */
-  min-height: 165px !important;     /* 👈 Altura de segurança fixa para os botões e textos coexistirem */
+  padding-bottom: 14px !important;
+  min-height: auto !important;
   position: relative !important;
   margin-bottom: 10px !important;
 }
@@ -208,7 +208,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
 #screen-fechamento .content .card-section:last-of-type span,
 #screen-fechamento .content .card-section:last-of-type div {
   visibility: visible !important;
-  display: flex !important;
   opacity: 1 !important;
 }
 
