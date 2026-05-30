@@ -174,8 +174,220 @@ input[type=number]{background:#1a201c;border:1px solid var(--border3);border-rad
     </div>
   </div>
 </div>
+<!-- TELA PEDIDO -->
+<div id="screen-pedido" class="screen">
+  <div class="header">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <button class="btn" onclick="voltarMesasCaixa()" style="padding:8px 12px;font-size:13px;">← Mesas</button>
+      <div>
+        <div class="header-title" id="titulo-mesa-cx">Mesa 01</div>
+        <div style="font-size:11px;color:var(--txt2);" id="tempo-mesa-cx"></div>
+      </div>
+    </div>
+    <button class="btn btn-verde" onclick="abrirFechamentoCx()" style="font-size:13px;padding:9px 14px;font-weight:600;">Fechar Mesa</button>
+  </div>
+  <div id="pedido-body-cx" style="display:flex;flex:1;min-height:0;overflow:hidden;">
+    <div id="cat-list-cx" style="width:82px;background:rgba(20,26,21,.95);border-right:1px solid var(--border2);display:flex;flex-direction:column;gap:4px;padding:6px 4px;overflow-y:auto;flex-shrink:0;"></div>
+    <div id="produto-area-cx" style="flex:1;min-height:0;overflow-y:auto;padding:8px;">
+      <div id="cat-titulo-cx" style="font-size:11px;color:var(--txt2);margin-bottom:6px;padding:0 2px;"></div>
+      <div id="produto-grid-cx" style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;"></div>
+    </div>
+  </div>
+  <div id="carrinho-panel-cx" style="background:rgba(20,26,21,.99);border-top:1px solid var(--border3);flex-shrink:0;display:flex;flex-direction:column;max-height:40vh;">
+    <div onclick="toggleCarrinhoCx()" style="padding:8px 14px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none;flex-shrink:0;">
+      <span style="font-size:14px;font-weight:700;">Pedido <span id="badge-qtd-cx" style="background:linear-gradient(180deg,#ff6464,#dc3e3e);color:#fff;border-radius:999px;font-size:10px;padding:2px 7px;margin-left:4px;">0</span></span>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:14px;font-weight:700;color:var(--verde);" id="total-pedido-cx">R$ 0,00</span>
+        <span id="carrinho-toggle-cx" style="color:var(--txt2);">▲</span>
+      </div>
+    </div>
+    <div id="carrinho-body-cx" style="flex:1;min-height:0;overflow-y:auto;padding:0 10px;">
+      <div id="carrinho-lista-cx"></div>
+    </div>
+    <button onclick="enviarCozinhaCx()" style="flex-shrink:0;margin:6px 10px 8px;border-radius:14px;font-size:14px;font-weight:700;padding:12px;width:calc(100% - 20px);background:linear-gradient(180deg,#f25a4e,#de3f3f);color:#fff;border:1px solid #dc4747;cursor:pointer;font-family:var(--font);">🖨 Enviar para Cozinha</button>
+  </div>
+</div>
 
+<!-- TELA FECHAMENTO -->
+<div id="screen-fechamento-cx" class="screen">
+  <div class="header">
+    <button class="btn" onclick="telaCx('pedido')" style="padding:8px 12px;font-size:13px;">← Voltar</button>
+    <div class="header-title" id="titulo-fech-cx">Fechamento</div>
+    <button class="btn btn-azul" onclick="imprimirContaCx()" style="font-size:13px;padding:9px 14px;">🖨 Conta</button>
+  </div>
+  <div style="flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px;">
+    <div style="background:rgba(20,26,21,.96);border:1px solid var(--border2);border-radius:var(--rad-lg);">
+      <div style="padding:10px 14px;border-bottom:1px solid var(--border2);font-size:13px;font-weight:600;">Consumo da Mesa</div>
+      <div id="tabela-fech-cx" style="min-height:60px;max-height:200px;overflow-y:auto;"></div>
+      <div style="padding:10px 14px;border-top:1px solid var(--border2);display:flex;justify-content:space-between;">
+        <span style="font-size:13px;color:var(--txt2);">Subtotal</span>
+        <span style="font-size:13px;font-weight:600;" id="subtotal-fech-cx">R$ 0,00</span>
+      </div>
+    </div>
+    <div style="background:rgba(20,26,21,.96);border:1px solid var(--border2);border-radius:var(--rad-lg);padding:12px 14px;">
+      <div style="font-size:13px;font-weight:600;margin-bottom:10px;">Desconto / Taxa</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <button class="btn" onclick="aplicarDescontoCx(10)" style="font-size:12px;">-10%</button>
+        <button class="btn" onclick="aplicarDescontoCx(-10)" style="font-size:12px;">+10% taxa</button>
+        <button class="btn" onclick="aplicarDescontoCx(0)" style="font-size:12px;">Limpar</button>
+      </div>
+      <div style="font-size:12px;color:var(--txt2);margin-top:8px;" id="desconto-info-cx">Nenhum aplicado</div>
+    </div>
+    <div style="background:linear-gradient(180deg,#1a2e1e,#111912);border:1px solid #2a4a30;border-radius:var(--rad-lg);padding:16px;display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:15px;font-weight:600;color:#8ecfaa;">Total a Pagar</span>
+      <span style="font-size:32px;font-weight:700;color:var(--verde);" id="total-final-cx">R$ 0,00</span>
+    </div>
+    <div style="background:rgba(20,26,21,.96);border:1px solid var(--border2);border-radius:var(--rad-lg);padding:12px 14px;">
+      <div style="font-size:13px;font-weight:600;margin-bottom:8px;">Forma de Pagamento</div>
+      <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;">
+        <button class="add-pag-btn" id="cx-addpag-dinheiro" onclick="addPagCx('dinheiro')" style="flex:1;min-width:80px;">💵 Dinheiro</button>
+        <button class="add-pag-btn" id="cx-addpag-cartao"   onclick="addPagCx('cartao')"   style="flex:1;min-width:80px;">💳 Cartão</button>
+        <button class="add-pag-btn" id="cx-addpag-pix"      onclick="addPagCx('pix')"      style="flex:1;min-width:80px;">📲 Pix</button>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:700;padding:8px 4px;margin-bottom:6px;border-bottom:1px solid var(--border2);">
+        <span style="color:var(--txt2);">Total: <span id="cx-total-ref" style="color:var(--verde);">R$ 0,00</span></span>
+        <span id="cx-res-diff" style="color:#cf5b74;">Falta: R$ 0,00</span>
+      </div>
+      <div id="pag-div-lista-cx"></div>
+      <div class="falta-bar"><div class="falta-bar-fill" id="cx-falta-bar" style="width:0%"></div></div>
+      <div style="font-size:12px;color:var(--txt2);margin-top:4px;">Pago: <span id="cx-res-pago" style="color:var(--verde);font-weight:600;">R$ 0,00</span></div>
+      <div id="cx-troco-box" style="display:none;margin-top:10px;">
+        <div style="font-size:12px;color:var(--txt2);margin-bottom:6px;">Troco (dinheiro)</div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input id="cx-valor-recebido" type="number" step="0.01" min="0" placeholder="Valor recebido (R$)"
+            style="flex:1;padding:10px;background:#1a201c;border:1px solid var(--border3);border-radius:12px;color:var(--txt);font-size:15px;font-family:var(--font);"
+            oninput="calcularTrocoCx()">
+          <div style="text-align:right;min-width:80px;">
+            <div style="font-size:11px;color:var(--txt2);">Troco</div>
+            <div style="font-size:18px;font-weight:700;color:var(--verde);" id="cx-valor-troco">R$ 0,00</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;border-bottom:1px solid var(--border2);flex-shrink:0;margin-bottom:10px;">
+  <button id="cx-aba-total" onclick="mudarAbaFechCx('total')"
+    style="flex:1;padding:11px;font-size:13px;font-weight:600;background:var(--card);border:none;color:var(--verde);border-bottom:2px solid var(--verde);cursor:pointer;font-family:var(--font);">
+    Mesa Completa
+  </button>
+  <button id="cx-aba-parcial" onclick="abrirModalParcialCx()"
+    style="flex:1;padding:11px;font-size:13px;font-weight:600;background:transparent;border:none;color:var(--txt2);border-bottom:2px solid transparent;cursor:pointer;font-family:var(--font);">
+    🧾 Fechamento Parcial
+  </button>
+</div>
+    <button id="btn-confirmar-cx" onclick="concluirVendaCx()"
+      style="padding:16px;font-size:15px;font-weight:700;border-radius:18px;background:linear-gradient(180deg,#2aa160,#1d7b49);color:#fff;border:1px solid #258754;cursor:pointer;font-family:var(--font);opacity:.4;pointer-events:none;">
+      ✓ Confirmar Pagamento e Liberar Mesa
+    </button>
+    <div style="height:16px;"></div>
+  </div>
+</div>
+
+<!-- TELA OK -->
+<div id="screen-ok-cx" class="screen" style="align-items:center;justify-content:center;gap:14px;padding:24px;flex-direction:column;">
+  <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(180deg,#2aa160,#1d7b49);display:flex;align-items:center;justify-content:center;font-size:36px;">✓</div>
+  <div style="font-size:22px;font-weight:700;">Pagamento confirmado!</div>
+  <div style="font-size:14px;color:var(--txt2);text-align:center;" id="ok-msg-cx"></div>
+  <button class="btn btn-verde" onclick="voltarMesasCaixa()" style="padding:12px 28px;font-size:14px;margin-top:10px;">← Voltar ao Salão</button>
+</div>
 </div><!-- #app -->
+<!-- MODAL TAMANHO PIZZA -->
+<div class="modal-overlay" id="modal-tamanho-cx">
+  <div class="modal-box">
+    <div style="font-size:16px;font-weight:600;margin-bottom:4px;" id="modal-pizza-nome-cx">Pizza</div>
+    <div style="font-size:12px;color:var(--txt2);margin-bottom:14px;">Selecione o tamanho:</div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <button class="btn" id="cx-btn-tam-M" onclick="escolherTamanhoCx('M')" style="text-align:left;padding:14px 16px;font-size:15px;font-weight:600;">Média (M)</button>
+      <button class="btn" id="cx-btn-tam-G" onclick="escolherTamanhoCx('G')" style="text-align:left;padding:14px 16px;font-size:15px;font-weight:600;">Grande (G)</button>
+      <button class="btn" id="cx-btn-tam-GG" onclick="escolherTamanhoCx('GG')" style="text-align:left;padding:14px 16px;font-size:15px;font-weight:600;">Gigante (GG)</button>
+    </div>
+    <button class="btn" onclick="fecharModal('modal-tamanho-cx')" style="width:100%;margin-top:12px;color:var(--txt2);">Cancelar</button>
+  </div>
+</div>
+
+<!-- MODAL OBSERVAÇÃO -->
+<div class="modal-overlay" id="modal-obs-cx">
+  <div class="modal-box">
+    <div style="font-size:16px;font-weight:600;margin-bottom:4px;" id="modal-obs-nome-cx">Item</div>
+    <div style="font-size:12px;color:var(--txt2);margin-bottom:14px;">Observação (opcional):</div>
+    <textarea id="input-obs-cx" rows="3" placeholder="Ex: sem cebola, bem passado, mais bacon..."
+      style="width:100%;padding:12px;background:#1a201c;border:1px solid var(--border3);border-radius:12px;
+      color:var(--txt);font-size:14px;font-family:var(--font);resize:none;margin-bottom:10px;"></textarea>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <button class="btn btn-verde" onclick="confirmarObsCx()" style="padding:14px;font-size:14px;font-weight:700;">✓ Confirmar</button>
+      <button class="btn" onclick="confirmarObsSemCx()" style="padding:14px;font-size:14px;color:var(--txt2);">Sem observação</button>
+      <button class="btn" onclick="fecharModal('modal-obs-cx')" style="padding:10px;font-size:13px;color:var(--txt2);">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL BORDA -->
+<div class="modal-overlay" id="modal-borda-cx">
+  <div class="modal-box">
+    <div style="font-size:15px;font-weight:700;margin-bottom:4px;" id="borda-pizza-nome-cx">Pizza</div>
+    <div style="font-size:12px;color:var(--txt2);margin-bottom:14px;" id="borda-tam-info-cx">Tamanho selecionado</div>
+    <div style="font-size:13px;font-weight:600;margin-bottom:10px;">Deseja acréscimo de borda?</div>
+    <div style="display:flex;flex-direction:column;gap:8px;" id="borda-opcoes-cx"></div>
+    <button class="btn btn-verde" onclick="semBordaCx()" style="width:100%;margin-top:14px;font-weight:700;">Sem borda — confirmar pedido</button>
+    <button class="btn" onclick="fecharModal('modal-borda-cx')" style="width:100%;margin-top:8px;color:var(--txt2);">Cancelar</button>
+  </div>
+</div>
+
+<!-- MODAL MEIO A MEIO TAMANHO -->
+<div class="modal-overlay" id="modal-mm-tamanho-cx">
+  <div class="modal-box" style="text-align:center;">
+    <div style="font-size:28px;margin-bottom:8px;">🍕</div>
+    <div style="font-size:16px;font-weight:700;margin-bottom:4px;">Pizza Meio a Meio</div>
+    <div style="font-size:12px;color:var(--txt2);margin-bottom:18px;">Selecione o tamanho:</div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <button class="btn btn-azul" onclick="escolherTamMMCx('G')" style="padding:15px;font-size:15px;font-weight:700;">
+        Grande (G)<br><span style="font-size:12px;font-weight:400;color:#aad4ff;">Trad. R$ 52,90 · Esp. R$ 57,90</span>
+      </button>
+      <button class="btn btn-azul" onclick="escolherTamMMCx('GG')" style="padding:15px;font-size:15px;font-weight:700;">
+        Gigante (GG)<br><span style="font-size:12px;font-weight:400;color:#aad4ff;">Trad. R$ 61,90 · Esp. R$ 76,90</span>
+      </button>
+    </div>
+    <button class="btn" onclick="fecharModal('modal-mm-tamanho-cx')" style="width:100%;margin-top:14px;color:var(--txt2);">Cancelar</button>
+  </div>
+</div>
+
+<!-- MODAL MEIO A MEIO SABOR 1 -->
+<div class="modal-overlay" id="modal-meiomeio1-cx">
+  <div class="modal-box" style="max-height:85vh;overflow-y:auto;">
+    <div style="font-size:15px;font-weight:700;margin-bottom:4px;">Pizza Meio a Meio</div>
+    <div style="font-size:12px;color:var(--txt2);margin-bottom:14px;">Passo 1 — escolha o 1º sabor:</div>
+    <div style="display:flex;gap:6px;margin-bottom:10px;">
+      <button class="btn" id="cx-mm1-btn-trad" onclick="filtrarMM1Cx('trad')" style="font-size:12px;padding:7px 12px;">Tradicionais</button>
+      <button class="btn btn-azul" id="cx-mm1-btn-esp" onclick="filtrarMM1Cx('esp')" style="font-size:12px;padding:7px 12px;">Especiais</button>
+    </div>
+    <div id="cx-mm1-lista" style="display:flex;flex-direction:column;gap:6px;"></div>
+    <button class="btn" onclick="fecharModal('modal-meiomeio1-cx')" style="width:100%;margin-top:12px;color:var(--txt2);">Cancelar</button>
+  </div>
+</div>
+
+<!-- MODAL MEIO A MEIO SABOR 2 -->
+<div class="modal-overlay" id="modal-meiomeio2-cx">
+  <div class="modal-box" style="max-height:85vh;overflow-y:auto;">
+    <div style="font-size:15px;font-weight:700;margin-bottom:2px;">Pizza Meio a Meio</div>
+    <div style="font-size:12px;color:var(--verde);margin-bottom:4px;" id="cx-mm2-sabor1-info">1º sabor: ...</div>
+    <div style="font-size:12px;color:var(--txt2);margin-bottom:14px;">Passo 2 — escolha o 2º sabor:</div>
+    <div style="display:flex;gap:6px;margin-bottom:10px;">
+      <button class="btn" id="cx-mm2-btn-trad" onclick="filtrarMM2Cx('trad')" style="font-size:12px;padding:7px 12px;">Tradicionais</button>
+      <button class="btn btn-azul" id="cx-mm2-btn-esp" onclick="filtrarMM2Cx('esp')" style="font-size:12px;padding:7px 12px;">Especiais</button>
+    </div>
+    <div id="cx-mm2-lista" style="display:flex;flex-direction:column;gap:6px;"></div>
+    <button class="btn" onclick="fecharModal('modal-meiomeio2-cx');abrirModal('modal-meiomeio1-cx')" style="width:100%;margin-top:12px;color:var(--txt2);">← Voltar</button>
+  </div>
+</div>
+
+<!-- MODAL COZINHA CONFIRMAÇÃO -->
+<div class="modal-overlay" id="modal-cozinha-cx">
+  <div class="modal-box" style="text-align:center;">
+    <div style="font-size:40px;margin-bottom:12px;" id="cozinha-icon-cx">🔔</div>
+    <div style="font-size:16px;font-weight:600;margin-bottom:8px;" id="cozinha-titulo-cx">Pedido enviado!</div>
+    <div style="font-size:13px;color:var(--txt2);margin-bottom:18px;" id="cozinha-msg-cx"></div>
+    <button class="btn btn-verde" onclick="fecharModal('modal-cozinha-cx')" style="padding:12px 40px;font-size:15px;">OK</button>
+  </div>
+</div>
 
 <!-- MODAL DETALHES MESA -->
 <div class="modal-overlay" id="modal-mesa-detalhe">
@@ -250,7 +462,21 @@ input[type=number]{background:#1a201c;border:1px solid var(--border3);border-rad
           style="flex:1;padding:12px 6px;border-radius:14px;border:2px solid var(--border3);background:linear-gradient(180deg,#0d1f12,#091410);cursor:pointer;font-family:var(--font);text-align:center;transition:all .15s;">
           <div style="font-size:20px;">💵</div>
           <div style="font-size:12px;font-weight:700;color:var(--verde);margin-top:3px;">Dinheiro</div>
-        </button>
+           </button>
+      </div>
+    </div>
+  </div>
+</div>
+        <!-- MODAL PARCIAL CX -->
+    <div class="modal-overlay" id="modal-parcial-cx">
+    <div class="modal-box" style="max-width:500px;width:100%;padding:16px 14px;">
+        <div style="font-size:17px;font-weight:700;margin-bottom:4px;">🧾 Selecionar Itens</div>
+        <div style="font-size:11px;color:var(--txt2);margin-bottom:12px;">Toque para selecionar os itens que serão pagos agora</div>
+        <div id="lista-parcial-cx" style="max-height:55vh;overflow-y:auto;border-radius:12px;border:1px solid var(--border2);overflow:hidden;"></div>
+        <div style="display:flex;gap:8px;margin-top:12px;">
+        <button class="btn" onclick="toggleTodosParcialCx()" style="flex:1;font-size:12px;">☑ Todos</button>
+        <button class="btn btn-verde" onclick="confirmarParcialCx()" style="flex:2;font-size:14px;font-weight:700;padding:13px;">✓ OK</button>
+        </div>
       </div>
     </div>
 
@@ -369,7 +595,7 @@ function renderMesasCaixa(){
     el.innerHTML=`<div style="font-size:13px;font-weight:700;color:${cor};">Mesa ${String(m.id).padStart(2,'0')}</div>
       <div style="font-size:10px;color:${cor};margin:2px 0;">${m.status==='livre'?'Livre':m.status==='ocupada'?'Ocupada':'Conta'}</div>
       ${total>0?`<div style="font-size:12px;font-weight:700;color:${cor};">${fmt(total)}</div>`:''}`;
-    el.onclick=()=>verDetalhesMesa(m);
+    el.onclick=()=>abrirMesaCx(m.id);
     grid.appendChild(el);
   });
   document.getElementById('c-stat-livre').textContent=liv+' livres';
@@ -829,9 +1055,640 @@ onValue(ref(db, '.info/connected'), (snap) => {
     el.style.color = on ? 'var(--verde)' : '#ff8080';
   }
 });
+// ══════════════════════════════════════════════
+// CAIXA — FUNÇÕES DO GARÇOM (PEDIDO POR MESA)
+// ══════════════════════════════════════════════
 
+const BORDAS_CX = { 'Catupiry':{M:11,G:13,GG:15}, 'Cheddar/Catupiry':{M:12,G:14,GG:16} };
+
+const pizzasTradCx = ['01 - Frango c/ Catupiry','02 - Palmito á Bolonhesa','03 - Palmito c/ Catupiry',
+  '04 - Portuguesa','05 - Napolitana','06 - Calabresa','07 - Mussarela','08 - Á Moda',
+  '09 - Frango á Bolonhesa','10 - Presunto','11 - Vegetariana','12 - Bacon','13 - Bacon Milho',
+  '14 - Sugestão Renito','15 - Atum','16 - Chef Cheddar','17 - Espanta Vampiro'
+].map(n=>({nome:n,tamanhos:{M:40.90,G:52.90,GG:61.90}}));
+
+const pizzasEspCx = ['18 - Lombo Tropical','19 - Lombo Canadense','20 - Milhombo','21 - A Moda Renito',
+  '22 - Quatro Queijo','23 - Salaminho Italiano','24 - 4 Carnes','25 - 5 Carnes',
+  '26 - Nordestina','27 - Porconobilis','28 - A Moda Especial'
+].map(n=>({nome:n,tamanhos:{M:45.90,G:57.90,GG:76.90}}));
+
+const categoriasCx = [
+  {nome:'Pizza Trad.',icon:'🍕',pizza:true,produtos:pizzasTradCx},
+  {nome:'Pizza Esp.',icon:'🌟',pizza:true,produtos:pizzasEspCx},
+  {nome:'Sanduíches',icon:'🍔',produtos:[
+    {nome:'01 - Hamburguer',preco:10},{nome:'02 - X-Burguer',preco:11},{nome:'03 - Misto Especial',preco:11},
+    {nome:'04 - X-Bacon',preco:14},{nome:'05 - Framburguer',preco:14.5},{nome:'06 - X-Egg-Burguer',preco:14.5},
+    {nome:'07 - X-Egg-Bacon',preco:16},{nome:'08 - X-Tudo',preco:17},{nome:'09 - Daliane',preco:23.5},
+    {nome:'10 - 5 Carnes',preco:24.5},{nome:'11 - X-Tudão',preco:19.5},{nome:'12 - X-Frango',preco:19.5},
+    {nome:'13 - Super X-Tudo',preco:24.5},{nome:'14 - RM Sanduíche',preco:25},{nome:'15 - LR Burguer',preco:26.5},
+    {nome:'16 - Rangão',preco:28.5},{nome:'17 - Califórnia',preco:22.5},{nome:'18 - X-Bruno',preco:22.5},
+    {nome:'19 - Chefe',preco:24.5},{nome:'20 - Patrão',preco:30.5},{nome:'21 - Ki-Frango',preco:24.5},
+    {nome:'22 - Dom Geraldo',preco:29.5},{nome:'23 - São Carlos',preco:24.5},{nome:'24 - Dom Cleiton',preco:31.5},
+    {nome:'25 - F-Kalll',preco:32.5},{nome:'26 - Marley',preco:25.5},{nome:'27 - Betoven',preco:35.5},
+  ]},
+  {nome:'Porções',icon:'🍟',carne:true,produtos:[
+    {nome:'Fritas 400g Mussarela',preco:24.9},{nome:'Fritas 400g Muss./Bacon',preco:34.9},
+    {nome:'Fritas 400g Muss./Bacon/Cala.',preco:49.9},{nome:'Carne de Sol c/ Fritas',preco:75.9},
+    {nome:'Contra Filé c/ Fritas',preco:77.9},{nome:'Fígado com Jiló',preco:32.9},
+    {nome:'Linguiça Caseira c/ Fritas',preco:55.9},{nome:'Pernil c/ Fritas/Mandioca',preco:55.9},
+    {nome:'Arroz na Chapa',preco:24.9},{nome:'Arroz com Pernil',preco:36.9},
+    {nome:'Porção Mista',preco:136.9},{nome:'Filé de Peito de Frango',preco:42.9},
+    {nome:'Picanha',preco:96.9},{nome:'Costelinha c/ Mandioca',preco:67.9},
+    {nome:'Coxinha da Asa 1kg',preco:50.9},
+  ]},
+  {nome:'Peixes',icon:'🐟',produtos:[
+    {nome:'Tilápia 400g Molho Especial',preco:53.9},{nome:'Tilápia 400g c/ Batata',preco:68.9},
+    {nome:'Cascudo 800g Molho Especial',preco:46.9},{nome:'Cascudo 800g c/ Batata',preco:60.9},
+    {nome:'Cascudo 400g Molho Especial',preco:23.9},{nome:'Cascudo 400g c/ Batata',preco:30.9},
+  ]},
+  {nome:'Bebidas',icon:'🥤',produtos:[
+    {nome:'Suco de Caixinha',preco:5,bar:true},{nome:'Suco 1 Litro',preco:12},
+    {nome:'Polpa Acerola/Abacaxi/Laranja/Morango',preco:7.5},
+    {nome:'Polpa Graviola/Cacau/Maracujá/Açaí',preco:8},
+    {nome:'Refri 1L Guaraná',preco:9,bar:true},{nome:'Refri 1L Coca-Cola',preco:12,bar:true},
+    {nome:'Refri 2L Fanta/Guaraná',preco:15,bar:true},{nome:'Refri 2L Coca-Cola',preco:17,bar:true},
+    {nome:'Refrigerante Lata',preco:6,bar:true},
+  ]},
+  {nome:'Cervejas',icon:'🍺',produtos:[
+    {nome:'Brahma / Skol 600ml',preco:10,bar:true},{nome:'Kaiser 600ml',preco:8,bar:true},
+    {nome:'Original 600ml',preco:13,bar:true},{nome:'Spaten / Stella 600ml',preco:14,bar:true},
+    {nome:'Heineken 600ml',preco:16,bar:true},
+    {nome:'Vinho Taça',preco:22.9,bar:true},{nome:'Vinho Garrafa',preco:22.9,bar:true},
+    {nome:'Vinho Pergola Taça',preco:10.9,bar:true},{nome:'Vinho Pergola Garrafa',preco:45.9,bar:true},
+    {nome:'White Horse',preco:15,bar:true},{nome:'Old Eight',preco:8,bar:true},
+    {nome:'Caip Orlof — Abacaxi',preco:20},{nome:'Caip Orlof — Morango',preco:20},
+    {nome:'Caip Orlof — Limão',preco:20},{nome:'Caip Orlof — Maracujá',preco:20},
+    {nome:'Pinga 51',preco:5,bar:true},{nome:'Vodka Orlof',preco:7,bar:true},
+  ]},
+  {nome:'Espaguete',icon:'🍝',produtos:[
+    {nome:'Espaguete na Chapa — Pequeno',preco:19.9},
+    {nome:'Espaguete na Chapa — Grande',preco:29.9},
+  ]},
+];
+
+// Estado do módulo garçom no caixa
+let mesaAtualCx = null, itemPendenteCx = null, carrinhoAbertoCx = true;
+let descontoAtualCx = 0, pagDivCx = [];
+let mmTamanhoCx = null, mmSabor1Cx = null;
+
+function telaCx(id){
+  const ids = ['screen-main','screen-pedido','screen-fechamento-cx','screen-ok-cx'];
+  ids.forEach(s => {
+    const el = document.getElementById(s);
+    if(el) el.classList.remove('active');
+  });
+  document.getElementById('screen-main').style.display = 'none';
+  const alvo = document.getElementById('screen-'+id+'-cx') || document.getElementById('screen-'+id) || document.getElementById(id);
+  if(alvo){ alvo.style.display='flex'; alvo.classList.add('active'); }
+}
+
+window.voltarMesasCaixa = function(){
+  ['screen-pedido','screen-fechamento-cx','screen-ok-cx'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.classList.remove('active');el.style.display='';}
+  });
+  const main = document.getElementById('screen-main');
+  main.style.display = 'flex';
+  main.classList.add('active');
+  mudarAba('mesas');
+};
+
+function abrirMesaCx(id){
+  mesaAtualCx = mesas.find(m=>m.id===id);
+  if(!mesaAtualCx) return;
+  if(!mesaAtualCx.inicio) mesaAtualCx.inicio = Date.now();
+  if(mesaAtualCx.status==='livre') mesaAtualCx.status='ocupada';
+  salvarMesaCx(mesaAtualCx);
+  document.getElementById('titulo-mesa-cx').textContent = 'Mesa '+String(id).padStart(2,'0');
+  renderCategoriasCx();
+  renderCarrinhoCx();
+  const main = document.getElementById('screen-main');
+  main.classList.remove('active'); main.style.display='none';
+  const pedido = document.getElementById('screen-pedido');
+  pedido.style.display='flex'; pedido.classList.add('active');
+}
+
+async function salvarMesaCx(mesa){
+  if(typeof salvarMesasLocal === 'function') salvarMesasLocal();
+  try{
+    const po={};(mesa.pedido||[]).forEach((it,i)=>po['i'+i]=it);
+    await set(ref(db,'mesas/mesa'+mesa.id),{id:mesa.id,status:mesa.status,inicio:mesa.inicio,pedido:po});
+  }catch(e){ console.warn('Erro ao salvar mesa:',e); }
+}
+
+// Sobrescreve o clique nas mesas do caixa para abrir pedido
+function renderMesasCaixaComClick(){
+  const grid = document.getElementById('caixa-mesa-grid');
+  if(!grid) return;
+  grid.innerHTML='';
+  let liv=0,ocu=0,con=0;
+  mesas.forEach(m=>{
+    if(m.status==='livre')liv++;
+    else if(m.status==='ocupada')ocu++;
+    else con++;
+    const cor=m.status==='livre'?'#2f9d64':m.status==='ocupada'?'#cf5b74':'#c89a2a';
+    const bg=m.status==='livre'?'linear-gradient(180deg,#edf8f0,#e0f5e6)':m.status==='ocupada'?'linear-gradient(180deg,#fff0f3,#ffe6ea)':'linear-gradient(180deg,#fff8e8,#fff2d2)';
+    const total=(m.pedido||[]).reduce((s,i)=>s+i.preco*i.qtd,0);
+    const el=document.createElement('div');
+    el.className='caixa-mesa-card';
+    el.style.cssText=`background:${bg};border-color:${cor};`;
+    el.innerHTML=`<div style="font-size:13px;font-weight:700;color:${cor};">Mesa ${String(m.id).padStart(2,'0')}</div>
+      <div style="font-size:10px;color:${cor};margin:2px 0;">${m.status==='livre'?'Livre':m.status==='ocupada'?'Ocupada':'Conta'}</div>
+      ${total>0?`<div style="font-size:12px;font-weight:700;color:${cor};">${fmt(total)}</div>`:''}`;
+    el.onclick=()=>abrirMesaCx(m.id);
+    grid.appendChild(el);
+  });
+  document.getElementById('c-stat-livre').textContent=liv+' livres';
+  document.getElementById('c-stat-ocup').textContent=ocu+' ocupadas';
+  document.getElementById('c-stat-conta').textContent=con+' conta';
+}
+
+// Categorias e Produtos
+function renderCategoriasCx(){
+  const list=document.getElementById('cat-list-cx'); list.innerHTML='';
+  categoriasCx.forEach((c,i)=>{
+    const el=document.createElement('div');
+    el.style.cssText='display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60px;border-radius:14px;padding:6px 3px;gap:2px;font-size:9px;line-height:1.2;text-align:center;border:1px solid var(--border3);background:linear-gradient(180deg,#232a25,#171c18);color:var(--txt);cursor:pointer;';
+    el.innerHTML=`<span style="font-size:18px;">${c.icon}</span><span>${c.nome}</span>`;
+    if(i===0) el.style.background='linear-gradient(180deg,#2f5e9f,#1f355c)';
+    el.onclick=()=>{
+      document.querySelectorAll('#cat-list-cx div').forEach(b=>b.style.background='linear-gradient(180deg,#232a25,#171c18)');
+      el.style.background='linear-gradient(180deg,#2f5e9f,#1f355c)';
+      selecionarCatCx(i);
+    };
+    list.appendChild(el);
+  });
+  selecionarCatCx(0);
+}
+
+function selecionarCatCx(idx){
+  const c=categoriasCx[idx];
+  document.getElementById('cat-titulo-cx').textContent=c.icon+' '+c.nome;
+  const grid=document.getElementById('produto-grid-cx'); grid.innerHTML='';
+  if(c.pizza){
+    const btnMM=document.createElement('div');
+    btnMM.style.cssText='grid-column:1/-1;background:linear-gradient(180deg,#1a3564,#102040);border:2px solid var(--azul);border-radius:14px;padding:13px 16px;cursor:pointer;display:flex;align-items:center;gap:10px;margin-bottom:4px;';
+    btnMM.innerHTML='<span style="font-size:22px;">🍕</span><div><div style="font-weight:700;font-size:14px;color:#aad4ff;">Pizza Meio a Meio</div><div style="font-size:11px;color:var(--txt2);">Escolha 2 sabores — G ou GG</div></div>';
+    btnMM.onclick=()=>abrirMeioAMeioCx();
+    grid.appendChild(btnMM);
+  }
+  c.produtos.forEach(p=>{
+    const el=document.createElement('div');
+    el.style.cssText='background:linear-gradient(180deg,#1e2420,#161b17);border:1px solid #2a322c;border-radius:12px;padding:8px;cursor:pointer;min-height:64px;display:flex;flex-direction:column;justify-content:space-between;';
+    const ph=p.tamanhos?`<div style="font-size:10px;color:var(--verde);font-weight:600;margin-top:3px;line-height:1.5;">M ${fmt(p.tamanhos.M)}<br>G ${fmt(p.tamanhos.G)}<br>GG ${fmt(p.tamanhos.GG)}</div>`:`<div style="font-size:13px;color:var(--verde);font-weight:700;margin-top:4px;">${fmt(p.preco)}</div>`;
+    el.innerHTML=`<div style="font-size:11px;font-weight:500;line-height:1.2;">${p.nome}</div>${ph}`;
+    el.onclick=()=>adicionarItemCx(p,c.nome,c.pizza);
+    grid.appendChild(el);
+  });
+}
+
+function adicionarItemCx(p,catNome,pizza){
+  if(pizza&&p.tamanhos){
+    itemPendenteCx={...p,categoria:catNome};
+    document.getElementById('modal-pizza-nome-cx').textContent=p.nome;
+    document.getElementById('cx-btn-tam-M').textContent='Média (M) — '+fmt(p.tamanhos.M);
+    document.getElementById('cx-btn-tam-G').textContent='Grande (G) — '+fmt(p.tamanhos.G);
+    document.getElementById('cx-btn-tam-GG').textContent='Gigante (GG) — '+fmt(p.tamanhos.GG);
+    abrirModal('modal-tamanho-cx'); return;
+  }
+  if(p.bar){ pushItemCx(p,'',catNome); return; }
+  itemPendenteCx={...p,categoria:catNome};
+  document.getElementById('modal-obs-nome-cx').textContent=p.nome;
+  document.getElementById('input-obs-cx').value='';
+  abrirModal('modal-obs-cx');
+}
+
+window.escolherTamanhoCx=function(tam){
+  const p=itemPendenteCx; if(!p) return;
+  abrirBordaCx(p.nome, tam, p.tamanhos[tam], p.categoria);
+};
+
+function abrirBordaCx(pizzaNome, tam, preco, catNome){
+  itemPendenteCx={nome:pizzaNome,preco,tamanhoObs:tam,categoria:catNome};
+  document.getElementById('borda-pizza-nome-cx').textContent=pizzaNome;
+  document.getElementById('borda-tam-info-cx').textContent='Tamanho: '+tam+' — '+fmt(preco);
+  const ops=document.getElementById('borda-opcoes-cx'); ops.innerHTML='';
+  Object.entries(BORDAS_CX).forEach(([nome,precos])=>{
+    const precoBorda=precos[tam]||0;
+    const btn=document.createElement('button');
+    btn.className='btn';
+    btn.style.cssText='text-align:left;padding:13px 16px;font-size:14px;font-weight:600;width:100%;';
+    btn.textContent='Borda de '+nome+' — +'+fmt(precoBorda);
+    btn.onclick=()=>{ fecharModal('modal-borda-cx'); confirmarPizzaComBordaCx('Borda de '+nome, precoBorda); };
+    ops.appendChild(btn);
+  });
+  fecharModal('modal-tamanho-cx');
+  abrirModal('modal-borda-cx');
+}
+
+window.semBordaCx=function(){
+  fecharModal('modal-borda-cx');
+  const p=itemPendenteCx; if(!p) return;
+  itemPendenteCx._obsBase=p.tamanhoObs;
+  itemPendenteCx._precoFinal=p.preco;
+  document.getElementById('modal-obs-nome-cx').textContent=p.nome;
+  document.getElementById('input-obs-cx').value='';
+  setTimeout(()=>abrirModal('modal-obs-cx'),150);
+};
+
+function confirmarPizzaComBordaCx(bordaNome, precoBorda){
+  const p=itemPendenteCx; if(!p) return;
+  itemPendenteCx._obsBase=p.tamanhoObs+' + '+bordaNome;
+  itemPendenteCx._precoFinal=p.preco+precoBorda;
+  document.getElementById('modal-obs-nome-cx').textContent=p.nome;
+  document.getElementById('input-obs-cx').value='';
+  setTimeout(()=>abrirModal('modal-obs-cx'),150);
+}
+
+window.confirmarObsCx=function(){
+  const obs=document.getElementById('input-obs-cx').value.trim();
+  fecharModal('modal-obs-cx');
+  const p=itemPendenteCx; if(!p){itemPendenteCx=null;return;}
+  const obsFinal=p._obsBase?(obs?p._obsBase+' — '+obs:p._obsBase):obs;
+  const preco=p._precoFinal!==undefined?p._precoFinal:p.preco;
+  pushItemCx({nome:p.nome,preco},obsFinal,p.categoria);
+  itemPendenteCx=null;
+};
+
+window.confirmarObsSemCx=function(){
+  fecharModal('modal-obs-cx');
+  const p=itemPendenteCx; if(!p){itemPendenteCx=null;return;}
+  const obsFinal=p._obsBase||'';
+  const preco=p._precoFinal!==undefined?p._precoFinal:p.preco;
+  pushItemCx({nome:p.nome,preco},obsFinal,p.categoria);
+  itemPendenteCx=null;
+};
+
+function pushItemCx(p,obs,catNome){
+  const ex=mesaAtualCx.pedido.find(i=>i.nome===p.nome&&i.obs===obs&&!i.enviadoCozinha);
+  if(ex) ex.qtd++;
+  else mesaAtualCx.pedido.push({nome:p.nome,preco:p.preco,qtd:1,obs,categoria:catNome||'',setor:p.bar?'bar':'cozinha',enviadoCozinha:false,criadoEm:Date.now()});
+  salvarMesaCx(mesaAtualCx);
+  renderCarrinhoCx();
+}
+
+function renderCarrinhoCx(){
+  const lista=document.getElementById('carrinho-lista-cx');
+  const total=(mesaAtualCx.pedido||[]).reduce((s,i)=>s+i.preco*i.qtd,0);
+  const qtd=(mesaAtualCx.pedido||[]).reduce((s,i)=>s+i.qtd,0);
+  document.getElementById('badge-qtd-cx').textContent=qtd;
+  document.getElementById('total-pedido-cx').textContent=fmt(total);
+  if(!mesaAtualCx.pedido||!mesaAtualCx.pedido.length){
+    lista.innerHTML='<div style="font-size:12px;color:var(--txt2);text-align:center;padding:12px;">Nenhum item</div>';return;
+  }
+  lista.innerHTML='';
+  mesaAtualCx.pedido.forEach((it,idx)=>{
+    const d=document.createElement('div');
+    d.style.cssText='background:linear-gradient(180deg,#171c18,#131814);border:1px solid #252d28;border-radius:14px;padding:9px;font-size:12px;margin:5px 0;';
+    d.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:start;">
+      <div style="flex:1;padding-right:4px;"><span style="font-weight:600;">${it.nome}</span>${it.obs?`<span style="font-size:10px;color:var(--txt2);"> — ${it.obs}</span>`:''}
+        <div style="margin-top:4px;"><span style="background:${it.enviadoCozinha?'var(--verde-bg)':'#3a2e0a'};color:${it.enviadoCozinha?'var(--verde)':'#c9a427'};border-radius:999px;font-size:10px;padding:2px 7px;">${it.enviadoCozinha?'✓ Enviado':'⏳ Novo'}</span></div></div>
+      <button onclick="removerItemCx(${idx})" style="background:none;border:none;cursor:pointer;color:var(--txt2);font-size:20px;padding:0;line-height:1;">×</button></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:7px;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button onclick="ajustarQtdCx(${idx},-1)" style="background:#1f2521;border:1px solid #313a33;border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:16px;color:var(--txt);display:flex;align-items:center;justify-content:center;">-</button>
+        <span style="font-weight:700;min-width:16px;text-align:center;">${it.qtd}</span>
+        <button onclick="ajustarQtdCx(${idx},1)" style="background:#1f2521;border:1px solid #313a33;border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:16px;color:var(--txt);display:flex;align-items:center;justify-content:center;">+</button>
+      </div>
+      <span style="color:var(--verde);font-weight:700;">${fmt(it.preco*it.qtd)}</span></div>`;
+    lista.appendChild(d);
+  });
+}
+
+window.ajustarQtdCx=(idx,d)=>{
+  mesaAtualCx.pedido[idx].qtd+=d;
+  if(mesaAtualCx.pedido[idx].qtd<=0) mesaAtualCx.pedido.splice(idx,1);
+  salvarMesaCx(mesaAtualCx); renderCarrinhoCx();
+};
+window.removerItemCx=idx=>{
+  mesaAtualCx.pedido.splice(idx,1);
+  salvarMesaCx(mesaAtualCx); renderCarrinhoCx();
+};
+window.toggleCarrinhoCx=function(){
+  carrinhoAbertoCx=!carrinhoAbertoCx;
+  document.getElementById('carrinho-body-cx').style.display=carrinhoAbertoCx?'block':'none';
+  document.getElementById('carrinho-toggle-cx').textContent=carrinhoAbertoCx?'▲':'▼';
+};
+
+window.enviarCozinhaCx=async function(){
+  if(!mesaAtualCx||!mesaAtualCx.pedido||!mesaAtualCx.pedido.length) return;
+  const todos=mesaAtualCx.pedido.filter(it=>!it.enviadoCozinha&&it.setor!=='bar');
+  if(!todos.length){
+    document.getElementById('cozinha-msg-cx').textContent='Todos os itens já foram enviados.';
+    abrirModal('modal-cozinha-cx'); return;
+  }
+  const codigo=mesaAtualCx.id+'-'+Date.now().toString().slice(-5);
+  const dados={mesa:mesaAtualCx.id,codigo,data:new Date().toLocaleString('pt-BR'),
+    itens:todos.map(it=>({nome:it.nome,qtd:it.qtd,preco:it.preco,obs:it.obs||'',setor:it.setor||''}))};
+  try{
+    await push(ref(db,'pedidos_cozinha'),{...dados,status:'pendente',timestamp:Date.now()});
+    todos.forEach(it=>{it.enviadoCozinha=true;it.enviadoEm=Date.now();});
+    salvarMesaCx(mesaAtualCx); renderCarrinhoCx();
+    document.getElementById('cozinha-icon-cx').textContent='🔔';
+    document.getElementById('cozinha-titulo-cx').textContent='Pedido enviado!';
+    document.getElementById('cozinha-msg-cx').textContent=todos.reduce((s,i)=>s+i.qtd,0)+' item(ns) enviado(s) para a cozinha!';
+  }catch(e){
+    document.getElementById('cozinha-icon-cx').textContent='⚠';
+    document.getElementById('cozinha-titulo-cx').textContent='Erro ao enviar';
+    document.getElementById('cozinha-msg-cx').textContent='Verifique a conexão e tente novamente.';
+  }
+  abrirModal('modal-cozinha-cx');
+};
+
+// Fechamento
+window.abrirFechamentoCx=function(){
+    abaFechCx = 'total';
+qtdSelCx = {};
+(mesaAtualCx.pedido||[]).forEach((_,i)=>{ qtdSelCx[i] = mesaAtualCx.pedido[i].qtd; });
+  descontoAtualCx=0; pagDivCx=[];
+  document.getElementById('titulo-fech-cx').textContent='Fechamento — Mesa '+String(mesaAtualCx.id).padStart(2,'0');
+  document.getElementById('desconto-info-cx').textContent='Nenhum aplicado';
+  document.getElementById('cx-troco-box').style.display='none';
+  renderFechamentoCx();
+  const pedido=document.getElementById('screen-pedido');
+  pedido.classList.remove('active'); pedido.style.display='none';
+  const fech=document.getElementById('screen-fechamento-cx');
+  fech.style.display='flex'; fech.classList.add('active');
+};
+
+function subTotalFechCx(){
+  if(abaFechCx === 'parcial'){
+    return (mesaAtualCx.pedido||[]).reduce((s,it,i)=>s+it.preco*(qtdSelCx[i]||0),0);
+  }
+  return (mesaAtualCx.pedido||[]).reduce((s,it)=>s+it.preco*it.qtd,0);
+}
+
+function renderFechamentoCx(){
+  const tabela=document.getElementById('tabela-fech-cx'); tabela.innerHTML='';
+  const sub=subTotalFechCx();
+  (mesaAtualCx.pedido||[]).forEach(it=>{
+    const r=document.createElement('div');
+    r.style.cssText='display:flex;justify-content:space-between;font-size:13px;padding:6px 14px;border-bottom:1px solid var(--border2);';
+    r.innerHTML=`<div><span style="font-weight:500;">${it.nome}</span>${it.obs?`<span style="font-size:11px;color:var(--txt2);"> — ${it.obs}</span>`:''} <span style="color:var(--txt2);">x${it.qtd}</span></div><span style="font-weight:600;">${fmt(it.preco*it.qtd)}</span>`;
+    tabela.appendChild(r);
+  });
+  document.getElementById('subtotal-fech-cx').textContent=fmt(sub);
+  atualizarTotalCx(sub);
+  renderPagDivCx();
+}
+
+function atualizarTotalCx(sub){
+  const total=sub-(sub*(descontoAtualCx/100));
+  document.getElementById('total-final-cx').textContent=fmt(total);
+}
+
+window.aplicarDescontoCx=function(pct){
+  descontoAtualCx=pct;
+  const sub=subTotalFechCx();
+  document.getElementById('desconto-info-cx').textContent=pct===0?'Nenhum aplicado':pct>0?pct+'% de desconto':Math.abs(pct)+'% de taxa';
+  atualizarTotalCx(sub);
+  renderPagDivCx();
+};
+
+window.addPagCx=function(tipo){
+  if(pagDivCx.find(p=>p.tipo===tipo)) return;
+  pagDivCx.push({tipo,valor:''});
+  renderPagDivCx();
+};
+
+window.remPagCx=function(tipo){
+  pagDivCx=pagDivCx.filter(p=>p.tipo!==tipo);
+  if(!pagDivCx.find(p=>p.tipo==='dinheiro')) document.getElementById('cx-troco-box').style.display='none';
+  renderPagDivCx();
+};
+
+window.setPagDivValCx=function(tipo,val){
+  const p=pagDivCx.find(p=>p.tipo===tipo);
+  if(p) p.valor=val;
+  if(tipo==='dinheiro') calcularTrocoCx();
+  atualizarResumoPagCx();
+};
+
+function totalPagDivCx(){ return pagDivCx.reduce((s,p)=>s+(parseFloat(p.valor)||0),0); }
+
+function renderPagDivCx(){
+  ['dinheiro','cartao','pix'].forEach(t=>{
+    const b=document.getElementById('cx-addpag-'+t);
+    if(b) b.className='add-pag-btn'+(pagDivCx.find(p=>p.tipo===t)?' usado':'');
+  });
+  const lista=document.getElementById('pag-div-lista-cx'); lista.innerHTML='';
+  const icones={dinheiro:'💵',cartao:'💳',pix:'📲'};
+  const nomes={dinheiro:'Dinheiro',cartao:'Cartão',pix:'Pix'};
+  const bgs={dinheiro:'#1a2e1e',cartao:'#1b3158',pix:'#3a2e0a'};
+  pagDivCx.forEach(p=>{
+    const row=document.createElement('div');
+    row.style.cssText='background:linear-gradient(180deg,#171c18,#131814);border:1px solid #252d28;border-radius:14px;padding:10px 12px;display:flex;align-items:center;gap:10px;margin-bottom:7px;';
+    row.innerHTML=`
+      <div style="width:30px;height:30px;border-radius:8px;background:${bgs[p.tipo]};display:flex;align-items:center;justify-content:center;font-size:16px;">${icones[p.tipo]}</div>
+      <span style="font-size:13px;font-weight:600;min-width:58px;">${nomes[p.tipo]}</span>
+      <input type="number" min="0" step="0.01" placeholder="0,00" value="${p.valor}"
+        oninput="setPagDivValCx('${p.tipo}',this.value)"
+        style="flex:1;padding:8px 10px;background:#1a201c;border:1px solid var(--border3);border-radius:10px;color:var(--txt);font-size:16px;font-weight:600;font-family:var(--font);text-align:right;"/>
+      <button onclick="remPagCx('${p.tipo}')" style="background:none;border:none;cursor:pointer;color:var(--txt2);font-size:18px;">×</button>`;
+    lista.appendChild(row);
+  });
+  document.getElementById('cx-troco-box').style.display=pagDivCx.find(p=>p.tipo==='dinheiro')?'block':'none';
+  atualizarResumoPagCx();
+}
+
+function atualizarResumoPagCx(){
+  const sub=subTotalFechCx();
+  const total=sub-(sub*(descontoAtualCx/100));
+  const pago=totalPagDivCx();
+  const falta=Math.max(0,total-pago);
+  const pct=total>0?Math.min(100,(pago/total)*100):0;
+  document.getElementById('cx-total-ref').textContent=fmt(total);
+  document.getElementById('cx-res-pago').textContent=fmt(pago);
+  const diffEl=document.getElementById('cx-res-diff');
+  if(pago>=total&&pagDivCx.length>0){ diffEl.textContent=pago-total>0.005?'Troco: '+fmt(pago-total):'✓ Pago'; diffEl.style.color='var(--verde)'; }
+  else{ diffEl.textContent='Falta: '+fmt(falta); diffEl.style.color='#cf5b74'; }
+  document.getElementById('cx-falta-bar').style.width=pct+'%';
+  const ok=pagDivCx.length>0&&pago>=total&&(mesaAtualCx.pedido||[]).length>0;
+  const btn=document.getElementById('btn-confirmar-cx');
+  btn.style.opacity=ok?'1':'0.4';
+  btn.style.pointerEvents=ok?'auto':'none';
+}
+
+window.calcularTrocoCx=function(){
+  const sub=subTotalFechCx();
+  const total=sub-(sub*(descontoAtualCx/100));
+  const rec=parseFloat(document.getElementById('cx-valor-recebido').value)||0;
+  const troco=rec-total;
+  document.getElementById('cx-valor-troco').textContent=fmt(troco>=0?troco:0);
+  document.getElementById('cx-valor-troco').style.color=troco>=0?'var(--verde)':'#cf5b74';
+};
+
+window.imprimirContaCx=async function(){
+  const itens=(mesaAtualCx.pedido||[]).map(it=>({nome:it.nome,qtd:it.qtd,preco:it.preco,obs:it.obs||''}));
+  const dados={mesa:mesaAtualCx.id,desconto:descontoAtualCx,
+    pagamentos:pagDivCx.map(p=>({tipo:p.tipo,valor:parseFloat(p.valor)||0})),
+    data:new Date().toLocaleString('pt-BR'),itens};
+  try{ await push(ref(db,'contas_imprimir'),{...dados,status:'pendente',timestamp:Date.now()}); }
+  catch(e){ console.warn('Erro ao enviar conta:',e); }
+};
+
+window.concluirVendaCx=async function(){
+  if(pagDivCx.length===0){alert('Adicione pelo menos uma forma de pagamento.');return;}
+  const sub=subTotalFechCx();
+  const desc=sub*(descontoAtualCx/100);
+  const total=sub-desc;
+  const pago=totalPagDivCx();
+  if(pago<total){alert('Valor pago menor que o total.');return;}
+  if(!confirm('Confirmar pagamento e liberar Mesa '+String(mesaAtualCx.id).padStart(2,'0')+'?')) return;
+  const hoje=new Date().toLocaleDateString('pt-BR').replace(/\//g,'-');
+  const venda={id:Date.now(),mesa:mesaAtualCx.id,
+    hora:new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}),
+    itens:(mesaAtualCx.pedido||[]).map(it=>({nome:it.nome,qtd:it.qtd,preco:it.preco,obs:it.obs||''})),
+    subtotal:sub,desconto:desc,total,
+    pagamentos:pagDivCx.map(p=>({tipo:p.tipo,valor:parseFloat(p.valor)||0})),
+    pagamento:pagDivCx[0].tipo};
+  try{
+    await set(ref(db,`caixa/${hoje}/vendas/v${Date.now()}`),venda);
+    const snap=await get(ref(db,`caixa/${hoje}`));
+    const atual=snap.val()||{};
+    const upd={data:hoje};
+    pagDivCx.forEach(p=>{ upd[p.tipo]=(atual[p.tipo]||0)+(parseFloat(p.valor)||0); });
+    await update(ref(db,`caixa/${hoje}`),upd);
+    await window.imprimirContaCx();
+    if(abaFechCx === 'parcial'){
+    const novos = [];
+    (mesaAtualCx.pedido||[]).forEach((it,i)=>{
+        const resto = it.qtd - (qtdSelCx[i]||0);
+        if(resto > 0) novos.push({...it, qtd:resto});
+    });
+    mesaAtualCx.pedido = novos;
+    if(!novos.length){ mesaAtualCx.status='livre'; mesaAtualCx.inicio=null; }
+    } else {
+    mesaAtualCx.status='livre'; mesaAtualCx.pedido=[]; mesaAtualCx.inicio=null;
+    }
+    await salvarMesaCx(mesaAtualCx);
+    const pagDesc=pagDivCx.map(p=>({dinheiro:'💵',cartao:'💳',pix:'📲'}[p.tipo]+' '+fmt(parseFloat(p.valor)||0))).join(' · ');
+    document.getElementById('ok-msg-cx').textContent='Mesa '+String(mesaAtualCx.id).padStart(2,'0')+' liberada · '+fmt(total)+'\n'+pagDesc;
+    mesaAtualCx=null;
+    const fech=document.getElementById('screen-fechamento-cx');
+    fech.classList.remove('active'); fech.style.display='none';
+    const ok=document.getElementById('screen-ok-cx');
+    ok.style.display='flex'; ok.classList.add('active');
+  }catch(e){ alert('Erro ao confirmar pagamento: '+e.message); }
+};
+
+// Meio a Meio
+window.abrirMeioAMeioCx=function(){ mmSabor1Cx=null; mmTamanhoCx=null; abrirModal('modal-mm-tamanho-cx'); };
+window.escolherTamMMCx=function(tam){ mmTamanhoCx=tam; fecharModal('modal-mm-tamanho-cx'); filtrarMM1Cx('trad'); abrirModal('modal-meiomeio1-cx'); };
+
+function renderListaMMCx(containerId, tipo, onClickFn){
+  const container=document.getElementById(containerId); container.innerHTML='';
+  const lista=tipo==='trad'?pizzasTradCx:pizzasEspCx;
+  lista.forEach(p=>{
+    const metade=p.tamanhos[mmTamanhoCx]/2;
+    const btn=document.createElement('button');
+    btn.className='btn';
+    btn.style.cssText='text-align:left;padding:11px 14px;font-size:13px;width:100%;';
+    btn.innerHTML='<span style="font-weight:600;">'+p.nome+'</span><br><span style="font-size:11px;color:var(--verde);">½ = '+fmt(metade)+'</span>';
+    btn.onclick=()=>onClickFn({nome:p.nome,metade});
+    container.appendChild(btn);
+  });
+}
+
+window.filtrarMM1Cx=function(tipo){
+  document.getElementById('cx-mm1-btn-trad').className='btn'+(tipo==='trad'?' btn-azul':'');
+  document.getElementById('cx-mm1-btn-esp').className='btn'+(tipo==='esp'?' btn-azul':'');
+  renderListaMMCx('cx-mm1-lista',tipo,(it)=>{
+    mmSabor1Cx=it;
+    document.getElementById('cx-mm2-sabor1-info').textContent='1º: '+it.nome+' ('+fmt(it.metade)+')';
+    fecharModal('modal-meiomeio1-cx'); filtrarMM2Cx('trad'); abrirModal('modal-meiomeio2-cx');
+  });
+};
+
+window.filtrarMM2Cx=function(tipo){
+  document.getElementById('cx-mm2-btn-trad').className='btn'+(tipo==='trad'?' btn-azul':'');
+  document.getElementById('cx-mm2-btn-esp').className='btn'+(tipo==='esp'?' btn-azul':'');
+  renderListaMMCx('cx-mm2-lista',tipo,(it)=>{
+    fecharModal('modal-meiomeio2-cx');
+    const total=mmSabor1Cx.metade+it.metade;
+    const nome='½ '+mmSabor1Cx.nome+' / ½ '+it.nome;
+    const tam=mmTamanhoCx;
+    mmSabor1Cx=null; mmTamanhoCx=null;
+    setTimeout(()=>abrirBordaCx(nome,tam,total,'Pizza Trad.'),200);
+  });
+};
+// ── PARCIAL CX ──
+let abaFechCx = 'total';
+let qtdSelCx = {};
+
+window.mudarAbaFechCx = function(aba){
+  abaFechCx = aba;
+  const ativo = 'flex:1;padding:11px;font-size:13px;font-weight:600;background:var(--card);border:none;color:var(--verde);border-bottom:2px solid var(--verde);cursor:pointer;font-family:var(--font);';
+  const inativo = 'flex:1;padding:11px;font-size:13px;font-weight:600;background:transparent;border:none;color:var(--txt2);border-bottom:2px solid transparent;cursor:pointer;font-family:var(--font);';
+  document.getElementById('cx-aba-total').style.cssText = aba==='total' ? ativo : inativo;
+  document.getElementById('cx-aba-parcial').style.cssText = aba==='parcial' ? ativo : inativo;
+  if(aba==='total'){
+    (mesaAtualCx.pedido||[]).forEach((_,i)=>{ qtdSelCx[i] = mesaAtualCx.pedido[i].qtd; });
+  }
+  renderFechamentoCx();
+};
+
+window.abrirModalParcialCx = function(){
+  renderModalParcialCx();
+  abrirModal('modal-parcial-cx');
+};
+
+function renderModalParcialCx(){
+  const lista = document.getElementById('lista-parcial-cx');
+  lista.innerHTML = '';
+  (mesaAtualCx.pedido||[]).forEach((it, idx)=>{
+    const sel = qtdSelCx[idx] || 0;
+    const marcado = sel > 0;
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:12px;padding:14px 12px;border-bottom:1px solid #2a322c;cursor:pointer;'+(marcado?'background:rgba(47,179,109,.08);':'');
+    row.onclick = ()=>{ qtdSelCx[idx] = marcado ? 0 : it.qtd; renderModalParcialCx(); };
+    row.innerHTML = `
+      <div style="width:28px;height:28px;border-radius:8px;border:2px solid ${marcado?'var(--verde)':'var(--border3)'};background:${marcado?'var(--verde)':'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:15px;">${marcado?'✓':''}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:14px;font-weight:600;">${it.nome}</div>
+        ${it.obs?`<div style="font-size:10px;color:var(--txt2);">${it.obs}</div>`:''}
+        <div style="font-size:11px;color:var(--txt2);margin-top:2px;">${it.qtd} × ${fmt(it.preco)}</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:14px;font-weight:700;color:${marcado?'var(--verde)':'var(--txt2)'};">${fmt(it.preco*sel)}</div>
+        <div style="font-size:10px;color:var(--txt2);">${marcado?sel+' un.':'não selecionado'}</div>
+      </div>`;
+    lista.appendChild(row);
+  });
+}
+
+window.toggleTodosParcialCx = function(){
+  const todos = mesaAtualCx.pedido||[];
+  const algum = todos.some((_,i)=>!qtdSelCx[i]||qtdSelCx[i]===0);
+  todos.forEach((_,i)=>{ qtdSelCx[i] = algum ? todos[i].qtd : 0; });
+  renderModalParcialCx();
+};
+
+window.confirmarParcialCx = function(){
+  fecharModal('modal-parcial-cx');
+  abaFechCx = 'parcial';
+  const ativo = 'flex:1;padding:11px;font-size:13px;font-weight:600;background:var(--card);border:none;color:var(--verde);border-bottom:2px solid var(--verde);cursor:pointer;font-family:var(--font);';
+  const inativo = 'flex:1;padding:11px;font-size:13px;font-weight:600;background:transparent;border:none;color:var(--txt2);border-bottom:2px solid transparent;cursor:pointer;font-family:var(--font);';
+  document.getElementById('cx-aba-total').style.cssText = inativo;
+  document.getElementById('cx-aba-parcial').style.cssText = ativo;
+  renderFechamentoCx();
+};
+
+// Atualiza subTotal e renderFechamento para respeitar parcial
+// Substituir renderMesasCaixa pela versão com clique
+setTimeout(()=>{ renderMesasCaixaComClick(); },500);
 // 5. ATIVAÇÃO FINAL DA TELA
 document.getElementById('screen-main').classList.add('active');
+document.getElementById('screen-main').style.display = 'flex';
+
+// Garante que telas extras começam escondidas
+['screen-pedido','screen-fechamento-cx','screen-ok-cx'].forEach(id=>{
+  const el = document.getElementById(id);
+  if(el){ el.classList.remove('active'); el.style.display='none'; }
+});
+
+// Atualiza mesas com clique completo após carregar Firebase
+setTimeout(()=>{ renderMesasCaixaComClick(); }, 800);
 
 </script>
 </body>
