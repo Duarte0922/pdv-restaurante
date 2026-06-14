@@ -1762,7 +1762,7 @@ window.salvarPreco = function(catKey, prodKey) {
   const input = document.getElementById(`preco-${catKey}-${prodKey}`);
   const novoPreco = parseFloat(input.value);
   if (isNaN(novoPreco) || novoPreco < 0) { alert('Preço inválido!'); return; }
-  set(ref(db, `cardapio/${catKey}/${prodKey}/preco`), novoPreco)
+  set(ref(db, `precos/${prodKey}`), novoPreco)
     .then(() => {
       input.style.borderColor = '#2fb36d';
       setTimeout(() => input.style.borderColor = '#303a33', 1500);
