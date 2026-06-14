@@ -980,6 +980,22 @@ function abrirMesa(id){
   salvarMesaFirebase(mesaAtual);
   document.getElementById('titulo-mesa').textContent='Mesa '+String(id).padStart(2,'0');
   document.getElementById('tempo-mesa').textContent='Aberta há '+tempoMesa(mesaAtual.inicio);
+  carregarPrecosEAbrirPedido();
+}
+
+async function carregarPrecosEAbrirPedido(){
+  try {
+    const snap = await get(ref(db, 'precos'));
+    if(snap.exists()) {
+      const precos = snap.val();
+      categorias.forEach(cat => {
+        cat.produtos.forEach(p => {
+          const chave = p.nome.replace(/[^a-zA-Z0-9]/g,'_').substring(0,30);
+          if(precos[chave] !== undefined) p.preco = precos[chave];
+        });
+      });
+    }
+  } catch(e) { console.warn('Preços offline, usando padrão'); }
   renderCategorias();renderCarrinho();tela('pedido');
 }
 window.voltarMesas=()=>{renderMesas();tela('mesas');};
