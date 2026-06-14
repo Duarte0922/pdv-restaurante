@@ -474,12 +474,31 @@ input[type=number]{background:#1a201c;border:1px solid var(--border3);border-rad
           style="flex:1;padding:12px 6px;border-radius:14px;border:2px solid var(--border3);background:linear-gradient(180deg,#0d1f12,#091410);cursor:pointer;font-family:var(--font);text-align:center;transition:all .15s;">
           <div style="font-size:20px;">💵</div>
           <div style="font-size:12px;font-weight:700;color:var(--verde);margin-top:3px;">Dinheiro</div>
-           </button>
+
+          </button>
       </div>
     </div>
+
+    <!-- Valor parcial (só aparece no modo parcial) -->
+    <div id="fc-parcial-valor" style="display:none;margin-bottom:12px;">
+      <div style="font-size:13px;font-weight:600;margin-bottom:6px;color:#c89a2a;">Valor Parcial (R$)</div>
+      <input type="number" id="fc-valor-parcial" min="0" step="0.01" placeholder="0,00"
+        style="width:100%;padding:12px;background:#1a201c;border:1px solid var(--border3);border-radius:12px;color:var(--txt);font-size:18px;font-family:var(--font);text-align:right;">
+    </div>
+
+    <div id="fc-resumo" style="background:rgba(47,179,109,.07);border:1px solid #2a4a30;border-radius:12px;padding:10px 14px;margin-bottom:14px;display:none;">
+      <div style="font-size:12px;color:#8ecfaa;" id="fc-resumo-texto">—</div>
+    </div>
+
+    <div style="display:flex;gap:8px;">
+      <button class="btn" onclick="fecharModal('modal-fechar-caixa');resetFechamentoCaixa();" style="flex:1;">Cancelar</button>
+      <button class="btn btn-red" id="btn-confirmar-fechamento-caixa" onclick="confirmarFechamentoCaixa()" style="flex:1;font-weight:700;opacity:.4;pointer-events:none;">Confirmar</button>
+    </div>
+    <div style="margin-top:10px;text-align:center;font-size:11px;color:var(--txt3);">⚠ Imprima o relatório antes de fechar.</div>
   </div>
 </div>
-        <!-- MODAL PARCIAL CX -->
+
+       <!-- MODAL PARCIAL CX -->
     <div class="modal-overlay" id="modal-parcial-cx">
     <div class="modal-box" style="max-width:500px;width:100%;padding:16px 14px;">
         <div style="font-size:17px;font-weight:700;margin-bottom:4px;">🧾 Selecionar Itens</div>
