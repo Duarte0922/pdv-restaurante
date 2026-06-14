@@ -1709,20 +1709,18 @@ setTimeout(()=>{ renderMesasCaixaComClick(); }, 800);
 let todosProdutos = [];
 
 function carregarProdutosPrecos() {
-  const dbRef = ref(db, 'cardapio');
-  get(dbRef).then(snap => {
-    todosProdutos = [];
-    snap.forEach(catSnap => {
-      catSnap.forEach(prodSnap => {
-        todosProdutos.push({
-          key: prodSnap.key,
-          catKey: catSnap.key,
-          ...prodSnap.val()
-        });
+  todosProdutos = [];
+  categoriasCx.forEach(cat => {
+    cat.produtos.forEach(p => {
+      todosProdutos.push({
+        key: p.nome.replace(/[^a-zA-Z0-9]/g,'_').substring(0,30),
+        catKey: cat.nome,
+        nome: p.nome,
+        preco: p.preco || p.tamanhos?.M || 0
       });
     });
-    renderListaPrecos(todosProdutos);
   });
+  renderListaPrecos(todosProdutos);
 }
 
 window.filtrarProdutos = function() {
