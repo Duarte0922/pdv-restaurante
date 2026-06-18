@@ -845,19 +845,23 @@ window.filtrarMM2 = function(tipo){
 // ════════════════════════════════════════════════════════════════
 // CARDÁPIO
 // ════════════════════════════════════════════════════════════════
-const pizzasTrad=['01 - Frango c/ Catupiry','02 - Palmito á Bolonhesa','03 - Palmito c/ Catupiry',
+const BORDAS_CX = { 'Catupiry':{M:11,G:13,GG:15}, 'Cheddar/Catupiry':{M:12,G:14,GG:16} };
+
+const pizzasTradCx = ['01 - Frango c/ Catupiry','02 - Palmito á Bolonhesa','03 - Palmito c/ Catupiry',
   '04 - Portuguesa','05 - Napolitana','06 - Calabresa','07 - Mussarela','08 - Á Moda',
   '09 - Frango á Bolonhesa','10 - Presunto','11 - Vegetariana','12 - Bacon','13 - Bacon Milho',
   '14 - Sugestão Renito','15 - Atum','16 - Chef Cheddar','17 - Espanta Vampiro'
 ].map(n=>({nome:n,tamanhos:{M:40.90,G:52.90,GG:61.90}}));
-const pizzasEsp=['18 - Lombo Tropical','19 - Lombo Canadense','20 - Milhombo','21 - A Moda Renito',
+
+const pizzasEspCx = ['18 - Lombo Tropical','19 - Lombo Canadense','20 - Milhombo','21 - A Moda Renito',
   '22 - Quatro Queijo','23 - Salaminho Italiano','24 - 4 Carnes','25 - 5 Carnes',
   '26 - Nordestina','27 - Porconobilis','28 - A Moda Especial'
 ].map(n=>({nome:n,tamanhos:{M:45.90,G:57.90,GG:76.90}}));
-const categorias=[
-  {nome:'Pizza Trad.',icon:'🍕',pizza:true,produtos:pizzasTrad},
-  {nome:'Pizza Esp.',icon:'🌟',pizza:true,produtos:pizzasEsp},
-  {nome:'Sanduíches',icon:'🍔',produtos:[
+
+const categoriasCx = [
+  {nome:'Pizza Trad.', img:'img/pizza-trad.jpeg', pizza:true, produtos:pizzasTradCx},
+  {nome:'Pizza Esp.', img:'img/pizza-esp.jpeg', pizza:true, produtos:pizzasEspCx},
+  {nome:'Sanduíches', img:'img/sanduiches.jpeg', produtos:[
     {nome:'01 - Hamburguer',preco:10},{nome:'02 - X-Burguer',preco:11},{nome:'03 - Misto Especial',preco:11},
     {nome:'04 - X-Bacon',preco:14},{nome:'05 - Framburguer',preco:14.5},{nome:'06 - X-Egg-Burguer',preco:14.5},
     {nome:'07 - X-Egg-Bacon',preco:16},{nome:'08 - X-Tudo',preco:17},{nome:'09 - Daliane',preco:23.5},
@@ -868,7 +872,7 @@ const categorias=[
     {nome:'22 - Dom Geraldo',preco:29.5},{nome:'23 - São Carlos',preco:24.5},{nome:'24 - Dom Cleiton',preco:31.5},
     {nome:'25 - F-Kalll',preco:32.5},{nome:'26 - Marley',preco:25.5},{nome:'27 - Betoven',preco:35.5},
   ]},
-  {nome:'Porções',icon:'🍟',carne:true,produtos:[
+  {nome:'Porções', img:'img/porcoes.jpeg', carne:true, produtos:[
     {nome:'Fritas 400g Mussarela',preco:24.9},{nome:'Fritas 400g Muss./Bacon',preco:34.9},
     {nome:'Fritas 400g Muss./Bacon/Cala.',preco:49.9},{nome:'Carne de Sol c/ Fritas',preco:75.9},
     {nome:'Contra Filé c/ Fritas',preco:77.9},{nome:'Fígado com Jiló',preco:32.9},
@@ -878,47 +882,31 @@ const categorias=[
     {nome:'Picanha',preco:96.9},{nome:'Costelinha c/ Mandioca',preco:67.9},
     {nome:'Coxinha da Asa 1kg',preco:50.9},
   ]},
-  {nome:'Peixes',icon:'🐟',produtos:[
+  {nome:'Peixes', img:'img/peixes.jpeg', produtos:[
     {nome:'Tilápia 400g Molho Especial',preco:53.9},{nome:'Tilápia 400g c/ Batata',preco:68.9},
     {nome:'Cascudo 800g Molho Especial',preco:46.9},{nome:'Cascudo 800g c/ Batata',preco:60.9},
     {nome:'Cascudo 400g Molho Especial',preco:23.9},{nome:'Cascudo 400g c/ Batata',preco:30.9},
   ]},
-  {nome:'Bebidas',icon:'🥤',produtos:[
-    // ── Cozinha (preparados na hora) ──
-    {nome:'Suco de Caixinha',preco:5,bar:true},
-    {nome:'Suco 1 Litro',preco:12},
+  {nome:'Bebidas', img:'img/bebidas.jpeg', produtos:[
+    {nome:'Suco de Caixinha',preco:5,bar:true},{nome:'Suco 1 Litro',preco:12},
     {nome:'Polpa Acerola/Abacaxi/Laranja/Morango',preco:7.5},
     {nome:'Polpa Graviola/Cacau/Maracujá/Açaí',preco:8},
-    // ── Bar (prontos de fábrica) ──
-    {nome:'Refri 1L Guaraná',preco:9,bar:true},
-    {nome:'Refri 1L Coca-Cola',preco:12,bar:true},
-    {nome:'Refri 2L Fanta/Guaraná',preco:15,bar:true},
-    {nome:'Refri 2L Coca-Cola',preco:17,bar:true},
+    {nome:'Refri 1L Guaraná',preco:9,bar:true},{nome:'Refri 1L Coca-Cola',preco:12,bar:true},
+    {nome:'Refri 2L Fanta/Guaraná',preco:15,bar:true},{nome:'Refri 2L Coca-Cola',preco:17,bar:true},
     {nome:'Refrigerante Lata',preco:6,bar:true},
   ]},
-  {nome:'Aperitivos/Cervejas',icon:'🍺',produtos:[
-    // ── Cervejas (bar) ──
+  {nome:'Cervejas', img:'img/cervejas.jpeg', produtos:[
     {nome:'Brahma / Skol 600ml',preco:10,bar:true},{nome:'Kaiser 600ml',preco:8,bar:true},
     {nome:'Original 600ml',preco:13,bar:true},{nome:'Spaten / Stella 600ml',preco:14,bar:true},
     {nome:'Heineken 600ml',preco:16,bar:true},
-    // ── Vinhos (bar) ──
-    {nome:'Vinho Taça (Chapinha/Campo Largo/Canção)',preco:22.9,bar:true},
-    {nome:'Vinho Garrafa (Chapinha/Campo Largo/Canção)',preco:22.9,bar:true},
+    {nome:'Vinho Taça',preco:22.9,bar:true},{nome:'Vinho Garrafa',preco:22.9,bar:true},
     {nome:'Vinho Pergola Taça',preco:10.9,bar:true},{nome:'Vinho Pergola Garrafa',preco:45.9,bar:true},
-    // ── Whisky (bar) ──
     {nome:'White Horse',preco:15,bar:true},{nome:'Old Eight',preco:8,bar:true},
-    {nome:'Jone Walk Red',preco:17,bar:true},{nome:'Natu Nobilis',preco:8,bar:true},
-    // ── Caipirinhas (cozinha — preparadas na hora) ──
     {nome:'Caip Orlof — Abacaxi',preco:20},{nome:'Caip Orlof — Morango',preco:20},
     {nome:'Caip Orlof — Limão',preco:20},{nome:'Caip Orlof — Maracujá',preco:20},
-    {nome:'Caip Orlof — Uva',preco:20},
-    // ── Aperitivos (bar) ──
-    {nome:'Pinga 51',preco:5,bar:true},{nome:'Conhaque Pres.',preco:5,bar:true},
-    {nome:'Vodka Orlof',preco:7,bar:true},{nome:'Seleta',preco:7,bar:true},{nome:'Vale Verde',preco:13,bar:true},
-    {nome:'Campari',preco:13,bar:true},{nome:'Pinga da Roça',preco:4,bar:true},
-    {nome:'Conhaque Dumek',preco:11,bar:true},{nome:'Salinas',preco:7,bar:true},{nome:'Rum Bacardi',preco:10,bar:true},
+    {nome:'Pinga 51',preco:5,bar:true},{nome:'Vodka Orlof',preco:7,bar:true},
   ]},
-  {nome:'Espaguete',icon:'🍝',produtos:[
+  {nome:'Espaguete', img:'img/espaguete.jpeg', produtos:[
     {nome:'Espaguete na Chapa — Pequeno',preco:19.9},
     {nome:'Espaguete na Chapa — Grande',preco:29.9},
   ]},
