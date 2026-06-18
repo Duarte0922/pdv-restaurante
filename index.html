@@ -178,6 +178,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
   overflow-y: auto !important;       /* Adiciona scroll apenas na lista de itens se necessário */
 }
 
+
 #screen-fechamento .content div[style*="var(--verde-bg)"] {
   padding: 14px 16px !important;
   margin: 2px 0 !important;
@@ -243,7 +244,19 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
   flex-shrink: 0 !important;         /* Impede distorções no botão principal */
   margin-bottom: 20px !important;
 }
+/* Imagens das categorias */
+.cat-btn img {
+  box-shadow: 0 2px 6px rgba(0,0,0,.3);
+  border: 1px solid rgba(255,255,255,.08);
+}
 
+/* Animação suave */
+.cat-btn {
+  transition: transform .1s, background .15s, border-color .15s;
+}
+.cat-btn:active {
+  transform: scale(.95);
+}
 
 /* OUTROS COMPONENTES DO FECHAMENTO */
 .pag-btn { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 14px 6px; gap: 6px; font-size: 12px; border-radius: 18px; }
@@ -822,55 +835,42 @@ window.filtrarMM1 = function(tipo){
   });
 };
 
-function renderCategorias(){
-  const div = document.getElementById('lista-categorias');
-  // Se estiver na tela do caixa usa categoriasCx, se estiver no garçom usa categorias
-  const lista = (typeof categoriasCx !== 'undefined' && categoriasCx.length > 0) ? categoriasCx : categorias;
-  
-  div.innerHTML = lista.map((c, idx) => `
-    <button onclick="selecionarCategoria(${idx})" 
-      style="width:100%;background:${categoriaAtual===idx?'var(--verde-bg)':'var(--card)'};
-      border:1px solid ${categoriaAtual===idx?'var(--verde)':'var(--border2)'};
-      border-radius:12px;color:${categoriaAtual===idx?'#fff':'var(--txt)'};
-      padding:12px;font-size:14px;font-weight:700;cursor:pointer;
-      display:flex;align-items:center;gap:10px;text-align:left;">
-      <img src="${c.img || 'img/pizza-trad.jpeg'}" style="width:24px;height:24px;object-fit:cover;border-radius:6px;flex-shrink:0;">
-      <span>${c.nome}</span>
-    </button>
-  `).join('');
-}
-
 window.filtrarMM2 = function(tipo){
   document.getElementById('mm2-btn-trad').className='btn'+(tipo==='trad'?' btn-azul':'');
   document.getElementById('mm2-btn-esp').className ='btn'+(tipo==='esp' ?' btn-azul':'');
   renderListaMM('mm2-lista', tipo, (it)=>{
     fecharModal('modal-meiomeio2');
     const total = mmSabor1.metade + it.metade;
-    const nome   = '½ '+mmSabor1.nome+' / ½ '+it.nome;
+    const nome  = '½ '+mmSabor1.nome+' / ½ '+it.nome;
     const tam   = mmTamanho;
     mmSabor1 = null; mmTamanho = null;
     setTimeout(()=>abrirBorda(nome, tam, total, 'Pizza Trad.'), 200);
   });
 };
+// ════════════════════════════════════════════════════════════════
+// PIZZAS (DEFINIR ANTES DO CARDÁPIO)
+// ════════════════════════════════════════════════════════════════
 
-// ════════════════════════════════════════════════════════════════
-// CARDÁPIO (GARÇOM)
-// ════════════════════════════════════════════════════════════════
-const pizzasTrad=['01 - Frango c/ Catupiry','02 - Palmito á Bolonhesa','03 - Palmito c/ Catupiry',
+const pizzasTrad = ['01 - Frango c/ Catupiry','02 - Palmito á Bolonhesa','03 - Palmito c/ Catupiry',
   '04 - Portuguesa','05 - Napolitana','06 - Calabresa','07 - Mussarela','08 - Á Moda',
   '09 - Frango á Bolonhesa','10 - Presunto','11 - Vegetariana','12 - Bacon','13 - Bacon Milho',
   '14 - Sugestão Renito','15 - Atum','16 - Chef Cheddar','17 - Espanta Vampiro'
-].map(n=>({nome:n,tamanhos:{M:40.90,G:52.90,GG:61.90}}));
+].map(n => ({nome: n, tamanhos: {M: 40.90, G: 52.90, GG: 61.90}}));
 
-const pizzasEsp=['18 - Lombo Tropical','19 - Lombo Canadense','20 - Milhombo','21 - A Moda Renito',
+const pizzasEsp = ['18 - Lombo Tropical','19 - Lombo Canadense','20 - Milhombo','21 - A Moda Renito',
   '22 - Quatro Queijo','23 - Salaminho Italiano','24 - 4 Carnes','25 - 5 Carnes',
   '26 - Nordestina','27 - Porconobilis','28 - A Moda Especial'
-].map(n=>({nome:n,tamanhos:{M:45.90,G:57.90,GG:76.90}}));
+].map(n => ({nome: n, tamanhos: {M: 45.90, G: 57.90, GG: 76.90}}));
 
+// ════════════════════════════════════════════════════════════════
+
+// ════════════════════════════════════════════════════════════════
+// CARDÁPIO
+// ════════════════════════════════════════════════════════════════
 const categorias=[
-  {nome:'Pizza Trad.',icon:'🍕', img:'img/pizza-trad.jpeg', pizza:true,produtos:pizzasTrad},
-  {nome:'Pizza Esp.',icon:'🌟', img:'img/pizza-esp.jpeg', pizza:true,produtos:pizzasEsp},
-  {nome:'Sanduíches',icon:'🍔', img:'img/sanduiches.jpeg', produtos:[
+  {nome:'Pizza Trad.',icon:'🍕',img:'img/pizza-trad.jpg',pizza:true,produtos:pizzasTrad},
+  {nome:'Pizza Esp.',icon:'🌟',img:'img/pizza-esp.jpg',pizza:true,produtos:pizzasEsp},
+  {nome:'Sanduíches',icon:'🍔',img:'img/sanduiches.jpg',produtos:[
     {nome:'01 - Hamburguer',preco:10},{nome:'02 - X-Burguer',preco:11},{nome:'03 - Misto Especial',preco:11},
     {nome:'04 - X-Bacon',preco:14},{nome:'05 - Framburguer',preco:14.5},{nome:'06 - X-Egg-Burguer',preco:14.5},
     {nome:'07 - X-Egg-Bacon',preco:16},{nome:'08 - X-Tudo',preco:17},{nome:'09 - Daliane',preco:23.5},
@@ -881,7 +881,7 @@ const categorias=[
     {nome:'22 - Dom Geraldo',preco:29.5},{nome:'23 - São Carlos',preco:24.5},{nome:'24 - Dom Cleiton',preco:31.5},
     {nome:'25 - F-Kalll',preco:32.5},{nome:'26 - Marley',preco:25.5},{nome:'27 - Betoven',preco:35.5},
   ]},
-  {nome:'Porções',icon:'🍟', img:'img/porcoes.jpeg', carne:true,produtos:[
+  {nome:'Porções',icon:'🍟',img:'img/porcoes.jpg',carne:true,produtos:[
     {nome:'Fritas 400g Mussarela',preco:24.9},{nome:'Fritas 400g Muss./Bacon',preco:34.9},
     {nome:'Fritas 400g Muss./Bacon/Cala.',preco:49.9},{nome:'Carne de Sol c/ Fritas',preco:75.9},
     {nome:'Contra Filé c/ Fritas',preco:77.9},{nome:'Fígado com Jiló',preco:32.9},
@@ -891,12 +891,12 @@ const categorias=[
     {nome:'Picanha',preco:96.9},{nome:'Costelinha c/ Mandioca',preco:67.9},
     {nome:'Coxinha da Asa 1kg',preco:50.9},
   ]},
-  {nome:'Peixes',icon:'🐟', img:'img/peixes.jpeg', produtos:[
+  {nome:'Peixes',icon:'🐟',img:'img/peixes.jpg',produtos:[
     {nome:'Tilápia 400g Molho Especial',preco:53.9},{nome:'Tilápia 400g c/ Batata',preco:68.9},
     {nome:'Cascudo 800g Molho Especial',preco:46.9},{nome:'Cascudo 800g c/ Batata',preco:60.9},
     {nome:'Cascudo 400g Molho Especial',preco:23.9},{nome:'Cascudo 400g c/ Batata',preco:30.9},
   ]},
-  {nome:'Bebidas',icon:'🥤', img:'img/bebidas.jpeg', produtos:[
+  {nome:'Bebidas',icon:'🥤',img:'img/bebidas.jpg',produtos:[
     {nome:'Suco de Caixinha',preco:5,bar:true},
     {nome:'Suco 1 Litro',preco:12},
     {nome:'Polpa Acerola/Abacaxi/Laranja/Morango',preco:7.5},
@@ -907,7 +907,7 @@ const categorias=[
     {nome:'Refri 2L Coca-Cola',preco:17,bar:true},
     {nome:'Refrigerante Lata',preco:6,bar:true},
   ]},
-  {nome:'Aperitivos/Cervejas',icon:'🍺', img:'img/cervejas.jpeg', produtos:[
+  {nome:'Aperitivos/Cervejas',icon:'🍺',img:'img/cervejas.jpg',produtos:[
     {nome:'Brahma / Skol 600ml',preco:10,bar:true},{nome:'Kaiser 600ml',preco:8,bar:true},
     {nome:'Original 600ml',preco:13,bar:true},{nome:'Spaten / Stella 600ml',preco:14,bar:true},
     {nome:'Heineken 600ml',preco:16,bar:true},
@@ -924,70 +924,60 @@ const categorias=[
     {nome:'Campari',preco:13,bar:true},{nome:'Pinga da Roça',preco:4,bar:true},
     {nome:'Conhaque Dumek',preco:11,bar:true},{nome:'Salinas',preco:7,bar:true},{nome:'Rum Bacardi',preco:10,bar:true},
   ]},
-  {nome:'Espaguete',icon:'🍝', img:'img/espaguete.jpeg', produtos:[
+  {nome:'Espaguete',icon:'🍝',img:'img/espaguete.jpg',produtos:[
     {nome:'Espaguete na Chapa — Pequeno',preco:19.9},
     {nome:'Espaguete na Chapa — Grande',preco:29.9},
   ]},
 ];
 
-const categoriasCx = [
-  {nome:'Pizza Trad.', icon:'🍕', img:'img/pizza-trad.jpg', pizza:true, produtos:pizzasTradCx},
-  {nome:'Pizza Esp.', icon:'🌟', img:'img/pizza-esp.jpg', pizza:true, produtos:pizzasEspCx},
-  {nome:'Sanduíches', icon:'🍔', img:'img/sanduiches.jpg', produtos:[
-    {nome:'01 - Hamburguer',preco:10},{nome:'02 - X-Burguer',preco:11},{nome:'03 - Misto Especial',preco:11},
-    {nome:'04 - X-Bacon',preco:14},{nome:'05 - Framburguer',preco:14.5},{nome:'06 - X-Egg-Burguer',preco:14.5},
-    {nome:'07 - X-Egg-Bacon',preco:16},{nome:'08 - X-Tudo',preco:17},{nome:'09 - Daliane',preco:23.5},
-    {nome:'10 - 5 Carnes',preco:24.5},{nome:'11 - X-Tudão',preco:19.5},{nome:'12 - X-Frango',preco:19.5},
-    {nome:'13 - Super X-Tudo',preco:24.5},{nome:'14 - RM Sanduíche',preco:25},{nome:'15 - LR Burguer',preco:26.5},
-    {nome:'16 - Rangão',preco:28.5},{nome:'17 - Califórnia',preco:22.5},{nome:'18 - X-Bruno',preco:22.5},
-    {nome:'19 - Chefe',preco:24.5},{nome:'20 - Patrão',preco:30.5},{nome:'21 - Ki-Frango',preco:24.5},
-    {nome:'22 - Dom Geraldo',preco:29.5},{nome:'23 - São Carlos',preco:24.5},{nome:'24 - Dom Cleiton',preco:31.5},
-    {nome:'25 - F-Kalll',preco:32.5},{nome:'26 - Marley',preco:25.5},{nome:'27 - Betoven',preco:35.5},
-  ]},
-  {nome:'Porções', icon:'🍟', img:'img/porcoes.jpg', carne:true, produtos:[
-    {nome:'Fritas 400g Mussarela',preco:24.9},{nome:'Fritas 400g Muss./Bacon',preco:34.9},
-    {nome:'Fritas 400g Muss./Bacon/Cala.',preco:49.9},{nome:'Carne de Sol c/ Fritas',preco:75.9},
-    {nome:'Contra Filé c/ Fritas',preco:77.9},{nome:'Fígado com Jiló',preco:32.9},
-    {nome:'Linguiça Caseira c/ Fritas',preco:55.9},{nome:'Pernil c/ Fritas/Mandioca',preco:55.9},
-    {nome:'Arroz na Chapa',preco:24.9},{nome:'Arroz com Pernil',preco:36.9},
-    {nome:'Porção Mista',preco:136.9},{nome:'Filé de Peito de Frango',preco:42.9},
-    {nome:'Picanha',preco:96.9},{nome:'Costelinha c/ Mandioca',preco:67.9},
-    {nome:'Coxinha da Asa 1kg',preco:50.9},
-  ]},
-  {nome:'Peixes', icon:'🐟', img:'img/peixes.jpg', produtos:[
-    {nome:'Tilápia 400g Molho Especial',preco:53.9},{nome:'Tilápia 400g c/ Batata',preco:68.9},
-    {nome:'Cascudo 800g Molho Especial',preco:46.9},{nome:'Cascudo 800g c/ Batata',preco:60.9},
-    {nome:'Cascudo 400g Molho Especial',preco:23.9},{nome:'Cascudo 400g c/ Batata',preco:30.9},
-  ]},
-  {nome:'Bebidas', icon:'🥤', img:'img/bebidas.jpg', produtos:[
-    {nome:'Suco de Caixinha',preco:5,bar:true},{nome:'Suco 1 Litro',preco:12},
-    {nome:'Polpa Acerola/Abacaxi/Laranja/Morango',preco:7.5},
-    {nome:'Polpa Graviola/Cacau/Maracujá/Açaí',preco:8},
-    {nome:'Refri 1L Guaraná',preco:9,bar:true},{nome:'Refri 1L Coca-Cola',preco:12,bar:true},
-    {nome:'Refri 2L Fanta/Guaraná',preco:15,bar:true},{nome:'Refri 2L Coca-Cola',preco:17,bar:true},
-    {nome:'Refrigerante Lata',preco:6,bar:true},
-  ]},
-  {nome:'Cervejas', icon:'🍺', img:'img/cervejas.jpg', produtos:[
-    {nome:'Brahma / Skol 600ml',preco:10,bar:true},{nome:'Kaiser 600ml',preco:8,bar:true},
-    {nome:'Original 600ml',preco:13,bar:true},{nome:'Spaten / Stella 600ml',preco:14,bar:true},
-    {nome:'Heineken 600ml',preco:16,bar:true},
-    {nome:'Vinho Taça',preco:22.9,bar:true},{nome:'Vinho Garrafa',preco:22.9,bar:true},
-    {nome:'Vinho Pergola Taça',preco:10.9,bar:true},{nome:'Vinho Pergola Garrafa',preco:45.9,bar:true},
-    {nome:'White Horse',preco:15,bar:true},{nome:'Old Eight',preco:8,bar:true},
-    {nome:'Caip Orlof — Abacaxi',preco:20},{nome:'Caip Orlof — Morango',preco:20},
-    {nome:'Caip Orlof — Limão',preco:20},{nome:'Caip Orlof — Maracujá',preco:20},
-    {nome:'Pinga 51',preco:5,bar:true},{nome:'Vodka Orlof',preco:7,bar:true},
-  ]},
-  {nome:'Espaguete', icon:'🍝', img:'img/espaguete.jpg', produtos:[
-    {nome:'Espaguete na Chapa — Pequeno',preco:19.9},
-    {nome:'Espaguete na Chapa — Grande',preco:29.9},
-  ]},
-];
 
 // ── ESTADO ──
 let mesas=[], mesaAtual=null, itemPendente=null, pagSelecionado=null;
 let descontoAtual=0, carrinhoAberto=true;
 let abaFech='total', qtdSel={}, pagDiv=[];
+
+function inicializarMesas(n){
+  const novas=Array.from({length:n},(_,i)=>{ const ex=mesas.find(m=>m.id===i+1); return ex||{id:i+1,status:'livre',inicio:null,pedido:[]}; });
+  mesas=novas;
+}
+
+// ── UTILS ──
+const fmt=v=>'R$ '+Number(v).toFixed(2).replace('.',',');
+const tempoMesa=ts=>{if(!ts)return'';const m=Math.floor((Date.now()-ts)/60000);return m<60?m+' min':Math.floor(m/60)+'h '+(m%60)+'min';};
+const getSetor=(cat,bar)=>bar?'bar':'cozinha';
+const iconePag=p=>({dinheiro:'💵',cartao:'💳',pix:'📲'}[p]||'❓');
+function tela(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('screen-'+id).classList.add('active');window.scrollTo(0,0);}
+const abrirModal=id=>document.getElementById(id).classList.add('open');
+const fecharModal=id=>document.getElementById(id).classList.remove('open');
+window.fecharModal=fecharModal;
+function mostrarStatus(msg,tipo,tempo=3000){
+  const b=document.getElementById('status-bar');
+  b.textContent=msg;b.className='show '+tipo;
+  if(tempo>0)setTimeout(()=>b.classList.remove('show'),tempo);
+}
+
+// ── MESAS ──
+function renderMesas(){
+  const grid=document.getElementById('mesa-grid');
+  grid.innerHTML='';
+  let liv=0,ocu=0,con=0;
+  mesas.forEach(m=>{
+    if(m.status==='livre')liv++; else if(m.status==='ocupada')ocu++; else con++;
+    const total=(m.pedido||[]).reduce((s,i)=>s+i.preco*i.qtd,0);
+    const el=document.createElement('div');
+    el.className='mesa-card '+m.status;
+    const cor=m.status==='livre'?'#2f9d64':m.status==='ocupada'?'#cf5b74':'#c89a2a';
+    el.innerHTML=`<div style="font-size:15px;font-weight:700;color:${cor};">Mesa ${String(m.id).padStart(2,'0')}</div>
+      <div style="font-size:10px;color:${cor};margin:2px 0;">${m.status==='livre'?'Livre':m.status==='ocupada'?'Ocupada':'Conta'}</div>
+      ${m.inicio?`<div style="font-size:10px;color:${cor};opacity:.8;">${tempoMesa(m.inicio)}</div>`:''}
+      ${total>0?`<div style="font-size:13px;font-weight:700;color:${cor};margin-top:3px;">${fmt(total)}</div>`:''}`;
+    el.onpointerup=()=>abrirMesa(m.id);
+    grid.appendChild(el);
+  });
+  document.getElementById('stat-livre').textContent=liv+' livres';
+  document.getElementById('stat-ocup').textContent=ocu+' ocupadas';
+  document.getElementById('stat-conta').textContent=con+' conta';
+}
 
 function abrirMesa(id){
   mesaAtual=mesas.find(m=>m.id===id);
@@ -1017,31 +1007,44 @@ async function carregarPrecosEAbrirPedido(){
 window.voltarMesas=()=>{renderMesas();tela('mesas');};
 window.voltarPedido=()=>tela('pedido');
 
+// ══════════════════════════════════════════════════
+// 🎨 FUNÇÃO PARA USAR IMAGENS NAS CATEGORIAS
+// ══════════════════════════════════════════════════
+function getIconHTML(cat, size = '32px'){
+  if(cat.img){
+    return `<img src="${cat.img}" alt="${cat.nome}" 
+      style="width:${size};height:${size};border-radius:8px;object-fit:cover;display:block;"
+      onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+      <span style="display:none;font-size:${parseInt(size)*0.6}px;align-items:center;justify-content:center;width:${size};height:${size};">${cat.icon || '🍽️'}</span>`;
+  }
+  return `<span style="font-size:${parseInt(size)*0.6}px;">${cat.icon || '🍽️'}</span>`;
+}
+
 // ── CATEGORIAS ──
 function renderCategorias(){
-  const div = document.getElementById('lista-categorias');
-  if (!div) return; // Segurança extra caso a div mude de nome
+  const list=document.getElementById('cat-list'); 
+  list.innerHTML='';
   
-  // Se existir categoriasCx usa ela, se não usa categorias
-  const lista = (typeof categoriasCx !== 'undefined' && categoriasCx.length > 0) ? categoriasCx : categorias;
-  
-  // Verifica se a variável de controle existe com segurança
-  const atualIdx = (typeof categoriaAtual !== 'undefined') ? categoriaAtual : 0;
-  
-  div.innerHTML = lista.map((c, idx) => {
-    const isAtivo = atualIdx === idx;
-    return `
-      <button onclick="selecionarCategoria(${idx})" 
-        style="width:100%;background:${isAtivo ? 'var(--verde-bg)' : 'var(--card)'};
-        border:1px solid ${isAtivo ? 'var(--verde)' : 'var(--border2)'};
-        border-radius:12px;color:${isAtivo ? '#fff' : 'var(--txt)'};
-        padding:12px;font-size:14px;font-weight:700;cursor:pointer;
-        display:flex;align-items:center;gap:10px;text-align:left;">
-        <img src="${c.img || 'img/pizza-trad.jpeg'}" style="width:24px;height:24px;object-fit:cover;border-radius:6px;flex-shrink:0;">
-        <span>${c.nome}</span>
-      </button>
+  categorias.forEach((c,i)=>{
+    const el=document.createElement('div');
+    el.className='cat-btn';
+    
+    // Usa a função getIconHTML para mostrar imagem ou emoji
+    el.innerHTML = `
+      ${getIconHTML(c, '36px')}
+      <span style="font-weight:500;">${c.nome}</span>
     `;
-  }).join('');
+    
+    if(i===0) el.classList.add('ativo');
+    
+    el.onclick=()=>{
+      document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('ativo'));
+      el.classList.add('ativo');
+      selecionarCat(i);
+    };
+    list.appendChild(el);
+  });
+  selecionarCat(0);
 }
 window.mudarAbaFech = function(aba){
   abaFech = aba;
