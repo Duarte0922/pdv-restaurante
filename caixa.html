@@ -1,10 +1,13 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="mobile-web-app-capable" content="yes">
-<title>🌙 Luar do Viena — Caixa</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>🌙 Luar do Viena — Caixa</title>
+  
+  <!-- CSS EXTERNO -->
+  <link rel="stylesheet" href="css/style.css">
 <style>
 :root{
   --verde:#2fb36d;--verde-dark:#1d7b49;--verde-bg:#1a3d28;
@@ -63,7 +66,19 @@ body{font-family:var(--font);background:var(--bg);color:var(--txt);touch-action:
   border-radius:var(--rad-lg);padding:14px 12px;text-align:center;}
 .total-label{font-size:12px;color:var(--txt2);margin-bottom:6px;}
 .total-valor{font-size:22px;font-weight:700;}
+/* Imagens das categorias */
+#cat-list-cx img {
+  box-shadow: 0 2px 6px rgba(0,0,0,.3);
+  border: 1px solid rgba(255,255,255,.08);
+}
 
+/* Animação suave */
+#cat-list-cx div {
+  transition: transform .1s, background .15s, border-color .15s;
+}
+#cat-list-cx div:active {
+  transform: scale(.95);
+}
 /* ── HISTÓRICO VENDAS ── */
 .venda-item{background:linear-gradient(180deg,#171c18,#131814);border:1px solid var(--border2);
   border-radius:14px;padding:10px 14px;margin-bottom:8px;}
@@ -202,7 +217,7 @@ input[type=number]{background:#1a201c;border:1px solid var(--border3);border-rad
     <div id="cat-list-cx" style="width:82px;background:rgba(20,26,21,.95);border-right:1px solid var(--border2);display:flex;flex-direction:column;gap:4px;padding:6px 4px;overflow-y:auto;flex-shrink:0;"></div>
     <div id="produto-area-cx" style="flex:1;min-height:0;overflow-y:auto;padding:8px;">
       <div id="cat-titulo-cx" style="font-size:11px;color:var(--txt2);margin-bottom:6px;padding:0 2px;"></div>
-      <div id="produto-grid-cx" style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;"></div>
+      <div id="produto-grid-cx"></div>
     </div>
   </div>
   <div id="carrinho-panel-cx" style="background:rgba(20,26,21,.99);border-top:1px solid var(--border3);flex-shrink:0;display:flex;flex-direction:column;max-height:40vh;">
@@ -510,26 +525,6 @@ input[type=number]{background:#1a201c;border:1px solid var(--border3);border-rad
         </div>
       </div>
     </div>
-
-    <!-- Valor parcial (só aparece no modo parcial) -->
-    <div id="fc-parcial-valor" style="display:none;margin-bottom:12px;">
-      <div style="font-size:13px;font-weight:600;margin-bottom:6px;color:#c89a2a;">Valor Parcial (R$)</div>
-      <input type="number" id="fc-valor-parcial" min="0" step="0.01" placeholder="0,00"
-        style="width:100%;padding:12px;background:#1a201c;border:1px solid var(--border3);border-radius:12px;color:var(--txt);font-size:18px;font-family:var(--font);text-align:right;">
-    </div>
-
-    <!-- Resumo selecionado -->
-    <div id="fc-resumo" style="background:rgba(47,179,109,.07);border:1px solid #2a4a30;border-radius:12px;padding:10px 14px;margin-bottom:14px;display:none;">
-      <div style="font-size:12px;color:#8ecfaa;" id="fc-resumo-texto">—</div>
-    </div>
-
-    <div style="display:flex;gap:8px;">
-      <button class="btn" onclick="fecharModal('modal-fechar-caixa');resetFechamentoCaixa();" style="flex:1;">Cancelar</button>
-      <button class="btn btn-red" id="btn-confirmar-fechamento-caixa" onclick="confirmarFechamentoCaixa()" style="flex:1;font-weight:700;opacity:.4;pointer-events:none;">Confirmar</button>
-    </div>
-    <div style="margin-top:10px;text-align:center;font-size:11px;color:var(--txt3);">⚠ Imprima o relatório antes de fechar.</div>
-  </div>
-</div>
 
 <script type="module">
 // 1. Imports
@@ -1087,27 +1082,61 @@ onValue(ref(db, '.info/connected'), (snap) => {
     el.style.color = on ? 'var(--verde)' : '#ff8080';
   }
 });
+
+
+
 // ══════════════════════════════════════════════
 // CAIXA — FUNÇÕES DO GARÇOM (PEDIDO POR MESA)
 // ══════════════════════════════════════════════
 
+
 const BORDAS_CX = { 'Catupiry':{M:11,G:13,GG:15}, 'Cheddar/Catupiry':{M:12,G:14,GG:16} };
 
-const pizzasTradCx = ['01 - Frango c/ Catupiry','02 - Palmito á Bolonhesa','03 - Palmito c/ Catupiry',
+// Função para gerar nome de arquivo da imagem baseado no nome do produto
+function gerarNomeImagem(nome) {
+  return nome
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // converte á,ã,ç etc para a,c...
+    .toLowerCase()
+    .replace(/[0-9\s-]+/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/[^\w\-]/g, '')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+// Função para gerar caminho da imagem na pasta produtos/
+function gerarCaminhoImagemProduto(nomeProduto) {
+  const nome = gerarNomeImagem(nomeProduto);
+  return `produtos/${nome}.jpg`;
+}
+
+// Função para adicionar imagem automaticamente aos produtos (pasta produtos/)
+function adicionarImagem(produtos) {
+  return produtos.map(p => ({
+    ...p,
+    img: gerarCaminhoImagemProduto(p.nome)
+  }));
+}
+
+// PIZZAS
+const pizzasTradCx = [
+  '01 - Frango c/ Catupiry','02 - Palmito á Bolonhesa','03 - Palmito c/ Catupiry',
   '04 - Portuguesa','05 - Napolitana','06 - Calabresa','07 - Mussarela','08 - Á Moda',
   '09 - Frango á Bolonhesa','10 - Presunto','11 - Vegetariana','12 - Bacon','13 - Bacon Milho',
   '14 - Sugestão Renito','15 - Atum','16 - Chef Cheddar','17 - Espanta Vampiro'
-].map(n=>({nome:n,tamanhos:{M:40.90,G:52.90,GG:61.90}}));
+].map(n => ({nome:n, tamanhos:{M:40.90, G:52.90, GG:61.90}}));
 
-const pizzasEspCx = ['18 - Lombo Tropical','19 - Lombo Canadense','20 - Milhombo','21 - A Moda Renito',
-  '22 - Quatro Queijo','23 - Salaminho Italiano','24 - 4 Carnes','25 - 5 Carnes',
+const pizzasEspCx = [
+  '18 - Lombo Tropical','19 - Lombo Canadense','20 - Milhombo','21 - A Moda Renito',
+  '22 - Quatro Queijo','23 - Salaminho Italiano','24 - Quatro Carnes','25 - Cinco Carnes',
   '26 - Nordestina','27 - Porconobilis','28 - A Moda Especial'
-].map(n=>({nome:n,tamanhos:{M:45.90,G:57.90,GG:76.90}}));
+].map(n => ({nome:n, tamanhos:{M:45.90, G:57.90, GG:76.90}}));
 
+// CATEGORIAS
 const categoriasCx = [
-  {nome:'Pizza Trad.',icon:'🍕',pizza:true,produtos:pizzasTradCx},
-  {nome:'Pizza Esp.',icon:'🌟',pizza:true,produtos:pizzasEspCx},
-  {nome:'Sanduíches',icon:'🍔',produtos:[
+  {nome:'Pizza Trad.', icon:'🍕', img:'img/pizza-trad.jpg', pizza:true, produtos: adicionarImagem(pizzasTradCx)},
+  {nome:'Pizza Esp.', icon:'🌟', img:'img/pizza-esp.jpg', pizza:true, produtos: adicionarImagem(pizzasEspCx)},
+  {nome:'Sanduíches', icon:'🍔', img:'img/sanduiches.jpg', produtos: adicionarImagem([
     {nome:'01 - Hamburguer',preco:10},{nome:'02 - X-Burguer',preco:11},{nome:'03 - Misto Especial',preco:11},
     {nome:'04 - X-Bacon',preco:14},{nome:'05 - Framburguer',preco:14.5},{nome:'06 - X-Egg-Burguer',preco:14.5},
     {nome:'07 - X-Egg-Bacon',preco:16},{nome:'08 - X-Tudo',preco:17},{nome:'09 - Daliane',preco:23.5},
@@ -1117,8 +1146,8 @@ const categoriasCx = [
     {nome:'19 - Chefe',preco:24.5},{nome:'20 - Patrão',preco:30.5},{nome:'21 - Ki-Frango',preco:24.5},
     {nome:'22 - Dom Geraldo',preco:29.5},{nome:'23 - São Carlos',preco:24.5},{nome:'24 - Dom Cleiton',preco:31.5},
     {nome:'25 - F-Kalll',preco:32.5},{nome:'26 - Marley',preco:25.5},{nome:'27 - Betoven',preco:35.5},
-  ]},
-  {nome:'Porções',icon:'🍟',carne:true,produtos:[
+  ])},
+  {nome:'Porções', icon:'🍟', img:'img/porcoes.jpg', carne:true, produtos: adicionarImagem([
     {nome:'Fritas 400g Mussarela',preco:24.9},{nome:'Fritas 400g Muss./Bacon',preco:34.9},
     {nome:'Fritas 400g Muss./Bacon/Cala.',preco:49.9},{nome:'Carne de Sol c/ Fritas',preco:75.9},
     {nome:'Contra Filé c/ Fritas',preco:77.9},{nome:'Fígado com Jiló',preco:32.9},
@@ -1127,21 +1156,21 @@ const categoriasCx = [
     {nome:'Porção Mista',preco:136.9},{nome:'Filé de Peito de Frango',preco:42.9},
     {nome:'Picanha',preco:96.9},{nome:'Costelinha c/ Mandioca',preco:67.9},
     {nome:'Coxinha da Asa 1kg',preco:50.9},
-  ]},
-  {nome:'Peixes',icon:'🐟',produtos:[
+  ])},
+  {nome:'Peixes', icon:'🐟', img:'img/peixes.jpg', produtos: adicionarImagem([
     {nome:'Tilápia 400g Molho Especial',preco:53.9},{nome:'Tilápia 400g c/ Batata',preco:68.9},
     {nome:'Cascudo 800g Molho Especial',preco:46.9},{nome:'Cascudo 800g c/ Batata',preco:60.9},
     {nome:'Cascudo 400g Molho Especial',preco:23.9},{nome:'Cascudo 400g c/ Batata',preco:30.9},
-  ]},
-  {nome:'Bebidas',icon:'🥤',produtos:[
+  ])},
+  {nome:'Bebidas', icon:'🥤', img:'img/bebidas.jpg', produtos: adicionarImagem([
     {nome:'Suco de Caixinha',preco:5,bar:true},{nome:'Suco 1 Litro',preco:12},
     {nome:'Polpa Acerola/Abacaxi/Laranja/Morango',preco:7.5},
     {nome:'Polpa Graviola/Cacau/Maracujá/Açaí',preco:8},
     {nome:'Refri 1L Guaraná',preco:9,bar:true},{nome:'Refri 1L Coca-Cola',preco:12,bar:true},
     {nome:'Refri 2L Fanta/Guaraná',preco:15,bar:true},{nome:'Refri 2L Coca-Cola',preco:17,bar:true},
     {nome:'Refrigerante Lata',preco:6,bar:true},
-  ]},
-  {nome:'Cervejas',icon:'🍺',produtos:[
+  ])},
+  {nome:'Cervejas', icon:'🍺', img:'img/cervejas.jpg', produtos: adicionarImagem([
     {nome:'Brahma / Skol 600ml',preco:10,bar:true},{nome:'Kaiser 600ml',preco:8,bar:true},
     {nome:'Original 600ml',preco:13,bar:true},{nome:'Spaten / Stella 600ml',preco:14,bar:true},
     {nome:'Heineken 600ml',preco:16,bar:true},
@@ -1151,11 +1180,11 @@ const categoriasCx = [
     {nome:'Caip Orlof — Abacaxi',preco:20},{nome:'Caip Orlof — Morango',preco:20},
     {nome:'Caip Orlof — Limão',preco:20},{nome:'Caip Orlof — Maracujá',preco:20},
     {nome:'Pinga 51',preco:5,bar:true},{nome:'Vodka Orlof',preco:7,bar:true},
-  ]},
-  {nome:'Espaguete',icon:'🍝',produtos:[
+  ])},
+  {nome:'Espaguete', icon:'🍝', img:'img/espaguete.jpg', produtos: adicionarImagem([
     {nome:'Espaguete na Chapa — Pequeno',preco:19.9},
     {nome:'Espaguete na Chapa — Grande',preco:29.9},
-  ]},
+  ])},
 ];
 
 // Estado do módulo garçom no caixa
@@ -1235,80 +1264,115 @@ function renderMesasCaixaComClick(){
   document.getElementById('c-stat-conta').textContent=con+' conta';
 }
 
+// ══════════════════════════════════════════════════
+// 🎨 FUNÇÃO PARA USAR IMAGENS NAS CATEGORIAS
+// ══════════════════════════════════════════════════
+function getIconHTML(cat, size = '32px'){
+  if(cat.img){
+    return `<img src="${cat.img}" alt="${cat.nome}" 
+      style="width:${size};height:${size};border-radius:8px;object-fit:cover;display:block;"
+      onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+      <span style="display:none;font-size:${parseInt(size)*0.6}px;align-items:center;justify-content:center;width:${size};height:${size};">${cat.icon || '🍽️'}</span>`;
+  }
+  return `<span style="font-size:${parseInt(size)*0.6}px;">${cat.icon || '🍽️'}</span>`;
+}
+
 // Categorias e Produtos
 function renderCategoriasCx(){
-  const list = document.getElementById('cat-list-cx');
-  list.innerHTML = '';
-
+  const list=document.getElementById('cat-list-cx'); 
+  list.innerHTML='';
+  
   categoriasCx.forEach((c,i)=>{
-    const el = document.createElement('div');
-
-    el.style.cssText = `
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      min-height:80px;
-      border-radius:14px;
-      padding:6px;
-      gap:4px;
-      font-size:10px;
-      line-height:1.2;
-      text-align:center;
-      border:1px solid var(--border3);
-      background:linear-gradient(180deg,#232a25,#171c18);
-      color:var(--txt);
-      cursor:pointer;
-    `;
-
+    const el=document.createElement('div');
+    el.style.cssText='display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:72px;border-radius:14px;padding:6px 3px;gap:4px;font-size:9px;line-height:1.2;text-align:center;border:1px solid var(--border3);background:linear-gradient(180deg,#232a25,#171c18);color:var(--txt);cursor:pointer;transition:all .15s;';
+    
+    // Usa a função getIconHTML para mostrar imagem ou emoji
     el.innerHTML = `
-      <img src="${c.img}"
-           style="
-             width:48px;
-             height:48px;
-             border-radius:10px;
-             object-fit:cover;
-             border:1px solid rgba(255,255,255,.2);
-           ">
-      <span>${c.nome}</span>
+      ${getIconHTML(c, '36px')}
+      <span style="font-weight:500;">${c.nome}</span>
     `;
-
-    if(i===0){
+    
+    if(i===0) {
       el.style.background='linear-gradient(180deg,#2f5e9f,#1f355c)';
+      el.style.borderColor='var(--azul)';
     }
-
+    
     el.onclick=()=>{
       document.querySelectorAll('#cat-list-cx div').forEach(b=>{
         b.style.background='linear-gradient(180deg,#232a25,#171c18)';
+        b.style.borderColor='var(--border3)';
       });
-
       el.style.background='linear-gradient(180deg,#2f5e9f,#1f355c)';
+      el.style.borderColor='var(--azul)';
       selecionarCatCx(i);
     };
-
     list.appendChild(el);
   });
-
   selecionarCatCx(0);
 }
 
 function selecionarCatCx(idx){
-  const c=categoriasCx[idx];
-  document.getElementById('cat-titulo-cx').textContent=c.icon+' '+c.nome;
-  const grid=document.getElementById('produto-grid-cx'); grid.innerHTML='';
+  const c = categoriasCx[idx];
+  document.getElementById('cat-titulo-cx').textContent = c.icon + ' ' + c.nome;
+  
+  const grid = document.getElementById('produto-grid-cx'); 
+  grid.innerHTML = '';
+  
+  // Botão Pizza Meio a Meio (só para categorias de pizza)
   if(c.pizza){
-    const btnMM=document.createElement('div');
-    btnMM.style.cssText='grid-column:1/-1;background:linear-gradient(180deg,#1a3564,#102040);border:2px solid var(--azul);border-radius:14px;padding:13px 16px;cursor:pointer;display:flex;align-items:center;gap:10px;margin-bottom:4px;';
-    btnMM.innerHTML='<span style="font-size:22px;">🍕</span><div><div style="font-weight:700;font-size:14px;color:#aad4ff;">Pizza Meio a Meio</div><div style="font-size:11px;color:var(--txt2);">Escolha 2 sabores — G ou GG</div></div>';
-    btnMM.onclick=()=>abrirMeioAMeioCx();
+    const btnMM = document.createElement('div');
+    btnMM.style.cssText = 'grid-column:1/-1;background:linear-gradient(180deg,#1a3564,#102040);border:2px solid var(--azul);border-radius:14px;padding:13px 16px;cursor:pointer;display:flex;align-items:center;gap:10px;margin-bottom:8px;';
+    btnMM.innerHTML = `
+  <div style="width:70px;height:48px;border-radius:8px;overflow:hidden;flex-shrink:0;border:2px solid #aad4ff;">
+    <img src="produtos/calabresa.jpg" style="width:200%;height:100%;object-fit:cover;object-position:left;">
+  </div>
+  <div>
+    <div style="font-weight:700;font-size:15px;color:#aad4ff;">Pizza Meio a Meio</div>
+    <div style="font-size:11px;color:var(--txt2);">Escolha 2 sabores — G ou GG</div>
+  </div>
+  <div style="width:70px;height:48px;border-radius:8px;overflow:hidden;flex-shrink:0;border:2px solid #aad4ff;">
+    <img src="produtos/napolitana.jpg" style="width:200%;height:100%;object-fit:cover;object-position:right;">
+  </div>
+`;
+    btnMM.onclick = () => abrirMeioAMeioCx();
     grid.appendChild(btnMM);
   }
-  c.produtos.forEach(p=>{
-    const el=document.createElement('div');
-    el.style.cssText='background:linear-gradient(180deg,#1e2420,#161b17);border:1px solid #2a322c;border-radius:12px;padding:8px;cursor:pointer;min-height:64px;display:flex;flex-direction:column;justify-content:space-between;';
-    const ph=p.tamanhos?`<div style="font-size:10px;color:var(--verde);font-weight:600;margin-top:3px;line-height:1.5;">M ${fmt(p.tamanhos.M)}<br>G ${fmt(p.tamanhos.G)}<br>GG ${fmt(p.tamanhos.GG)}</div>`:`<div style="font-size:13px;color:var(--verde);font-weight:700;margin-top:4px;">${fmt(p.preco)}</div>`;
-    el.innerHTML=`<div style="font-size:11px;font-weight:500;line-height:1.2;">${p.nome}</div>${ph}`;
-    el.onclick=()=>adicionarItemCx(p,c.nome,c.pizza);
+  
+  // Renderiza cada produto com layout compacto
+  c.produtos.forEach(p => {
+    const el = document.createElement('div');
+    el.className = 'produto-card';
+    
+    // Verifica se tem imagem
+    const hasImg = p.img && p.img.trim() !== '';
+    
+    // Conteúdo de tamanhos ou preço
+    const ph = p.tamanhos 
+      ? `<div class="produto-tamanhos">M ${fmt(p.tamanhos.M)} | G ${fmt(p.tamanhos.G)} | GG ${fmt(p.tamanhos.GG)}</div>`
+      : `<div class="produto-preco">${fmt(p.preco)}</div>`;
+    
+    if(hasImg) {
+      // Card COM imagem (imagem à esquerda, texto à direita)
+      el.innerHTML = `
+        <img src="${p.img}" alt="${p.nome}" class="produto-img" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+        <div class="produto-no-img" style="display:none;">🍽️</div>
+        <div class="produto-info">
+          <div class="produto-nome">${p.nome}</div>
+          ${ph}
+        </div>
+      `;
+    } else {
+      // Card SEM imagem (placeholder à esquerda, texto à direita)
+      el.innerHTML = `
+        <div class="produto-no-img">🍽️</div>
+        <div class="produto-info">
+          <div class="produto-nome">${p.nome}</div>
+          ${ph}
+        </div>
+      `;
+    }
+    
+    el.onclick = () => adicionarItemCx(p, c.nome, c.pizza);
     grid.appendChild(el);
   });
 }
@@ -1542,26 +1606,27 @@ function renderPagDivCx(){
     const b=document.getElementById('cx-addpag-'+t);
     if(b) b.className='add-pag-btn'+(pagDivCx.find(p=>p.tipo===t)?' usado':'');
   });
-  const lista=document.getElementById('pag-div-lista-cx'); lista.innerHTML='';
+  const lista=document.getElementById('pag-div-lista-cx'); 
+  lista.innerHTML='';
   const icones={dinheiro:'💵',cartao:'💳',pix:'📲'};
   const nomes={dinheiro:'Dinheiro',cartao:'Cartão',pix:'Pix'};
   const bgs={dinheiro:'#1a2e1e',cartao:'#1b3158',pix:'#3a2e0a'};
+  
   pagDivCx.forEach(p=>{
     const row=document.createElement('div');
     row.style.cssText='background:linear-gradient(180deg,#171c18,#131814);border:1px solid #252d28;border-radius:14px;padding:10px 12px;display:flex;align-items:center;gap:10px;margin-bottom:7px;';
-    row.innerHTML=`
-      <div style="width:30px;height:30px;border-radius:8px;background:${bgs[p.tipo]};display:flex;align-items:center;justify-content:center;font-size:16px;">${icones[p.tipo]}</div>
+    
+    row.innerHTML=`<div style="width:30px;height:30px;border-radius:8px;background:${bgs[p.tipo]};display:flex;align-items:center;justify-content:center;font-size:16px;">${icones[p.tipo]}</div>
       <span style="font-size:13px;font-weight:600;min-width:58px;">${nomes[p.tipo]}</span>
-      <input type="number" min="0" step="0.01" placeholder="0,00" value="${p.valor}"
-        oninput="setPagDivValCx('${p.tipo}',this.value)"
-        style="flex:1;padding:8px 10px;background:#1a201c;border:1px solid var(--border3);border-radius:10px;color:var(--txt);font-size:16px;font-weight:600;font-family:var(--font);text-align:right;"/>
+      <input type="number" min="0" step="0.01" placeholder="0,00" value="${p.valor}" oninput="setPagDivValCx('${p.tipo}',this.value)" style="flex:1;padding:8px 10px;background:#1a201c;border:1px solid var(--border3);border-radius:10px;color:var(--txt);font-size:16px;font-weight:600;font-family:var(--font);text-align:right;"/>
       <button onclick="remPagCx('${p.tipo}')" style="background:none;border:none;cursor:pointer;color:var(--txt2);font-size:18px;">×</button>`;
+    
     lista.appendChild(row);
   });
+  
   document.getElementById('cx-troco-box').style.display=pagDivCx.find(p=>p.tipo==='dinheiro')?'block':'none';
   atualizarResumoPagCx();
 }
-
 function atualizarResumoPagCx(){
   const sub=subTotalFechCx();
   const total=sub-(sub*(descontoAtualCx/100));
@@ -1807,7 +1872,7 @@ function renderListaPrecos(lista) {
           style="width:90px;background:#1a201c;border:1px solid #303a33;
           border-radius:8px;color:#f4f7f1;font-size:15px;font-weight:700;
           padding:6px 10px;text-align:right;">
-        <button onclick="salvarPreco('${p.catKey}','${p.key}')"
+        <button onclick='salvarPreco("${p.catKey}","${p.key}")'
           style="background:linear-gradient(180deg,#2aa160,#1d7b49);color:#fff;
           border:none;border-radius:8px;padding:8px 14px;font-size:12px;
           font-weight:700;cursor:pointer;">✓</button>
