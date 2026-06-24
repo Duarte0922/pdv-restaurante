@@ -1,10 +1,10 @@
 /* ── CARDS DE PRODUTO (caixa e garçom) ── */
-#produto-grid-cx,
-#produto-grid {
-  display: flex;
-  flex-direction: column;
+#produto-grid-cx {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 6px;
 }
+@media(min-width:900px){ #produto-grid-cx{ grid-template-columns: repeat(4,1fr); } }
 
 .produto-card {
   background: linear-gradient(180deg, #1e2420, #161b17);
@@ -67,10 +67,11 @@
 }
 /* ── CARDS DE PRODUTO COM IMAGEM (garçom) ── */
 #produto-grid {
-  display: flex !important;
-  flex-direction: column !important;
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
   gap: 6px !important;
 }
+@media(min-width:900px){ #produto-grid{ grid-template-columns: repeat(4,1fr) !important; } }
 .prod-card {
   display: flex !important;
   align-items: center !important;
