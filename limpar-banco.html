@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🧹 Limpar Banco — Luar do Viena</title>
+<style>
+  body { font-family: sans-serif; background: #0c100d; color: #f4f7f1; padding: 24px; max-width: 500px; margin: 0 auto; }
+  h2 { color: #2fb36d; margin-bottom: 4px; }
+  .sub { font-size: 13px; color: #acb5ac; margin-bottom: 24px; }
+  .card { background: #141a15; border: 1px solid #252d28; border-radius: 16px; padding: 18px; margin-bottom: 14px; }
+  .card h3 { font-size: 14px; margin-bottom: 6px; }
+  .card p { font-size: 12px; color: #acb5ac; margin-bottom: 12px; }
+  button { padding: 10px 18px; border-radius: 10px; border: none; cursor: pointer; font-size: 13px; font-weight: 700; font-family: sans-serif; }
+  .btn-red { background: linear-gradient(180deg,#8b1a1a,#5c1010); color: #ffaaaa; border: 1px solid #cc3333; width: 100%; }
+  .btn-verde { background: linear-gradient(180deg,#2aa160,#1d7b49); color: #fff; border: 1px solid #258754; width: 100%; }
+  .btn-red:active, .btn-verde:active { opacity: .8; }
+  #log { background: #0c100d; border: 1px solid #252d28; border-radius: 10px; padding: 12px; font-size: 12px; min-height: 80px; margin-top: 16px; color: #acb5ac; white-space: pre-wrap; }
+  .ok { color: #2fb36d; }
+  .err { color: #ff8080; }
+  .warn { color: #c89a2a; }
+</style>
+</head>
+<body>
+
+<h2>🧹 Limpar Banco — Luar do Viena</h2>
+<p class="sub">Use com cuidado. Dados apagados não podem ser recuperados.</p>
+
+<div class="card">
+  <h3>🪑 Mesas</h3>
+  <p>Libera todas as mesas, apaga pedidos e zera status.</p>
+  <button class="btn-red" onclick="limpar('mesas')">Limpar Mesas</button>
+</div>
+
+<div class="card">
+  <h3>🔔 Pedidos Cozinha</h3>
+  <p>Remove todos os pedidos pendentes/impressos da fila da cozinha.</p>
+  <button class="btn-red" onclick="limpar('pedidos_cozinha')">Limpar Pedidos Cozinha</button>
+</div>
+
+<div class="card">
+  <h3>🧾 Contas a Imprimir</h3>
+  <p>Remove todas as contas pendentes de impressão.</p>
+  <button class="btn-red" onclick="limpar('contas_imprimir')">Limpar Contas</button>
+</div>
+
+<div class="card">
+  <h3>💰 Caixa do Dia</h3>
+  <p>Apaga os registros financeiros de hoje.</p>
+  <button class="btn-red" onclick="limparCaixaHoje()">Limpar Caixa de Hoje</button>
+</div>
+
+<div class="card" style="border-color:#8b1a1a;">
+  <h3 style="color:#ffaaaa;">⚠ Limpar TUDO</h3>
+  <p>Apaga mesas, pedidos, contas e caixa de hoje de uma vez.</p>
+  <button class="btn-red" onclick="limparTudo()" style="background:linear-gradient(180deg,#cc3333,#8b1a1a);">LIMPAR TUDO</button>
+</div>
+
+<div id="log">Aguardando ação...</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, remove, set, get }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const FB = {
+  apiKey: "AIzaSyAXMDwp1-VT3FdBMHkihTPESWL8smJLZcc",
+  authDomain: "pdv-restaurante-a7b75.firebaseapp.com",
+  databaseURL: "https://pdv-restaurante-a7b75-default-rtdb.firebaseio.com",
+  projectId: "pdv-restaurante-a7b75",
+  storageBucket: "pdv-restaurante-a7b75.firebasestorage.app",
+  messagingSenderId: "262025117951",
+  appId: "1:262025117951:web:384a6ec2567d8a231bccca"
+};
+
+const app = initializeApp(FB);
+const db = getDatabase(app);
+
+const log = document.getElementById('log');
+function escrever(msg, tipo='') {
+  const linha = document.createElement('div');
+  linha.className = tipo;
+  linha.textContent = new Date().toLocaleTimeString('pt-BR') + ' — ' + msg;
+  log.appendChild(linha);
+  log.scrollTop = log.scrollHeight;
+}
+log.innerHTML = '';
+
+window.limpar = async function(nodo) {
+  if(!confirm(`Tem certeza que quer apagar "${nodo}"?`)) return;
+  try {
+    await remove(ref(db, nodo));
+    escrever(`✓ "${nodo}" apagado com sucesso!`, 'ok');
+  } catch(e) {
+    escrever(`✗ Erro ao apagar "${nodo}": ` + e.message, 'err');
+  }
+};
+
+window.limparCaixaHoje = async function() {
+  const hoje = new Date().toLocaleDateString('pt-BR').replace(/\//g,'-');
+  if(!confirm(`Apagar caixa do dia ${hoje}?`)) return;
+  try {
+    await remove(ref(db, 'caixa/' + hoje));
+    escrever(`✓ Caixa de ${hoje} apagado!`, 'ok');
+  } catch(e) {
+    escrever(`✗ Erro: ` + e.message, 'err');
+  }
+};
+
+window.limparTudo = async function() {
+  if(!confirm('⚠ ATENÇÃO: Isso vai apagar TUDO (mesas, pedidos, contas e caixa de hoje). Confirmar?')) return;
+  if(!confirm('Tem certeza mesmo? Esta ação não pode ser desfeita!')) return;
+  const hoje = new Date().toLocaleDateString('pt-BR').replace(/\//g,'-');
+  const nodos = ['mesas', 'pedidos_cozinha', 'contas_imprimir', 'caixa/'+hoje];
+  escrever('Iniciando limpeza completa...', 'warn');
+  for(const n of nodos) {
+    try {
+      await remove(ref(db, n));
+      escrever(`✓ "${n}" apagado!`, 'ok');
+    } catch(e) {
+      escrever(`✗ Erro em "${n}": ` + e.message, 'err');
+    }
+  }
+  escrever('✓ Limpeza completa finalizada!', 'ok');
+};
+</script>
+</body>
+</html>
