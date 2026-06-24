@@ -1,7 +1,8 @@
 /* ── CARDS DE PRODUTO (caixa e garçom) ── */
-#produto-grid-cx {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+#produto-grid-cx,
+#produto-grid {
+  display: flex;
+  flex-direction: column;
   gap: 6px;
 }
 @media(min-width:900px){ #produto-grid-cx{ grid-template-columns: repeat(4,1fr); } }
