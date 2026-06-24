@@ -1,0 +1,67 @@
+/* ── CARDS DE PRODUTO (caixa e garçom) ── */
+#produto-grid-cx,
+#produto-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.produto-card {
+  background: linear-gradient(180deg, #1e2420, #161b17);
+  border: 1px solid #2a322c;
+  border-radius: 12px;
+  padding: 10px 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 70px;
+  transition: border-color .15s, transform .1s;
+}
+.produto-card:hover  { border-color: var(--verde); }
+.produto-card:active { transform: scale(.97); }
+
+.produto-img {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 8px;
+  flex-shrink: 0;
+  border: 1px solid rgba(255,255,255,.06);
+}
+
+.produto-no-img {
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, #1a2e1e, #111912);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  border: 1px dashed #303a33;
+  flex-shrink: 0;
+}
+
+.produto-info   { flex: 1; min-width: 0; }
+
+.produto-nome {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--txt);
+  margin-bottom: 3px;
+}
+
+.produto-preco {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--verde);
+}
+
+.produto-tamanhos {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--txt2);
+  line-height: 1.6;
+}
