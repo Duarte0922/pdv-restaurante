@@ -1060,21 +1060,48 @@ window.mudarAbaFech = function(aba){
   renderFechamento();
 }
 function selecionarCat(idx){
-  const c=categorias[idx];
-  document.getElementById('cat-titulo').textContent=c.icon+' '+c.nome;
-  const grid=document.getElementById('produto-grid'); grid.innerHTML='';
+  const c = categorias[idx];
+  document.getElementById('cat-titulo').textContent = c.icon+' '+c.nome;
+  const grid = document.getElementById('produto-grid');
+  grid.innerHTML = '';
+
   if(c.pizza){
-    const btnMM=document.createElement('div');
-    btnMM.style.cssText='grid-column:1/-1;background:linear-gradient(180deg,#1a3564,#102040);border:2px solid var(--azul);border-radius:14px;padding:13px 16px;cursor:pointer;display:flex;align-items:center;gap:10px;margin-bottom:4px;';
-    btnMM.innerHTML='<span style="font-size:22px;">🍕</span><div><div style="font-weight:700;font-size:14px;color:#aad4ff;">Pizza Meio a Meio</div><div style="font-size:11px;color:var(--txt2);">Escolha 2 sabores — G ou GG</div></div>';
-    btnMM.onclick=()=>abrirMeioAMeio();
+    const btnMM = document.createElement('div');
+    btnMM.style.cssText = 'grid-column:1/-1;background:linear-gradient(180deg,#1a3564,#102040);border:2px solid var(--azul);border-radius:14px;padding:13px 16px;cursor:pointer;display:flex;align-items:center;gap:10px;margin-bottom:4px;';
+    btnMM.innerHTML = '<span style="font-size:22px;">🍕</span><div><div style="font-weight:700;font-size:14px;color:#aad4ff;">Pizza Meio a Meio</div><div style="font-size:11px;color:var(--txt2);">Escolha 2 sabores — G ou GG</div></div>';
+    btnMM.onclick = ()=>abrirMeioAMeio();
     grid.appendChild(btnMM);
   }
-  c.produtos.forEach(p=>{
-    const el=document.createElement('div'); el.className='prod-card';
-    const ph=p.tamanhos?`<div class="prod-tamanhos">M ${fmt(p.tamanhos.M)}<br>G ${fmt(p.tamanhos.G)}<br>GG ${fmt(p.tamanhos.GG)}</div>`:`<div class="prod-preco">${fmt(p.preco)}</div>`;
-    el.innerHTML=`<div class="prod-nome">${p.nome}</div>${ph}`;
-    el.onclick=()=>adicionarItem(p,c.nome,c.carne,c.pizza);
+
+  c.produtos.forEach(p => {
+    const el = document.createElement('div');
+    el.className = 'prod-card';
+
+    // gera caminho da imagem igual ao caixa
+    const nomeImg = p.nome
+      .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+      .toLowerCase()
+      .replace(/[0-9\s-]+/g,'')
+      .replace(/\s+/g,'-')
+      .replace(/[^\w\-]/g,'')
+      .replace(/-+/g,'-')
+      .replace(/^-|-$/g,'');
+    const imgPath = `produtos/${nomeImg}.jpg`;
+
+    const ph = p.tamanhos
+      ? `<div class="prod-tamanhos">M ${fmt(p.tamanhos.M)} | G ${fmt(p.tamanhos.G)} | GG ${fmt(p.tamanhos.GG)}</div>`
+      : `<div class="prod-preco">${fmt(p.preco)}</div>`;
+
+    el.innerHTML = `
+      <img src="${imgPath}" alt="${p.nome}" class="prod-img"
+        onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+      <div class="prod-no-img" style="display:none;">🍽️</div>
+      <div class="prod-info">
+        <div class="prod-nome">${p.nome}</div>
+        ${ph}
+      </div>`;
+
+    el.onclick = ()=>adicionarItem(p, c.nome, c.carne, c.pizza);
     grid.appendChild(el);
   });
 }
