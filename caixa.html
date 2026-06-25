@@ -1765,11 +1765,34 @@ window.calcularTrocoCx=function(){
 };
 
 window.imprimirContaCx=async function(){
-  const itens=(mesaAtualCx.pedido||[]).map(it=>({nome:it.nome,qtd:it.qtd,preco:it.preco,obs:it.obs||''}));
-  const dados={mesa:mesaAtualCx.id,desconto:descontoAtualCx,
+  let itensImp;
+  
+  // ✅ Se for parcial, filtra só os itens selecionados
+  if(abaFechCx === 'parcial'){
+    itensImp = [];
+    (mesaAtualCx.pedido||[]).forEach((it, idx) => {
+      const q = qtdSelCx[idx] || 0;
+      if(q > 0){
+        itensImp.push({nome:it.nome, qtd:q, preco:it.preco, obs:it.obs||''});
+      }
+    });
+  } else {
+    // Modo normal: todos os itens
+    itensImp = (mesaAtualCx.pedido||[]).map(it=>({nome:it.nome,qtd:it.qtd,preco:it.preco,obs:it.obs||''}));
+  }
+  
+  const dados={
+    mesa:mesaAtualCx.id,
+    desconto:descontoAtualCx,
     pagamentos:pagDivCx.map(p=>({tipo:p.tipo,valor:parseFloat(p.valor)||0})),
-    data:new Date().toLocaleString('pt-BR'),itens};
-  try{ await push(ref(db,'contas_imprimir'),{...dados,status:'pendente',timestamp:Date.now()}); }
+    data:new Date().toLocaleString('pt-BR'),
+    itens:itensImp,
+    parcial:abaFechCx === 'parcial'  // ✅ Avisa que é parcial
+  };
+  
+  try{ 
+    await push(ref(db,'contas_imprimir'),{...dados,status:'pendente',timestamp:Date.now()}); 
+  }
   catch(e){ console.warn('Erro ao enviar conta:',e); }
 };
 
