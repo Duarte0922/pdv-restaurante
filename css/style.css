@@ -278,9 +278,15 @@ input[type=number]{background:#1a201c;border:1px solid var(--border3);border-rad
 
 .layout-principal {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
+  grid-template-columns: 380px minmax(0, 1fr) 320px;
   gap: 14px;
   height: 100%;
+}
+
+.coluna-esquerda {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
 
 .coluna-mesas {
@@ -452,51 +458,132 @@ input[type=number]{background:#1a201c;border:1px solid var(--border3);border-rad
   background: rgba(47, 179, 109, .06);
 }
 
-/* ── Cards de Balcão ── */
-.balcão-list, .balcao-list,
-.pedido-list {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  max-height: 200px;
-  overflow-y: auto;
+/* ─ Container do Balcão (mesma largura das mesas) ── */
+.balcao-container-novo {
+  background: rgba(20, 26, 21, 0.96);
+  border: 1px solid var(--border2);
+  border-radius: var(--rad-lg);
+  padding: 12px;
+  margin-top: 14px;
 }
 
-.balcão-empty, .balcao-empty {
-  text-align: center;
-  padding: 18px 10px;
-  color: var(--txt3);
-  font-size: 12px;
-  border: 1px dashed var(--border3);
-  border-radius: 12px;
-}
-
-.balcão-card, .balcao-card {
+.balcao-header-novo {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 10px;
-  background: linear-gradient(180deg, #1f1c0d, #151208);
-  border: 1px solid #3a3520;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all .15s;
-}
-.balcão-card:hover, .balcao-card:hover {
-  border-color: #c89a2a;
-  transform: translateX(2px);
+  margin-bottom: 10px;
 }
 
-.balcão-nome, .balcao-nome {
-  font-size: 12px;
+.balcao-titulo {
+  font-size: 14px;
   font-weight: 700;
   color: var(--txt);
 }
 
-.balcão-info, .balcao-info {
-  font-size: 10px;
+.balcao-sub {
+  font-size: 11px;
   color: var(--txt2);
   margin-top: 2px;
+}
+
+/* ── Grid de Balcões (3 colunas, igual mesas) ── */
+.balcao-grid-novo {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+@media (min-width: 1200px) {
+  .balcao-grid-novo {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 700px) {
+  .balcao-grid-novo {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ── Card de Balcão (mesmo estilo das mesas) ─ */
+.balcao-card-novo {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  max-height: 140px;
+  border-radius: 14px;
+  border: 1px solid var(--border2);
+  background: linear-gradient(180deg, #1f1c0d, #151208);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  transition: transform .12s, box-shadow .12s;
+  user-select: none;
+  overflow: hidden;
+}
+
+.balcao-card-novo:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, .35);
+}
+
+.balcao-card-novo:active {
+  transform: scale(.94);
+}
+
+.balcao-card-novo .balcao-num {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--txt);
+  line-height: 1;
+}
+
+.balcao-card-novo .balcao-status-txt {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: #c89a2a;
+}
+
+.balcao-card-novo .balcao-info {
+  font-size: 9px;
+  color: var(--txt2);
+  margin-top: 2px;
+}
+
+/* Barra de tempo no topo (igual mesas) */
+.balcao-card-novo::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: #c89a2a;
+  opacity: .6;
+}
+
+/* Botão novo balcão (estilo outline) */
+.btn-novo-balcão {
+  width: 100%;
+  padding: 10px;
+  background: transparent;
+  border: 1px dashed var(--border3);
+  border-radius: 12px;
+  color: var(--txt2);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font);
+  margin-top: 6px;
+  transition: all .15s;
+}
+
+.btn-novo-balcão:hover {
+  border-color: var(--verde);
+  color: var(--verde);
+  background: rgba(47, 179, 109, .06);
 }
 
 /* ── Cards de Pedido (Delivery / Telefone) ─ */
@@ -597,7 +684,10 @@ input[type=number]{background:#1a201c;border:1px solid var(--border3);border-rad
 /* ── Responsivo ── */
 @media (max-width: 900px) {
   .layout-principal {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 320px;
+  }
+  .coluna-esquerda {
+    grid-column: 1 / -1;
   }
   .mesas-grid-novo {
     grid-template-columns: repeat(3, 1fr);
