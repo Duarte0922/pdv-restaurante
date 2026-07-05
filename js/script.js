@@ -211,6 +211,8 @@ window.carregarRelatorio=async function(){
   }
 };
 
+
+
 window.imprimirRelatorio=function(){
   const inputVal=document.getElementById('data-relatorio').value;
   const conteudo=document.getElementById('relatorio-resultado').innerHTML;
