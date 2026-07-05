@@ -35,42 +35,77 @@
     <div class="aba" onclick="mudarAba('precos')">🏷️ Preços</div>
   </div>
 
-<!-- ABA MESAS COM NOVO LAYOUT -->
-<div class="aba-content ativa" id="aba-mesas">
-  <div class="layout-principal">
+  <!-- ABA MESAS COM NOVO LAYOUT 3 COLUNAS -->
+  <div class="aba-content ativa" id="aba-mesas">
+    <div class="layout-principal">
 
-    <!-- COLUNA ESQUERDA - MESAS + BALCÃO -->
-    <div class="coluna-mesas">
-
-      <!-- Indicadores de Status -->
-      <div style="font-size:11px;color:var(--txt2);margin-bottom:8px;display:flex;gap:14px;">
-        <span><span class="dot-status" style="background:#2f9d64;"></span>Livre</span>
-        <span><span class="dot-status" style="background:#cf5b74;"></span>Ocupada</span>
-        <span><span class="dot-status" style="background:#c89a2a;"></span>Conta</span>
-      </div>
-
-      <!-- Container das Mesas -->
-      <div class="mesas-container-novo">
-        <div class="mesas-grid-novo" id="mesasGridNovo">
-          <!-- Mesas geradas via JS -->
-        </div>
-      </div>
-
-      <!-- 🍽️ BALCÃO -->
-      <div class="secao-direita" style="margin-top: 12px;">
-        <div class="secao-header">
-          <div>
-            <div class="secao-titulo">🍽️ Balcão</div>
-            <div class="secao-sub">Múltiplos simultâneos</div>
+      <!-- COLUNA ESQUERDA - BALCÃO -->
+      <div class="coluna-esquerda">
+        <div class="secao-direita" style="height:100%;display:flex;flex-direction:column;">
+          <div class="secao-header">
+            <div>
+              <div class="secao-titulo">🍽️ Balcão</div>
+              <div class="secao-sub">Múltiplos simultâneos</div>
+            </div>
+            <button class="btn-novo" onclick="novoBalcão()">+ Novo</button>
           </div>
-          <button class="btn-novo" onclick="novoBalcão()">+ Novo</button>
-        </div>
-        <div class="balcao-list" id="balcaoList">
-          <!-- Balcões gerados via JS -->
-          <div class="balcao-empty">Nenhum balcão aberto</div>
+          <div class="balcao-list" id="balcaoList" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;flex:1;overflow-y:auto;max-height:none;">
+            <!-- Balcões gerados via JS -->
+            <div class="balcao-empty" style="grid-column:1/-1;">Nenhum balcão aberto</div>
+          </div>
         </div>
       </div>
 
+      <!-- COLUNA CENTRO - MESAS -->
+      <div class="coluna-mesas">
+
+        <!-- Indicadores de Status -->
+        <div style="font-size:11px;color:var(--txt2);margin-bottom:8px;display:flex;gap:14px;">
+          <span><span class="dot-status" style="background:#2f9d64;"></span>Livre</span>
+          <span><span class="dot-status" style="background:#cf5b74;"></span>Ocupada</span>
+          <span><span class="dot-status" style="background:#c89a2a;"></span>Conta</span>
+        </div>
+
+        <!-- Container das Mesas -->
+        <div class="mesas-container-novo">
+          <div class="mesas-grid-novo" id="mesasGridNovo">
+            <!-- Mesas geradas via JS -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- COLUNA DIREITA - DELIVERY / TELEFONE -->
+      <div class="coluna-direita">
+        <div class="secao-direita">
+          <div class="secao-header">
+            <div>
+              <div class="secao-titulo">📱 Delivery / Zap</div>
+              <div class="secao-sub">Pedidos por WhatsApp</div>
+            </div>
+            <button class="btn-novo">+ Pedido</button>
+          </div>
+          <div class="pedido-list" id="pedidoListDelivery">
+            <div class="balcao-empty">Nenhum pedido delivery</div>
+          </div>
+        </div>
+
+        <div class="secao-direita">
+          <div class="secao-header">
+            <div>
+              <div class="secao-titulo">📞 Telefone</div>
+              <div class="secao-sub">Pedidos por ligação</div>
+            </div>
+            <button class="btn-novo">+ Pedido</button>
+          </div>
+          <div class="pedido-list" id="pedidoListTelefone">
+            <div class="balcao-empty">Nenhum pedido telefone</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
       <!-- Contadores de Status -->
       <div style="margin-top:10px;display:flex;justify-content:space-around;font-size:12px;color:var(--txt2);">
         <span id="c-stat-livre">0 livres</span>
