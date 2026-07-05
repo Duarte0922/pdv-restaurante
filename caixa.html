@@ -35,28 +35,11 @@
     <div class="aba" onclick="mudarAba('precos')">🏷️ Preços</div>
   </div>
 
-  <!-- ABA MESAS COM NOVO LAYOUT 3 COLUNAS -->
+  <!-- ABA MESAS COM NOVO LAYOUT -->
   <div class="aba-content ativa" id="aba-mesas">
     <div class="layout-principal">
 
-      <!-- COLUNA ESQUERDA - BALCÃO -->
-      <div class="coluna-esquerda">
-        <div class="secao-direita" style="height:100%;display:flex;flex-direction:column;">
-          <div class="secao-header">
-            <div>
-              <div class="secao-titulo">🍽️ Balcão</div>
-              <div class="secao-sub">Múltiplos simultâneos</div>
-            </div>
-            <button class="btn-novo" onclick="novoBalcão()">+ Novo</button>
-          </div>
-          <div class="balcao-list" id="balcaoList" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;flex:1;overflow-y:auto;max-height:none;">
-            <!-- Balcões gerados via JS -->
-            <div class="balcao-empty" style="grid-column:1/-1;">Nenhum balcão aberto</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- COLUNA CENTRO - MESAS -->
+      <!-- COLUNA MESAS (o Balcão fica embaixo, mesmo raciocínio visual das mesas) -->
       <div class="coluna-mesas">
 
         <!-- Indicadores de Status -->
@@ -66,90 +49,77 @@
           <span><span class="dot-status" style="background:#c89a2a;"></span>Conta</span>
         </div>
 
-        <!-- Container das Mesas -->
-        <div class="mesas-container-novo">
-          <div class="mesas-grid-novo" id="mesasGridNovo">
-            <!-- Mesas geradas via JS -->
+        <!-- Grid unificado: mesas ocupam toda a largura, balcão ocupa a largura da mesa 1 até a mesa 3 -->
+        <div class="mesas-balcao-grid-wrapper">
+          <div class="mesas-full-linha">
+            <div class="mesas-container-novo">
+              <div class="mesas-grid-novo" id="mesasGridNovo">
+                <!-- Mesas geradas via JS -->
+              </div>
+            </div>
+            <!-- Contadores de Status -->
+            <div style="margin-top:10px;display:flex;justify-content:space-around;font-size:12px;color:var(--txt2);">
+              <span id="c-stat-livre">0 livres</span>
+              <span id="c-stat-ocup">0 ocupadas</span>
+              <span id="c-stat-conta">0 conta</span>
+            </div>
+          </div>
+
+          <!-- BALCÃO — largura = mesa 1 até mesa 3, mesmo estilo de card das mesas -->
+          <div class="balcao-secao-abaixo-mesas">
+            <div class="secao-header">
+              <div>
+                <div class="secao-titulo">🍽️ Balcão</div>
+                <div class="secao-sub">Múltiplos simultâneos</div>
+              </div>
+              <button class="btn-novo" onclick="novoBalcão()">+ Novo</button>
+            </div>
+            <div class="balcao-grid-novo" id="balcaoList">
+              <!-- Balcões gerados via JS -->
+              <div class="balcao-empty" style="grid-column:1/-1;">Nenhum balcão aberto</div>
+            </div>
           </div>
         </div>
 
       </div>
 
-      <!-- COLUNA DIREITA - DELIVERY / TELEFONE -->
+      <!-- COLUNA DIREITA - DELIVERY + TELEFONE -->
       <div class="coluna-direita">
+
+        <!-- DELIVERY / ZAP -->
         <div class="secao-direita">
           <div class="secao-header">
             <div>
               <div class="secao-titulo">📱 Delivery / Zap</div>
               <div class="secao-sub">Pedidos por WhatsApp</div>
             </div>
-            <button class="btn-novo">+ Pedido</button>
+            <button class="btn-novo" onclick="abrirModalNovoPedido('delivery')">+ Pedido</button>
           </div>
-          <div class="pedido-list" id="pedidoListDelivery">
+          <div class="pedido-list" id="deliveryList">
+            <!-- Pedidos delivery gerados via JS -->
             <div class="balcao-empty">Nenhum pedido delivery</div>
           </div>
         </div>
 
+        <!-- TELEFONE -->
         <div class="secao-direita">
           <div class="secao-header">
             <div>
               <div class="secao-titulo">📞 Telefone</div>
               <div class="secao-sub">Pedidos por ligação</div>
             </div>
-            <button class="btn-novo">+ Pedido</button>
+            <button class="btn-novo" onclick="abrirModalNovoPedido('telefone')">+ Pedido</button>
           </div>
-          <div class="pedido-list" id="pedidoListTelefone">
+          <div class="pedido-list" id="telefoneList">
+            <!-- Pedidos telefone gerados via JS -->
             <div class="balcao-empty">Nenhum pedido telefone</div>
           </div>
         </div>
+
       </div>
 
     </div>
   </div>
-      <!-- Contadores de Status -->
-      <div style="margin-top:10px;display:flex;justify-content:space-around;font-size:12px;color:var(--txt2);">
-        <span id="c-stat-livre">0 livres</span>
-        <span id="c-stat-ocup">0 ocupadas</span>
-        <span id="c-stat-conta">0 conta</span>
-      </div>
-    </div>
-
-    <!-- COLUNA DIREITA - DELIVERY + TELEFONE -->
-    <div class="coluna-direita">
-
-      <!-- DELIVERY / ZAP -->
-      <div class="secao-direita">
-        <div class="secao-header">
-          <div>
-            <div class="secao-titulo">📱 Delivery / Zap</div>
-            <div class="secao-sub">Pedidos por WhatsApp</div>
-          </div>
-          <button class="btn-novo" onclick="abrirModalNovoPedido('delivery')">+ Pedido</button>
-        </div>
-        <div class="pedido-list" id="deliveryList">
-          <!-- Pedidos delivery gerados via JS -->
-          <div class="balcao-empty">Nenhum pedido delivery</div>
-        </div>
-      </div>
-
-      <!-- TELEFONE -->
-      <div class="secao-direita">
-        <div class="secao-header">
-          <div>
-            <div class="secao-titulo">📞 Telefone</div>
-            <div class="secao-sub">Pedidos por ligação</div>
-          </div>
-          <button class="btn-novo" onclick="abrirModalNovoPedido('telefone')">+ Pedido</button>
-        </div>
-        <div class="pedido-list" id="telefoneList">
-          <!-- Pedidos telefone gerados via JS -->
-          <div class="balcao-empty">Nenhum pedido telefone</div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-</div>
 
 <!-- ═══════════════════════════════════════════════════════════════ -->
 <!-- MODAL NOVO PEDIDO (Delivery / Telefone) -->
