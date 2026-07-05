@@ -120,106 +120,150 @@
 <!-- MODAL NOVO PEDIDO (Delivery / Telefone) -->
 <!-- ═══════════════════════════════════════════════════════════════ -->
 <div class="modal-overlay" id="modal-novo-pedido">
-  <div class="modal-box modal-box-grande" style="max-width:900px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+  <div class="modal-box" style="max-width:560px;max-height:88vh;overflow-y:auto;">
+    <div style="font-size:16px;font-weight:700;margin-bottom:4px;" id="modal-np-titulo">Novo Pedido</div>
+    <div style="font-size:12px;color:var(--txt2);margin-bottom:14px;" id="modal-np-sub">Preencha os dados do cliente</div>
+
+    <div style="display:flex;flex-direction:column;gap:10px;">
       <div>
-        <div style="font-size:16px;font-weight:700;" id="modal-np-titulo">Novo Pedido</div>
-        <div style="font-size:12px;color:var(--txt2);" id="modal-np-sub">Preencha os dados do cliente</div>
+        <label style="font-size:12px;color:var(--txt2);">Nome do cliente</label>
+        <input type="text" id="np-nome" placeholder="Ex: João Silva" oninput="buscarClienteModalPorNome(this.value)" autocomplete="off"
+          style="width:100%;padding:10px;background:#1a201c;border:1px solid #303a33;border-radius:10px;color:var(--txt);font-size:14px;">
+        <div id="np-nome-resultados" style="display:none;max-height:150px;overflow-y:auto;background:#12160f;border:1px solid #303a33;border-radius:10px;margin-top:4px;"></div>
       </div>
-      <button class="btn" onclick="fecharModal('modal-novo-pedido')" style="padding:6px 12px;font-size:18px;">×</button>
-    </div>
-
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;height:calc(100vh - 280px);">
-      <!-- COLUNA ESQUERDA: Dados do Cliente -->
-      <div style="display:flex;flex-direction:column;gap:10px;overflow-y:auto;padding-right:4px;">
-        <div>
-          <label style="font-size:12px;color:var(--txt2);">Nome do cliente *</label>
-          <input type="text" id="np-nome" placeholder="Ex: João Silva"
-            style="width:100%;padding:10px;background:#1a201c;border:1px solid #303a33;border-radius:10px;color:var(--txt);font-size:14px;"
-            onblur="buscarCliente()">
-        </div>
-        <div>
-          <label style="font-size:12px;color:var(--txt2);">Telefone *</label>
-          <input type="tel" id="np-telefone" placeholder="(00) 00000-0000"
-            style="width:100%;padding:10px;background:#1a201c;border:1px solid #303a33;border-radius:10px;color:var(--txt);font-size:14px;"
-            onblur="buscarCliente()">
-        </div>
-        
-        <!-- Endereços Salvos -->
-        <div id="np-enderecos-salvos-box" style="display:none;">
-          <label style="font-size:12px;color:var(--txt2);">Endereços Salvos</label>
-          <div id="np-lista-enderecos" style="display:flex;flex-direction:column;gap:6px;margin-top:6px;max-height:150px;overflow-y:auto;"></div>
-        </div>
-
-        <div id="np-endereco-box">
-          <label style="font-size:12px;color:var(--txt2);">Endereço de Entrega *</label>
-          <textarea id="np-endereco" rows="2" placeholder="Rua, número, bairro, complemento"
-            style="width:100%;padding:10px;background:#1a201c;border:1px solid #303a33;border-radius:10px;color:var(--txt);font-size:14px;resize:none;font-family:var(--font);"></textarea>
-          <button onclick="salvarNovoEndereco()" class="btn" style="margin-top:6px;font-size:11px;padding:6px 10px;">💾 Salvar este endereço</button>
-        </div>
-
-        <div style="display:flex;gap:10px;">
-          <div style="flex:1;">
-            <label style="font-size:12px;color:var(--txt2);">KM</label>
-            <input type="number" id="np-km" placeholder="0" min="0" step="0.1"
-              style="width:100%;padding:10px;background:#1a201c;border:1px solid #303a33;border-radius:10px;color:var(--txt);font-size:14px;"
-              oninput="calcularTaxaEntrega()">
-          </div>
-          <div style="flex:1;">
-            <label style="font-size:12px;color:var(--txt2);">Taxa de Entrega</label>
-            <input type="number" id="np-taxa" placeholder="0,00" min="0" step="0.01"
-              style="width:100%;padding:10px;background:#1a201c;border:1px solid #303a33;border-radius:10px;color:var(--txt);font-size:14px;">
-          </div>
-        </div>
-
-        <div style="display:flex;gap:10px;">
-          <div style="flex:1;">
-            <label style="font-size:12px;color:var(--txt2);">Pagamento</label>
-            <select id="np-pagamento"
-              style="width:100%;padding:10px;background:#1a201c;border:1px solid #303a33;border-radius:10px;color:var(--txt);font-size:14px;">
-              <option value="pix">Pix</option>
-              <option value="cartao">Cartão</option>
-              <option value="dinheiro">Dinheiro</option>
-            </select>
-          </div>
-          <div style="flex:1;">
-            <label style="font-size:12px;color:var(--txt2);">Troco p/ (se dinheiro)</label>
-            <input type="number" id="np-troco" placeholder="0,00" min="0" step="0.01"
-              style="width:100%;padding:10px;background:#1a201c;border:1px solid #303a33;border-radius:10px;color:var(--txt);font-size:14px;">
-          </div>
-        </div>
-
-        <div>
-          <label style="font-size:12px;color:var(--txt2);">Observação</label>
-          <textarea id="np-obs" rows="2" placeholder="Ex: sem cebola, tocar campainha..."
-            style="width:100%;padding:10px;background:#1a201c;border:1px solid #303a33;border-radius:10px;color:var(--txt);font-size:14px;resize:none;font-family:var(--font);"></textarea>
+      <div>
+        <label style="font-size:12px;color:var(--txt2);">Telefone</label>
+        <input type="tel" id="np-telefone" placeholder="(00) 00000-0000" oninput="aoDigitarTelefonePedido()"
+          style="width:100%;padding:10px;background:#1a201c;border:1px solid #303a33;border-radius:10px;color:var(--txt);font-size:14px;">
+        <div id="np-cliente-info" style="font-size:11px;color:var(--verde);margin-top:4px;display:none;"></div>
+        <div id="np-pedidos-anteriores" style="display:none;margin-top:6px;background:#12160f;border:1px solid #303a33;border-radius:10px;overflow:hidden;"></div>
+      </div>
+      <div id="np-endereco-box">
+        <label style="font-size:12px;color:var(--txt2);">Endereço</label>
+        <select id="np-endereco-select" onchange="selecionarEnderecoPedido()"
+          style="width:100%;padding:10px;background:#1a201c;border:1px solid #303a33;border-radius:10px;color:var(--txt);font-size:14px;">
+          <option value="__novo__">+ Novo endereço</option>
+        </select>
+        <div id="np-endereco-novo-box" style="margin-top:8px;display:flex;flex-direction:column;gap:8px;">
+          <input type="text" id="np-endereco-novo" placeholder="📍 Rua, número, bairro (obrigatório)"
+            style="width:100%;padding:10px;background:#1a201c;border:1px solid #303a33;border-radius:10px;color:var(--txt);font-size:14px;">
+          <input type="text" id="np-endereco-label" placeholder="Rótulo opcional (Ex: Casa, Trabalho, Casa da mãe...)"
+            style="width:100%;padding:8px 10px;background:#161b17;border:1px solid #2a322c;border-radius:10px;color:var(--txt2);font-size:12px;">
         </div>
       </div>
-
-      <!-- COLUNA DIREITA: Catálogo de Produtos -->
-      <div style="background:rgba(20,26,21,0.6);border-radius:12px;padding:10px;display:flex;flex-direction:column;">
-        <div style="font-size:13px;font-weight:600;margin-bottom:8px;">📦 Catálogo de Produtos</div>
-        <input type="text" id="np-busca-produto" placeholder="🔍 Buscar produto..."
-          style="width:100%;padding:8px;background:#1a201c;border:1px solid #303a33;border-radius:8px;color:var(--txt);font-size:13px;margin-bottom:8px;"
-          oninput="filtrarProdutosNovoPedido()">
-        <div id="np-catalogo-produtos" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:6px;"></div>
-        
-        <!-- Carrinho do Pedido -->
-        <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border2);">
-          <div style="font-size:13px;font-weight:600;margin-bottom:6px;">🛒 Itens do Pedido</div>
-          <div id="np-carrinho-itens" style="max-height:150px;overflow-y:auto;display:flex;flex-direction:column;gap:4px;margin-bottom:8px;"></div>
-          <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:700;color:var(--verde);">
-            <span>Total:</span>
-            <span id="np-carrinho-total">R$ 0,00</span>
-          </div>
+      <div style="display:flex;gap:10px;">
+        <div style="flex:1;">
+          <label style="font-size:12px;color:var(--txt2);">KM (distância)</label>
+          <input type="number" id="np-km" placeholder="0" min="0" step="0.1"
+            style="width:100%;padding:10px;background:#1a201c;border:1px solid #303a33;border-radius:10px;color:var(--txt);font-size:14px;">
+        </div>
+        <div style="flex:1;">
+          <label style="font-size:12px;color:var(--txt2);">Taxa de entrega (R$)</label>
+          <input type="number" id="np-taxa" placeholder="0,00" min="0" step="0.01"
+            style="width:100%;padding:10px;background:#1a201c;border:1px solid #303a33;border-radius:10px;color:var(--txt);font-size:14px;">
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <div style="flex:1;">
+          <label style="font-size:12px;color:var(--txt2);">Pagamento</label>
+          <select id="np-pagamento"
+            style="width:100%;padding:10px;background:#1a201c;border:1px solid #303a33;border-radius:10px;color:var(--txt);font-size:14px;">
+            <option value="pix">Pix</option>
+            <option value="cartao">Cartão</option>
+            <option value="dinheiro">Dinheiro</option>
+          </select>
+        </div>
+        <div style="flex:1;">
+          <label style="font-size:12px;color:var(--txt2);">Troco p/ (se dinheiro)</label>
+          <input type="number" id="np-troco" placeholder="0,00" min="0" step="0.01"
+            style="width:100%;padding:10px;background:#1a201c;border:1px solid #303a33;border-radius:10px;color:var(--txt);font-size:14px;">
+        </div>
+      </div>
+      <div>
+        <label style="font-size:12px;color:var(--txt2);">Observação</label>
+        <textarea id="np-obs" rows="2" placeholder="Ex: sem cebola, tocar campainha..."
+          style="width:100%;padding:10px;background:#1a201c;border:1px solid #303a33;border-radius:10px;color:var(--txt);font-size:14px;resize:none;font-family:var(--font);"></textarea>
+      </div>
+      <div style="border-top:1px solid #2a322c;padding-top:10px;">
+        <label style="font-size:12px;color:var(--txt2);font-weight:700;">🛒 Produtos do Pedido</label>
+        <div onclick="abrirMeioAMeioPedido()" style="margin-top:6px;background:linear-gradient(180deg,#1a3564,#102040);border:2px solid var(--azul);border-radius:12px;padding:11px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;">
+          <span style="font-size:20px;">🍕</span>
+          <div><div style="font-weight:700;font-size:13px;color:#aad4ff;">Pizza Meio a Meio</div><div style="font-size:11px;color:var(--txt2);">Escolha 2 sabores — G ou GG</div></div>
+        </div>
+        <input type="text" id="np-busca-produto" placeholder="🔍 Buscar produto para adicionar..." oninput="buscarProdutoModalPedido(this.value)"
+          style="width:100%;padding:10px;margin-top:6px;background:#1a201c;border:1px solid #303a33;border-radius:10px;color:var(--txt);font-size:14px;">
+        <div id="np-resultados-produto" style="display:none;max-height:160px;overflow-y:auto;background:#12160f;border:1px solid #303a33;border-radius:10px;margin-top:4px;"></div>
+        <div id="np-carrinho-lista" style="margin-top:8px;"></div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;padding-top:6px;border-top:1px solid #232a25;margin-top:4px;">
+          <span style="color:var(--txt2);">Total dos produtos</span>
+          <span id="np-carrinho-total" style="color:var(--verde);">R$ 0,00</span>
         </div>
       </div>
     </div>
 
     <div style="display:flex;gap:8px;margin-top:14px;">
-      <button class="btn" onclick="limparPedidoNovo()" style="flex:1;">Limpar</button>
-      <button class="btn btn-verde" onclick="confirmarNovoPedido()" style="flex:2;font-weight:700;">✓ Criar Pedido</button>
+      <button class="btn" onclick="fecharModal('modal-novo-pedido')" style="flex:1;">Cancelar</button>
+      <button class="btn btn-verde" onclick="confirmarNovoPedido()" style="flex:1;font-weight:700;">✓ Criar Pedido</button>
     </div>
+  </div>
+</div>
+
+<!-- MODAL MEIO A MEIO (PEDIDO ZAP/TELEFONE) — TAMANHO -->
+<div class="modal-overlay" id="modal-mmp-tamanho">
+  <div class="modal-box" style="text-align:center;">
+    <div style="font-size:28px;margin-bottom:8px;">🍕</div>
+    <div style="font-size:16px;font-weight:700;margin-bottom:4px;">Pizza Meio a Meio</div>
+    <div style="font-size:12px;color:var(--txt2);margin-bottom:18px;">Selecione o tamanho:</div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <button class="btn btn-azul" onclick="escolherTamMMP('G')" style="padding:15px;font-size:15px;font-weight:700;">
+        Grande (G)<br><span style="font-size:12px;font-weight:400;color:#aad4ff;">Trad. R$ 52,90 · Esp. R$ 57,90</span>
+      </button>
+      <button class="btn btn-azul" onclick="escolherTamMMP('GG')" style="padding:15px;font-size:15px;font-weight:700;">
+        Gigante (GG)<br><span style="font-size:12px;font-weight:400;color:#aad4ff;">Trad. R$ 61,90 · Esp. R$ 76,90</span>
+      </button>
+    </div>
+    <button class="btn" onclick="fecharModal('modal-mmp-tamanho')" style="width:100%;margin-top:14px;color:var(--txt2);">Cancelar</button>
+  </div>
+</div>
+
+<!-- MODAL MEIO A MEIO (PEDIDO ZAP/TELEFONE) — SABOR 1 -->
+<div class="modal-overlay" id="modal-mmp-sabor1">
+  <div class="modal-box" style="max-height:85vh;overflow-y:auto;">
+    <div style="font-size:15px;font-weight:700;margin-bottom:4px;">Pizza Meio a Meio</div>
+    <div style="font-size:12px;color:var(--txt2);margin-bottom:14px;">Passo 1 — escolha o 1º sabor:</div>
+    <div style="display:flex;gap:6px;margin-bottom:10px;">
+      <button class="btn" id="mmp1-btn-trad" onclick="filtrarMMP1('trad')" style="font-size:12px;padding:7px 12px;">Tradicionais</button>
+      <button class="btn btn-azul" id="mmp1-btn-esp" onclick="filtrarMMP1('esp')" style="font-size:12px;padding:7px 12px;">Especiais</button>
+    </div>
+    <div id="mmp1-lista" style="display:flex;flex-direction:column;gap:6px;"></div>
+    <button class="btn" onclick="fecharModal('modal-mmp-sabor1')" style="width:100%;margin-top:12px;color:var(--txt2);">Cancelar</button>
+  </div>
+</div>
+
+<!-- MODAL MEIO A MEIO (PEDIDO ZAP/TELEFONE) — SABOR 2 -->
+<div class="modal-overlay" id="modal-mmp-sabor2">
+  <div class="modal-box" style="max-height:85vh;overflow-y:auto;">
+    <div style="font-size:15px;font-weight:700;margin-bottom:2px;">Pizza Meio a Meio</div>
+    <div style="font-size:12px;color:var(--verde);margin-bottom:4px;" id="mmp2-sabor1-info">1º sabor: ...</div>
+    <div style="font-size:12px;color:var(--txt2);margin-bottom:14px;">Passo 2 — escolha o 2º sabor:</div>
+    <div style="display:flex;gap:6px;margin-bottom:10px;">
+      <button class="btn" id="mmp2-btn-trad" onclick="filtrarMMP2('trad')" style="font-size:12px;padding:7px 12px;">Tradicionais</button>
+      <button class="btn btn-azul" id="mmp2-btn-esp" onclick="filtrarMMP2('esp')" style="font-size:12px;padding:7px 12px;">Especiais</button>
+    </div>
+    <div id="mmp2-lista" style="display:flex;flex-direction:column;gap:6px;"></div>
+    <button class="btn" onclick="fecharModal('modal-mmp-sabor2');abrirModal('modal-mmp-sabor1')" style="width:100%;margin-top:12px;color:var(--txt2);">← Voltar</button>
+  </div>
+</div>
+
+<!-- MODAL MEIO A MEIO (PEDIDO ZAP/TELEFONE) — BORDA -->
+<div class="modal-overlay" id="modal-mmp-borda">
+  <div class="modal-box">
+    <div style="font-size:15px;font-weight:700;margin-bottom:4px;" id="mmp-borda-pizza-nome">Pizza</div>
+    <div style="font-size:12px;color:var(--txt2);margin-bottom:14px;" id="mmp-borda-tam-info">Tamanho selecionado</div>
+    <div style="font-size:13px;font-weight:600;margin-bottom:10px;">Deseja acréscimo de borda?</div>
+    <div style="display:flex;flex-direction:column;gap:8px;" id="mmp-borda-opcoes"></div>
+    <button class="btn btn-verde" onclick="semBordaMMP()" style="width:100%;margin-top:14px;font-weight:700;">Sem borda — adicionar ao pedido</button>
+    <button class="btn" onclick="fecharModal('modal-mmp-borda')" style="width:100%;margin-top:8px;color:var(--txt2);">Cancelar</button>
   </div>
 </div>
   <!-- ABA CAIXA (dia atual) -->
@@ -232,7 +276,8 @@
       </div>
     </div>
     <div class="totais-grid" id="caixa-totais-hoje"></div>
-    <div style="background:linear-gradient(180deg,#1a2e1e,#111912);border:1px solid #2a4a30;border-radius:var(--rad-lg);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+    <div id="caixa-canais-hoje" style="margin-top:8px;"></div>
+    <div style="background:linear-gradient(180deg,#1a2e1e,#111912);border:1px solid #2a4a30;border-radius:var(--rad-lg);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;margin-top:10px;">
       <span style="font-size:14px;font-weight:600;color:#8ecfaa;">Total do Dia</span>
       <span style="font-size:28px;font-weight:700;color:var(--verde);" id="caixa-total-hoje">R$ 0,00</span>
     </div>
@@ -287,6 +332,8 @@
   <div id="pedido-body-cx">
     <!-- LADO ESQUERDO: Categorias + Produtos -->
     <div id="lado-esquerdo-cx">
+      <input type="text" id="busca-produto-cx" placeholder="🔍 Buscar produto..." oninput="buscarProdutoCx(this.value)"
+        style="width:100%;padding:9px 12px;margin-bottom:8px;background:#1a201c;border:1px solid #303a33;border-radius:10px;color:var(--txt);font-size:13px;">
       <div id="cat-list-cx"></div>
       <div id="produto-area-cx">
         <div id="cat-titulo-cx" style="font-size:11px;color:var(--txt2);margin-bottom:6px;padding:0 2px;"></div>
@@ -341,6 +388,10 @@
       <div style="padding:10px 14px;border-top:1px solid var(--border2);display:flex;justify-content:space-between;flex-shrink:0;">
         <span style="font-size:13px;color:var(--txt2);">Subtotal</span>
         <span style="font-size:13px;font-weight:600;" id="subtotal-fech-cx">R$ 0,00</span>
+      </div>
+      <div id="taxa-fech-cx-linha" style="display:none;padding:0 14px 10px;justify-content:space-between;flex-shrink:0;">
+        <span style="font-size:12px;color:#c89a2a;">🛵 Taxa de entrega</span>
+        <span style="font-size:12px;font-weight:600;color:#c89a2a;" id="taxa-fech-cx-valor">R$ 0,00</span>
       </div>
     </div>
 
