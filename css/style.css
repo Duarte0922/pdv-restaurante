@@ -278,15 +278,9 @@ input[type=number]{background:#1a201c;border:1px solid var(--border3);border-rad
 
 .layout-principal {
   display: grid;
-  grid-template-columns: 380px minmax(0, 1fr) 320px;
+  grid-template-columns: minmax(0, 1fr) 320px;
   gap: 14px;
   height: 100%;
-}
-
-.coluna-esquerda {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
 }
 
 .coluna-mesas {
@@ -300,6 +294,26 @@ input[type=number]{background:#1a201c;border:1px solid var(--border3);border-rad
   flex-direction: column;
   gap: 12px;
   min-width: 0;
+}
+
+/* Wrapper com o MESMO número de colunas da grade de mesas, para que o
+   balcão possa ocupar exatamente a largura de 3 mesas (mesa 1 até mesa 3) */
+.mesas-balcao-grid-wrapper {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+@media (min-width: 1200px) {
+  .mesas-balcao-grid-wrapper {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+.mesas-full-linha {
+  grid-column: 1 / -1;
+}
+.balcao-secao-abaixo-mesas {
+  grid-column: 1 / span 3;
+  margin-top: 4px;
 }
 
 /* ── Grid de Mesas (4x4) ── */
@@ -486,17 +500,11 @@ input[type=number]{background:#1a201c;border:1px solid var(--border3);border-rad
   margin-top: 2px;
 }
 
-/* ── Grid de Balcões (3 colunas, igual mesas) ── */
+/* ── Grid de Balcões (3 colunas — largura de mesa 1 até mesa 3, mesmo tamanho de card das mesas) ── */
 .balcao-grid-novo {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
-}
-
-@media (min-width: 1200px) {
-  .balcao-grid-novo {
-    grid-template-columns: repeat(4, 1fr);
-  }
 }
 
 @media (max-width: 700px) {
@@ -686,16 +694,22 @@ input[type=number]{background:#1a201c;border:1px solid var(--border3);border-rad
   .layout-principal {
     grid-template-columns: 1fr 320px;
   }
-  .coluna-esquerda {
-    grid-column: 1 / -1;
-  }
-  .mesas-grid-novo {
+  .mesas-grid-novo, .mesas-balcao-grid-wrapper {
     grid-template-columns: repeat(3, 1fr);
   }
 }
 
+@media (max-width: 700px) {
+  .layout-principal {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 500px) {
-  .mesas-grid-novo {
+  .mesas-grid-novo, .mesas-balcao-grid-wrapper {
     grid-template-columns: repeat(2, 1fr);
+  }
+  .balcao-secao-abaixo-mesas {
+    grid-column: 1 / -1;
   }
 }
