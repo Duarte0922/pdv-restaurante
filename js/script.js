@@ -1905,7 +1905,8 @@ window.selecionarEnderecoPedido = function(){
 };
 
 // 🔴 CONFIRMAR NOVO PEDIDO — SALVA NO FIREBASE
-window.confirmarNovoPedido = function(){
+// 🔴 FUNÇÃO AGORA É async
+window.confirmarNovoPedido = async function() {
   try{
     const nome = document.getElementById('np-nome').value.trim();
     const tel = document.getElementById('np-telefone').value.trim();
@@ -1918,38 +1919,37 @@ window.confirmarNovoPedido = function(){
     const enderecosCliente = window._enderecosClientePedido || [];
     let enderecoObj = null, enderecoFinal = '', labelFinal = '';
     if(selVal && selVal !== '__novo__'){
-      enderecoObj = enderecosCliente.find(e => e.id === selVal);
+      enderecoObj = enderecosCliente.find(e=>e.id===selVal);
       if(enderecoObj){ enderecoFinal = enderecoObj.endereco; labelFinal = enderecoObj.label; }
     }
     if(!enderecoFinal){
       enderecoFinal = document.getElementById('np-endereco-novo').value.trim();
-      labelFinal = document.getElementById('np-endereco-label').value.trim() || ('Endereço ' + (enderecosCliente.length + 1));
+      labelFinal = document.getElementById('np-endereco-label').value.trim() || ('Endereço '+(enderecosCliente.length+1));
     }
-    if(!nome){ mostrarAlerta('Informe o nome do cliente', 'vermelho'); return; }
-    if(!tel){ mostrarAlerta('Informe o telefone do cliente', 'vermelho'); return; }
-    if(!enderecoFinal){ mostrarAlerta('Informe ou selecione um endereço', 'vermelho'); return; }
-    if(!window._carrinhoPedidoModal.length){ mostrarAlerta('Adicione pelo menos um produto ao pedido', 'vermelho'); return; }
-
-    salvarOuAtualizarCliente({nome, telefone:tel, endereco:{label:labelFinal, endereco:enderecoFinal, km, taxa}});
-
+    if (!nome) { mostrarAlerta('Informe o nome do cliente', 'vermelho'); return; }
+    if (!tel) { mostrarAlerta('Informe o telefone do cliente', 'vermelho'); return; }
+    if (!enderecoFinal) { mostrarAlerta('Informe ou selecione um endereço', 'vermelho'); return; }
+    if (!window._carrinhoPedidoModal.length) { mostrarAlerta('Adicione pelo menos um produto', 'vermelho'); return; }
+    
+    salvarOuAtualizarCliente({ nome, telefone: tel, endereco:{ label:labelFinal, endereco:enderecoFinal, km, taxa } });
+    
     const canal = _tipoNovoPedido;
     const id = (canal === 'delivery' ? 'D' : 'T') + Date.now();
-    const itensPedido = window._carrinhoPedidoModal.map(it => ({
-      nome: it.nome, preco: it.preco, qtd: it.qtd, obs:'', categoria:'',
+    const itensPedido = window._carrinhoPedidoModal.map(it=>({
+      nome: it.nome, preco: it.preco, qtd: it.qtd, obs:'', categoria:'', 
       setor:'cozinha', enviadoCozinha:false, criadoEm: Date.now()
     }));
-    const totalItens = itensPedido.reduce((s,i) => s + i.preco * i.qtd, 0);
+    const totalItens = itensPedido.reduce((s,i)=>s+i.preco*i.qtd,0);
     salvarPedidoHistoricoCliente(tel, itensPedido, totalItens);
-
+    
     const pedido = {
-      id, tipo: canal, nome, telefone: tel,
-      endereco: enderecoFinal, enderecoLabel: labelFinal, km, taxa,
-      pagamento: pag, trocoPara: troco, observacao: obs,
+      id, tipo: canal, nome, telefone: tel, 
+      endereco: enderecoFinal, enderecoLabel: labelFinal, km, taxa, 
+      pagamento: pag, trocoPara: troco, observacao: obs, 
       abertoEm: Date.now(), total: totalItens, itens: itensPedido, status: 'aguardando'
     };
-
-    // 🔴 SALVA NO FIREBASE — NÃO no localStorage
-    if(canal === 'delivery'){
+    
+    if (canal === 'delivery') {
       deliveryList.push(pedido);
       salvarPedidoAvulsoFirebase('delivery', pedido);
       renderizarDelivery();
@@ -1958,19 +1958,30 @@ window.confirmarNovoPedido = function(){
       salvarPedidoAvulsoFirebase('telefone', pedido);
       renderizarTelefone();
     }
-
+    
     const novaMesa = {
-      id, status:'ocupada', inicio:Date.now(), pedido:itensPedido,
-      virtual:true, canal, nomeCliente:nome, telefoneCliente:tel,
-      endereco:enderecoFinal, km, taxa, observacao:obs
+      id, status: 'ocupada', inicio: Date.now(), pedido: itensPedido, 
+      virtual: true, canal, nomeCliente: nome, telefoneCliente: tel, 
+      endereco: enderecoFinal, km, taxa, observacao: obs
     };
     mesas.push(novaMesa);
-    salvarMesaCx(novaMesa);
+    await salvarMesaCx(novaMesa);
+    
     fecharModal('modal-novo-pedido');
-    mostrarAlerta(`Pedido de ${nome} criado — ${fmt(totalItens)}`, 'verde');
+    
+    // 🔴 NOVO: Abre a mesa e envia DIRETO pra cozinha
+    mesaAtualCx = novaMesa;
+    try {
+      await window.enviarCozinhaCx();
+      mostrarAlerta(`✓ Pedido de ${nome} criado e enviado pra cozinha — ${fmt(totalItens)}`, 'verde');
+    } catch(eEnvio) {
+      console.warn('Erro ao enviar pra cozinha:', eEnvio);
+      mostrarAlerta(`Pedido criado, mas não foi enviado pra cozinha. Abra a mesa e envie manualmente.`, 'vermelho');
+    }
+    
   }catch(e){
     console.error('Erro ao criar pedido:', e);
-    alert('Erro ao criar o pedido: ' + e.message);
+    alert('Erro ao criar o pedido: '+e.message);
   }
 };
 
