@@ -1113,3 +1113,46 @@ setTimeout(()=>{
 }, 500);
 
 setTimeout(inicializarNovoLayout, 1000);
+// ═══════════════════════════════════════════════════════════════
+// SINCRONISMO EM TEMPO REAL COM O CAIXA
+// ═══════════════════════════════════════════════════════════════
+
+// Monitora mudanças nas mesas (quando caixa ou outro garçom mexe)
+onValue(ref(db, 'mesas'), (snap) => {
+  const dados = snap.val();
+  if (!dados) return;
+  
+  Object.values(dados).forEach(m => {
+    const local = mesas.find(x => x.id === m.id);
+    if (local) {
+      local.status = m.status || 'livre';
+      local.inicio = m.inicio || null;
+      local.pedido = m.pedido ? Object.values(m.pedido) : [];
+    }
+  });
+  
+  // Atualiza a tela se estiver na aba mesas
+  if (document.getElementById('aba-mesas').classList.contains('ativa')) {
+    renderMesasCaixa();
+  }
+  
+  // Se tiver uma mesa aberta, atualiza o carrinho
+  if (mesaAtualCx && document.getElementById('screen-pedido').style.display === 'flex') {
+    const atualizada = mesas.find(x => x.id === mesaAtualCx.id);
+    if (atualizada) {
+      mesaAtualCx = atualizada;
+      renderCarrinhoCx();
+    }
+  }
+});
+
+// Monitora status da conexão
+onValue(ref(db, '.info/connected'), (snap) => {
+  const el = document.getElementById('sync-indicator');
+  const online = !!snap.val();
+  if (el) {
+    el.textContent = online ? '● Online' : '○ Offline';
+    el.style.background = online ? 'var(--verde-bg)' : '#3a1a1a';
+    el.style.color = online ? 'var(--verde)' : '#ff8080';
+  }
+});
