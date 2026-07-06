@@ -12,6 +12,7 @@
   .card h3 { font-size: 14px; margin-bottom: 6px; }
   .card p { font-size: 12px; color: #acb5ac; margin-bottom: 12px; }
   button { padding: 10px 18px; border-radius: 10px; border: none; cursor: pointer; font-size: 13px; font-weight: 700; font-family: sans-serif; }
+  button:disabled { opacity: .4; cursor: not-allowed; }
   .btn-red { background: linear-gradient(180deg,#8b1a1a,#5c1010); color: #ffaaaa; border: 1px solid #cc3333; width: 100%; }
   .btn-verde { background: linear-gradient(180deg,#2aa160,#1d7b49); color: #fff; border: 1px solid #258754; width: 100%; }
   .btn-red:active, .btn-verde:active { opacity: .8; }
@@ -19,49 +20,81 @@
   .ok { color: #2fb36d; }
   .err { color: #ff8080; }
   .warn { color: #c89a2a; }
+
+  /* Tela de login */
+  #login-screen{position:fixed;inset:0;background:#0c100d;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:16px;z-index:9999;padding:20px;text-align:center;}
+  #login-screen input{width:100%;max-width:280px;padding:12px 14px;border-radius:12px;border:1px solid #303a33;
+    background:#1a201c;color:#f4f7f1;font-size:14px;}
+  #login-screen button{width:100%;max-width:280px;padding:14px;background:linear-gradient(180deg,#2aa160,#1d7b49);
+    color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;}
+  #login-msg{font-size:12px;color:#ff8080;min-height:16px;}
+  #conteudo{display:none;}
 </style>
 </head>
 <body>
 
-<h2>🧹 Limpar Banco — Luar do Viena</h2>
-<p class="sub">Use com cuidado. Dados apagados não podem ser recuperados.</p>
-
-<div class="card">
-  <h3>🪑 Mesas</h3>
-  <p>Libera todas as mesas, apaga pedidos e zera status.</p>
-  <button class="btn-red" onclick="limpar('mesas')">Limpar Mesas</button>
+<!-- TELA DE LOGIN -->
+<div id="login-screen">
+  <div style="font-size:44px;">🌙</div>
+  <h2 style="margin:0;">Luar do Viena</h2>
+  <p class="sub" style="margin:0 0 8px;">Faça login para liberar a limpeza do banco</p>
+  <input type="email" id="login-email" placeholder="E-mail (ex: caixa@luar.com)" autocomplete="username">
+  <input type="password" id="login-senha" placeholder="Senha" autocomplete="current-password">
+  <button onclick="fazerLoginLimpeza()">Entrar</button>
+  <div id="login-msg"></div>
 </div>
 
-<div class="card">
-  <h3>🔔 Pedidos Cozinha</h3>
-  <p>Remove todos os pedidos pendentes/impressos da fila da cozinha.</p>
-  <button class="btn-red" onclick="limpar('pedidos_cozinha')">Limpar Pedidos Cozinha</button>
-</div>
+<!-- CONTEÚDO (só aparece após login) -->
+<div id="conteudo">
+  <h2>🧹 Limpar Banco — Luar do Viena</h2>
+  <p class="sub">Use com cuidado. Dados apagados não podem ser recuperados.</p>
 
-<div class="card">
-  <h3>🧾 Contas a Imprimir</h3>
-  <p>Remove todas as contas pendentes de impressão.</p>
-  <button class="btn-red" onclick="limpar('contas_imprimir')">Limpar Contas</button>
-</div>
+  <div class="card">
+    <h3>🪑 Mesas</h3>
+    <p>Libera todas as mesas, apaga pedidos e zera status.</p>
+    <button class="btn-red" onclick="limpar('mesas')">Limpar Mesas</button>
+  </div>
 
-<div class="card">
-  <h3>💰 Caixa do Dia</h3>
-  <p>Apaga os registros financeiros de hoje.</p>
-  <button class="btn-red" onclick="limparCaixaHoje()">Limpar Caixa de Hoje</button>
-</div>
+  <div class="card">
+    <h3>🍽️ Balcão / Delivery / Telefone</h3>
+    <p>Remove balcões abertos, pedidos delivery e telefone em andamento.</p>
+    <button class="btn-red" onclick="limparAvulsos()">Limpar Balcão / Delivery / Telefone</button>
+  </div>
 
-<div class="card" style="border-color:#8b1a1a;">
-  <h3 style="color:#ffaaaa;">⚠ Limpar TUDO</h3>
-  <p>Apaga mesas, pedidos, contas e caixa de hoje de uma vez.</p>
-  <button class="btn-red" onclick="limparTudo()" style="background:linear-gradient(180deg,#cc3333,#8b1a1a);">LIMPAR TUDO</button>
-</div>
+  <div class="card">
+    <h3>🔔 Pedidos Cozinha</h3>
+    <p>Remove todos os pedidos pendentes/impressos da fila da cozinha.</p>
+    <button class="btn-red" onclick="limpar('pedidos_cozinha')">Limpar Pedidos Cozinha</button>
+  </div>
 
-<div id="log">Aguardando ação...</div>
+  <div class="card">
+    <h3>🧾 Contas a Imprimir</h3>
+    <p>Remove todas as contas pendentes de impressão.</p>
+    <button class="btn-red" onclick="limpar('contas_imprimir')">Limpar Contas</button>
+  </div>
+
+  <div class="card">
+    <h3>💰 Caixa do Dia</h3>
+    <p>Apaga os registros financeiros de hoje.</p>
+    <button class="btn-red" onclick="limparCaixaHoje()">Limpar Caixa de Hoje</button>
+  </div>
+
+  <div class="card" style="border-color:#8b1a1a;">
+    <h3 style="color:#ffaaaa;">⚠ Limpar TUDO</h3>
+    <p>Apaga mesas, balcão/delivery/telefone, pedidos, contas e caixa de hoje de uma vez.</p>
+    <button class="btn-red" onclick="limparTudo()" style="background:linear-gradient(180deg,#cc3333,#8b1a1a);">LIMPAR TUDO</button>
+  </div>
+
+  <div id="log">Aguardando ação...</div>
+</div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, remove, set, get }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, setPersistence, browserLocalPersistence }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const FB = {
   apiKey: "AIzaSyAXMDwp1-VT3FdBMHkihTPESWL8smJLZcc",
@@ -75,6 +108,31 @@ const FB = {
 
 const app = initializeApp(FB);
 const db = getDatabase(app);
+const auth = getAuth(app);
+setPersistence(auth, browserLocalPersistence);
+
+// ── LOGIN (necessário — sem isso o Firebase nega a exclusão com "sem permissão") ──
+window.fazerLoginLimpeza = function(){
+  const email = document.getElementById('login-email').value.trim();
+  const senha = document.getElementById('login-senha').value;
+  const msg = document.getElementById('login-msg');
+  msg.textContent = '';
+  if(!email || !senha){ msg.textContent = 'Preencha e-mail e senha.'; return; }
+  signInWithEmailAndPassword(auth, email, senha)
+    .catch((error) => { msg.textContent = 'Erro ao entrar: ' + error.message; });
+};
+
+onAuthStateChanged(auth, (user) => {
+  const login = document.getElementById('login-screen');
+  const conteudo = document.getElementById('conteudo');
+  if(user){
+    login.style.display = 'none';
+    conteudo.style.display = 'block';
+  }else{
+    login.style.display = 'flex';
+    conteudo.style.display = 'none';
+  }
+});
 
 const log = document.getElementById('log');
 function escrever(msg, tipo='') {
@@ -96,6 +154,17 @@ window.limpar = async function(nodo) {
   }
 };
 
+// Balcão / Delivery / Telefone ficam em pedidos_avulsos/{balcoes,delivery,telefone}
+window.limparAvulsos = async function() {
+  if(!confirm('Apagar todos os balcões abertos e pedidos delivery/telefone em andamento?')) return;
+  try {
+    await remove(ref(db, 'pedidos_avulsos'));
+    escrever('✓ Balcão / Delivery / Telefone apagados!', 'ok');
+  } catch(e) {
+    escrever('✗ Erro: ' + e.message, 'err');
+  }
+};
+
 window.limparCaixaHoje = async function() {
   const hoje = new Date().toLocaleDateString('pt-BR').replace(/\//g,'-');
   if(!confirm(`Apagar caixa do dia ${hoje}?`)) return;
@@ -108,10 +177,10 @@ window.limparCaixaHoje = async function() {
 };
 
 window.limparTudo = async function() {
-  if(!confirm('⚠ ATENÇÃO: Isso vai apagar TUDO (mesas, pedidos, contas e caixa de hoje). Confirmar?')) return;
+  if(!confirm('⚠ ATENÇÃO: Isso vai apagar TUDO (mesas, balcão/delivery/telefone, pedidos, contas e caixa de hoje). Confirmar?')) return;
   if(!confirm('Tem certeza mesmo? Esta ação não pode ser desfeita!')) return;
   const hoje = new Date().toLocaleDateString('pt-BR').replace(/\//g,'-');
-  const nodos = ['mesas', 'pedidos_cozinha', 'contas_imprimir', 'caixa/'+hoje];
+  const nodos = ['mesas', 'pedidos_avulsos', 'pedidos_cozinha', 'contas_imprimir', 'caixa/'+hoje];
   escrever('Iniciando limpeza completa...', 'warn');
   for(const n of nodos) {
     try {
