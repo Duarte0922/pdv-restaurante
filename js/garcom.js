@@ -1,4 +1,4 @@
-// garcom.js - VERSÃO CORRIGIDA (sincronizado com o Caixa)
+// garcom.js - VERSÃO FINAL CORRIGIDA
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, set, onValue, update, push, get, query, orderByChild, equalTo, onChildAdded }
 from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
@@ -130,20 +130,6 @@ function renderMesasCaixa(){
   document.getElementById('c-stat-conta').textContent=con+' conta';
 }
 
-function tocarBeep(){
-  try{
-    const ctx=new(window.AudioContext||window.webkitAudioContext)();
-    [0,180,360].forEach(d=>{
-      const o=ctx.createOscillator(),g=ctx.createGain();
-      o.connect(g);g.connect(ctx.destination);
-      o.frequency.value=880;
-      g.gain.setValueAtTime(0.3,ctx.currentTime+d/1000);
-      g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+d/1000+0.15);
-      o.start(ctx.currentTime+d/1000);o.stop(ctx.currentTime+d/1000+0.15);
-    });
-  }catch{}
-}
-
 function mostrarAlerta(msg, cor){
   const div = document.createElement('div');
   div.className = 'toast-msg toast-'+(cor==='vermelho' ? 'vermelho' : 'verde');
@@ -203,16 +189,21 @@ let mesaAtualCx = null, itemPendenteCx = null, carrinhoAbertoCx = true;
 let mmTamanhoCx = null, mmSabor1Cx = null;
 
 window.voltarMesasCaixa = function(){
+  mesaAtualCx = null; // 🔴 LIMPA A MESA ATUAL
   const pedido = document.getElementById('screen-pedido');
   if(pedido){pedido.classList.remove('active');pedido.style.display='none';}
   const main = document.getElementById('screen-main');
   if(main){main.style.display = 'flex';main.classList.add('active');}
   mudarAba('mesas');
+  renderMesasCaixa(); // 🔴 FORÇA RE-RENDERIZAÇÃO
 };
 
 function abrirMesaCx(id){
   mesaAtualCx = mesas.find(m=>m.id===id);
-  if(!mesaAtualCx) return;
+  if(!mesaAtualCx){
+    mostrarAlerta('Mesa não encontrada', 'vermelho');
+    return;
+  }
   if(!mesaAtualCx.inicio) mesaAtualCx.inicio = Date.now();
   if(mesaAtualCx.status==='livre') mesaAtualCx.status='ocupada';
   salvarMesaCx(mesaAtualCx);
@@ -528,6 +519,7 @@ window.filtrarMM2Cx=function(tipo){
   });
 };
 
+// 🔴 LISTENERS FIREBASE
 onValue(ref(db, 'config/numMesas'), (snap) => {
   const n = snap.val() || 16;
   const atuais = mesas.filter(m=>!m.virtual);
@@ -877,7 +869,6 @@ window.selecionarEnderecoPedido = function(){
   const sel = document.getElementById('np-endereco-select');
   const val = sel.value;
   const box = document.getElementById('np-endereco-novo-box');
-  // 🔴 CORRIGIDO: comparar com '__novo__' em vez de 'novo'
   if(val === '__novo__' || !val){
     box.style.display = 'flex';
     document.getElementById('np-endereco-novo').value='';
