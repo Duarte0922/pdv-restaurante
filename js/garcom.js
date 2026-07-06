@@ -1,4 +1,4 @@
-// garcom.js - VERSÃO LIMPA (só mesas, balcão, delivery, telefone)
+// garcom.js - VERSÃO CORRIGIDA (sincronizado com o Caixa)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, set, onValue, update, push, get, query, orderByChild, equalTo, onChildAdded }
 from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
@@ -156,43 +156,6 @@ function mostrarAlerta(msg, cor){
 }
 window.mostrarAlerta = mostrarAlerta;
 
-function criarAlerta(titulo,subtitulo,itensHtml,onImprimir){
-  tocarBeep();
-  const div=document.createElement('div');
-  div.className='alerta';
-  div.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;"><div class="alerta-titulo">${titulo}</div><button class="btn-fechar-alerta" style="background:#3a1a1a;border:1px solid #cc3333;border-radius:8px;color:#ff8080;font-size:16px;font-weight:700;cursor:pointer;padding:2px 8px;line-height:1;flex-shrink:0;margin-left:8px;" title="Fechar sem imprimir">✕</button></div><div class="alerta-sub">${subtitulo}</div><div class="alerta-itens">${itensHtml}</div><button class="btn-imprimir-alerta" style="width:100%;padding:10px;background:linear-gradient(180deg,#2aa160,#1d7b49);border:none;border-radius:10px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;"> IMPRIMIR</button>`;
-  document.getElementById('alertas-container').appendChild(div);
-  div.querySelector('.btn-fechar-alerta').onclick=()=>div.remove();
-  div.querySelector('.btn-imprimir-alerta').onclick=function(){
-    this.disabled=true;this.textContent='Imprimindo...';
-    onImprimir();
-    setTimeout(()=>div.remove(),600);
-  };
-}
-
-function imprimirComanda(pedido){
-  const popup=window.open('','_blank','width=420,height=580');
-  if(!popup)return;
-  const linhas=pedido.itens.map(it=>`<div style="padding:8px 0;border-bottom:1px dashed #ccc;"><div style="display:flex;justify-content:space-between;"><strong style="font-size:15px;">${it.qtd}x ${it.nome}</strong><span>${fmt(it.preco*it.qtd)}</span></div>${it.obs?`<div style="font-size:12px;color:#555;">→ ${it.obs}</div>`:''}<div style="font-size:10px;color:#777;text-transform:uppercase;">${it.setor||''}</div></div>`).join('');
-  popup.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Cozinha Mesa ${String(pedido.mesa).padStart(2,'0')}</title><style>body{font-family:Arial,sans-serif;margin:0;padding:16px;color:#000;}@media print{button{display:none;}}</style></head><body><div style="max-width:300px;margin:0 auto;"><div style="text-align:center;border-bottom:2px dashed #000;padding-bottom:10px;margin-bottom:12px;"><div style="font-size:22px;font-weight:bold;">COMANDA</div><div style="font-size:18px;font-weight:bold;margin-top:6px;">Mesa ${String(pedido.mesa).padStart(2,'0')}</div><div style="font-size:12px;margin-top:4px;">${pedido.data}</div><div style="font-size:11px;">#${pedido.codigo}</div></div>${linhas}<div style="margin-top:14px;text-align:center;font-size:11px;border-top:2px dashed #000;padding-top:10px;"> Luar do Viena</div></div></body></html>`);
-  popup.document.close();
-  setTimeout(()=>{popup.print();popup.close();},400);
-}
-
-const SESSAO_INICIO = Date.now();
-
-onChildAdded(query(ref(db,'pedidos_cozinha'),orderByChild('status'),equalTo('pendente')),(snap)=>{
-  const p=snap.val();const id=snap.key;
-  if(!p.timestamp || p.timestamp < SESSAO_INICIO) return;
-  const itensHtml=p.itens.map(it=>`<div>• <strong>${it.qtd}x ${it.nome}</strong>${it.obs?` (${it.obs})`:''} <small style="color:var(--txt2);">[${it.setor||''}]</small></div>`).join('');
-  criarAlerta(` MESA ${String(p.mesa).padStart(2,'0')} — COZINHA`,p.data+' · #'+p.codigo,itensHtml,async ()=>{
-    // O garcom NAO imprime mais aqui. Ele repassa o pedido para o CAIXA
-    // (computador que tem a impressora conectada) via o no comandas_imprimir.
-    await push(ref(db,'comandas_imprimir'),{...p,status:'pendente',timestamp:Date.now()});
-    update(ref(db,'pedidos_cozinha/'+id),{status:'enviado_caixa',enviadoCaixaEm:Date.now()});
-  });
-});
-
 window.abrirConfig=function(){
   get(ref(db,'config/numMesas')).then(s=>{
     document.getElementById('input-num-mesas').value=s.val()||16;
@@ -228,7 +191,7 @@ const pizzasEspCx = ['18 - Lombo Tropical','19 - Lombo Canadense','20 - Milhombo
 const categoriasCx = [
   {nome:'Pizza Trad.', icon:'🍕', img:'img/pizza-trad.jpg', pizza:true, produtos: adicionarImagem(pizzasTradCx)},
   {nome:'Pizza Esp.', icon:'🌟', img:'img/pizza-esp.jpg', pizza:true, produtos: adicionarImagem(pizzasEspCx)},
-  {nome:'Sanduíches', icon:'', img:'img/sanduiches.jpg', produtos: adicionarImagem([{nome:'01 - Hamburguer',preco:10},{nome:'02 - X-Burguer',preco:11},{nome:'03 - Misto Especial',preco:11},{nome:'04 - X-Bacon',preco:14},{nome:'05 - Framburguer',preco:14.5},{nome:'06 - X-Egg-Burguer',preco:14.5},{nome:'07 - X-Egg-Bacon',preco:16},{nome:'08 - X-Tudo',preco:17},{nome:'09 - Daliane',preco:23.5},{nome:'10 - 5 Carnes',preco:24.5},{nome:'11 - X-Tudão',preco:19.5},{nome:'12 - X-Frango',preco:19.5},{nome:'13 - Super X-Tudo',preco:24.5},{nome:'14 - RM Sanduíche',preco:25},{nome:'15 - LR Burguer',preco:26.5},{nome:'16 - Rangão',preco:28.5},{nome:'17 - Califórnia',preco:22.5},{nome:'18 - X-Bruno',preco:22.5},{nome:'19 - Chefe',preco:24.5},{nome:'20 - Patrão',preco:30.5},{nome:'21 - Ki-Frango',preco:24.5},{nome:'22 - Dom Geraldo',preco:29.5},{nome:'23 - São Carlos',preco:24.5},{nome:'24 - Dom Cleiton',preco:31.5},{nome:'25 - F-Kalll',preco:32.5},{nome:'26 - Marley',preco:25.5},{nome:'27 - Betoven',preco:35.5}])},
+  {nome:'Sanduíches', icon:'🍔', img:'img/sanduiches.jpg', produtos: adicionarImagem([{nome:'01 - Hamburguer',preco:10},{nome:'02 - X-Burguer',preco:11},{nome:'03 - Misto Especial',preco:11},{nome:'04 - X-Bacon',preco:14},{nome:'05 - Framburguer',preco:14.5},{nome:'06 - X-Egg-Burguer',preco:14.5},{nome:'07 - X-Egg-Bacon',preco:16},{nome:'08 - X-Tudo',preco:17},{nome:'09 - Daliane',preco:23.5},{nome:'10 - 5 Carnes',preco:24.5},{nome:'11 - X-Tudão',preco:19.5},{nome:'12 - X-Frango',preco:19.5},{nome:'13 - Super X-Tudo',preco:24.5},{nome:'14 - RM Sanduíche',preco:25},{nome:'15 - LR Burguer',preco:26.5},{nome:'16 - Rangão',preco:28.5},{nome:'17 - Califórnia',preco:22.5},{nome:'18 - X-Bruno',preco:22.5},{nome:'19 - Chefe',preco:24.5},{nome:'20 - Patrão',preco:30.5},{nome:'21 - Ki-Frango',preco:24.5},{nome:'22 - Dom Geraldo',preco:29.5},{nome:'23 - São Carlos',preco:24.5},{nome:'24 - Dom Cleiton',preco:31.5},{nome:'25 - F-Kalll',preco:32.5},{nome:'26 - Marley',preco:25.5},{nome:'27 - Betoven',preco:35.5}])},
   {nome:'Porções', icon:'🍟', img:'img/porcoes.jpg', carne:true, produtos: adicionarImagem([{nome:'Fritas 400g Mussarela',preco:24.9},{nome:'Fritas 400g Muss./Bacon',preco:34.9},{nome:'Fritas 400g Muss./Bacon/Cala.',preco:49.9},{nome:'Carne de Sol c/ Fritas',preco:75.9},{nome:'Contra Filé c/ Fritas',preco:77.9},{nome:'Fígado com Jiló',preco:32.9},{nome:'Linguiça Caseira c/ Fritas',preco:55.9},{nome:'Pernil c/ Fritas/Mandioca',preco:55.9},{nome:'Arroz na Chapa',preco:24.9},{nome:'Arroz com Pernil',preco:36.9},{nome:'Porção Mista',preco:136.9},{nome:'Filé de Peito de Frango',preco:42.9},{nome:'Picanha',preco:96.9},{nome:'Costelinha c/ Mandioca',preco:67.9},{nome:'Coxinha da Asa 1kg',preco:50.9}])},
   {nome:'Peixes', icon:'🐟', img:'img/peixes.jpg', produtos: adicionarImagem([{nome:'Tilápia 400g Molho Especial',preco:53.9},{nome:'Tilápia 400g c/ Batata',preco:68.9},{nome:'Cascudo 800g Molho Especial',preco:46.9},{nome:'Cascudo 800g c/ Batata',preco:60.9},{nome:'Cascudo 400g Molho Especial',preco:23.9},{nome:'Cascudo 400g c/ Batata',preco:30.9}])},
   {nome:'Bebidas', icon:'🥤', img:'img/bebidas.jpg', produtos: adicionarImagem([{nome:'Suco de Caixinha',preco:5,bar:true},{nome:'Suco 1 Litro',preco:12},{nome:'Polpa Acerola/Abacaxi/Laranja/Morango',preco:7.5},{nome:'Polpa Graviola/Cacau/Maracujá/Açaí',preco:8},{nome:'Refri 1L Guaraná',preco:9,bar:true},{nome:'Refri 1L Coca-Cola',preco:12,bar:true},{nome:'Refri 2L Fanta/Guaraná',preco:15,bar:true},{nome:'Refri 2L Coca-Cola',preco:17,bar:true},{nome:'Refrigerante Lata',preco:6,bar:true}])},
@@ -293,9 +256,9 @@ async function salvarMesaCx(mesa){
 
 function getIconHTML(cat, size = '32px'){
   if(cat.img){
-    return `<img src="${cat.img}" alt="${cat.nome}" style="width:${size};height:${size};border-radius:8px;object-fit:cover;display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><span style="display:none;font-size:${parseInt(size)*0.6}px;align-items:center;justify-content:center;width:${size};height:${size};">${cat.icon || '️'}</span>`;
+    return `<img src="${cat.img}" alt="${cat.nome}" style="width:${size};height:${size};border-radius:8px;object-fit:cover;display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><span style="display:none;font-size:${parseInt(size)*0.6}px;align-items:center;justify-content:center;width:${size};height:${size};">${cat.icon || '🍽️'}</span>`;
   }
-  return `<span style="font-size:${parseInt(size)*0.6}px;">${cat.icon || '️'}</span>`;
+  return `<span style="font-size:${parseInt(size)*0.6}px;">${cat.icon || '🍽️'}</span>`;
 }
 
 window.buscarProdutoCx = function(termo){
@@ -490,6 +453,7 @@ window.toggleCarrinhoCx=function(){
   document.getElementById('carrinho-toggle-cx').textContent=carrinhoAbertoCx?'▲':'▼';
 };
 
+// 🔴 FUNÇÃO CORRIGIDA — Escreve DIRETO em comandas_imprimir
 window.enviarCozinhaCx=async function(){
   if(!mesaAtualCx||!mesaAtualCx.pedido||!mesaAtualCx.pedido.length) return;
   const todos=mesaAtualCx.pedido.filter(it=>!it.enviadoCozinha&&it.setor!=='bar');
@@ -499,15 +463,21 @@ window.enviarCozinhaCx=async function(){
     return;
   }
   const codigo=mesaAtualCx.id+'-'+Date.now().toString().slice(-5);
-  const dados={mesa:mesaAtualCx.id,codigo,data:new Date().toLocaleString('pt-BR'),itens:todos.map(it=>({nome:it.nome,qtd:it.qtd,preco:it.preco,obs:it.obs||'',setor:it.setor||''}))};
+  const dados={
+    mesa:mesaAtualCx.id,
+    codigo,
+    data:new Date().toLocaleString('pt-BR'),
+    itens:todos.map(it=>({nome:it.nome,qtd:it.qtd,preco:it.preco,obs:it.obs||'',setor:it.setor||''}))
+  };
   try{
-    await push(ref(db,'pedidos_cozinha'),{...dados,status:'pendente',timestamp:Date.now()});
+    // 🔴 ESCREVE DIRETO EM comandas_imprimir — o Caixa imprime
+    await push(ref(db,'comandas_imprimir'),{...dados, status:'pendente', timestamp:Date.now()});
     todos.forEach(it=>{it.enviadoCozinha=true;it.enviadoEm=Date.now();});
     salvarMesaCx(mesaAtualCx); renderCarrinhoCx();
     if(mesaAtualCx.virtual && (mesaAtualCx.canal==='delivery'||mesaAtualCx.canal==='telefone')){
       avancarStatusEntregaCx('preparando');
     }
-    document.getElementById('cozinha-icon-cx').textContent='';
+    document.getElementById('cozinha-icon-cx').textContent='🔔';
     document.getElementById('cozinha-titulo-cx').textContent='Pedido enviado!';
     document.getElementById('cozinha-msg-cx').textContent=todos.reduce((s,i)=>s+i.qtd,0)+' item(ns) enviado(s) para a cozinha!';
   }catch(e){
@@ -876,7 +846,7 @@ function renderPedidosAnterioresCliente(cli){
   if(!pedidos.length){ box.style.display='none'; box.innerHTML=''; window._pedidosAnterioresTemp=[]; return; }
   window._pedidosAnterioresTemp = pedidos;
   box.style.display = 'block';
-  box.innerHTML = `<div style="padding:7px 10px;font-size:11px;font-weight:700;color:var(--txt2);border-bottom:1px solid #232a25;"> Pedidos anteriores</div>` + pedidos.slice(0,5).map((ped,idx)=>{
+  box.innerHTML = `<div style="padding:7px 10px;font-size:11px;font-weight:700;color:var(--txt2);border-bottom:1px solid #232a25;">🔁 Pedidos anteriores</div>` + pedidos.slice(0,5).map((ped,idx)=>{
     const dataFmt = new Date(ped.data).toLocaleDateString('pt-BR');
     const itensTxt = ped.itens.map(it=>it.qtd+'x '+it.nome).join(', ');
     return `<div style="padding:8px 10px;border-bottom:1px solid #232a25;font-size:12px;display:flex;justify-content:space-between;align-items:center;gap:8px;"><div style="flex:1;min-width:0;"><div style="color:var(--txt2);font-size:10px;">${dataFmt}</div><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${itensTxt}</div></div><button type="button" onclick="usarPedidoAnterior(${idx})" style="flex-shrink:0;padding:6px 10px;background:linear-gradient(180deg,#274f88,#1b3158);border:1px solid var(--azul);border-radius:8px;color:#aad4ff;font-size:11px;font-weight:700;cursor:pointer;">Pedir de novo</button></div>`;
@@ -907,6 +877,7 @@ window.selecionarEnderecoPedido = function(){
   const sel = document.getElementById('np-endereco-select');
   const val = sel.value;
   const box = document.getElementById('np-endereco-novo-box');
+  // 🔴 CORRIGIDO: comparar com '__novo__' em vez de 'novo'
   if(val === '__novo__' || !val){
     box.style.display = 'flex';
     document.getElementById('np-endereco-novo').value='';
@@ -1048,13 +1019,13 @@ window.concluirPedidoCard = function(ev, id, canal){
     salvarMesaCx(mesa);
   }
   mesas = mesas.filter(m=>m.id!==id);
-    removerPedidoAvulsoFirebase(canal, id);
-    mostrarAlerta('Pedido de '+nomeExibicao+' concluído — '+fmt(total), 'verde');
-    if(mesaAtualCx && mesaAtualCx.id===id){
-      mesaAtualCx = null;
-      voltarMesasCaixa();
-    }
-  };
+  removerPedidoAvulsoFirebase(canal, id);
+  mostrarAlerta('Pedido de '+nomeExibicao+' concluído — '+fmt(total), 'verde');
+  if(mesaAtualCx && mesaAtualCx.id===id){
+    mesaAtualCx = null;
+    voltarMesasCaixa();
+  }
+};
 
 window.avancarStatusEntregaCx = function(novoStatus){
   if(!mesaAtualCx) return;
