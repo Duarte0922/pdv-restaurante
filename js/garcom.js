@@ -44,60 +44,54 @@ const fecharModal = id => document.getElementById(id).classList.remove('open');
 window.fecharModal = fecharModal;
 
 function normalizarTel(t){ return (t||'').replace(/\D/g,''); }
-function carregarClientesDB(){
-  try{ return JSON.parse(localStorage.getItem('clientes')||'{}'); }
-  catch{ return {}; }
-}
-function salvarClientesDB(db){ localStorage.setItem('clientes', JSON.stringify(db)); }
+let clientesCache = {};
+onValue(ref(db,'clientes'), snap => { clientesCache = snap.val() || {}; });
+function carregarClientesDB(){ return clientesCache; }
 function buscarCliente(tel){
   const key=normalizarTel(tel);
   if(!key) return null;
-  const db=carregarClientesDB();
-  return db[key]||null;
+  return clientesCache[key]||null;
 }
 window.buscarCliente=buscarCliente;
 
 function salvarOuAtualizarCliente({nome,telefone,endereco}){
   const key=normalizarTel(telefone);
   if(!key) return null;
-  const db=carregarClientesDB();
-  if(!db[key]) db[key]={nome,telefone,enderecos:[]};
-  if(nome) db[key].nome=nome;
-  db[key].telefone=telefone;
+  const atual = clientesCache[key] || {nome,telefone,enderecos:[]};
+  const registro = {...atual};
+  registro.enderecos = [...(atual.enderecos||[])];
+  if(nome) registro.nome=nome;
+  registro.telefone=telefone;
   if(endereco && endereco.endereco){
     const norm=endereco.endereco.trim().toLowerCase();
-    let existente=db[key].enderecos.find(e=>e.endereco.trim().toLowerCase()===norm);
-    if(existente){
-      existente.label=endereco.label||existente.label;
-      if(endereco.km) existente.km=endereco.km;
-      if(endereco.taxa) existente.taxa=endereco.taxa;
+    const idx=registro.enderecos.findIndex(e=>e.endereco.trim().toLowerCase()===norm);
+    if(idx>=0){
+      registro.enderecos[idx] = {...registro.enderecos[idx],
+        label: endereco.label||registro.enderecos[idx].label,
+        km: endereco.km||registro.enderecos[idx].km,
+        taxa: endereco.taxa||registro.enderecos[idx].taxa};
     }else{
-      db[key].enderecos.push({
+      registro.enderecos.push({
         id:'E'+Date.now(),
-        label:endereco.label||('Endereço '+(db[key].enderecos.length+1)),
-        endereco:endereco.endereco,
-        km:endereco.km||0,
-        taxa:endereco.taxa||0
+        label:endereco.label||('Endereço '+(registro.enderecos.length+1)),
+        endereco:endereco.endereco, km:endereco.km||0, taxa:endereco.taxa||0
       });
     }
   }
-  salvarClientesDB(db);
-  return db[key];
+  clientesCache[key] = registro;
+  set(ref(db,'clientes/'+key), registro).catch(e=>console.warn('Erro ao salvar cliente:',e));
+  return registro;
 }
 
 function salvarPedidoHistoricoCliente(telefone, itens, total){
   const key=normalizarTel(telefone);
   if(!key || !itens || !itens.length) return;
-  const db=carregarClientesDB();
-  if(!db[key]) return;
-  if(!db[key].pedidos) db[key].pedidos=[];
-  db[key].pedidos.unshift({
-    data: Date.now(),
-    itens: itens.map(it=>({nome:it.nome, preco:it.preco, qtd:it.qtd})),
-    total
-  });
-  db[key].pedidos = db[key].pedidos.slice(0,8);
-  salvarClientesDB(db);
+  const atual = clientesCache[key];
+  if(!atual) return;
+  const registro = {...atual};
+  registro.pedidos = [{data: Date.now(), itens: itens.map(it=>({nome:it.nome, preco:it.preco, qtd:it.qtd})), total}, ...(atual.pedidos||[])].slice(0,8);
+  clientesCache[key] = registro;
+  set(ref(db,'clientes/'+key), registro).catch(e=>console.warn('Erro ao salvar histórico:',e));
 }
 window.salvarPedidoHistoricoCliente = salvarPedidoHistoricoCliente;
 
@@ -280,13 +274,13 @@ async function salvarMesaCx(mesa){
     const total=(mesa.pedido||[]).reduce((s,i)=>s+i.preco*i.qtd,0);
     if(mesa.canal==='balcao'){
       const b=balcoes.find(x=>x.id===mesa.id);
-      if(b){ b.total=total; salvarBalcoes(); renderizarBalcoes(); }
+      if(b){ b.total=total; salvarPedidoAvulsoFirebase('balcao', b); renderizarBalcoes(); }
     }else if(mesa.canal==='delivery'){
       const p=deliveryList.find(x=>x.id===mesa.id);
-      if(p){ p.total=total; localStorage.setItem('deliveryList',JSON.stringify(deliveryList)); renderizarDelivery(); }
+      if(p){ p.total=total; salvarPedidoAvulsoFirebase('delivery', p); renderizarDelivery(); }
     }else if(mesa.canal==='telefone'){
       const p=telefoneList.find(x=>x.id===mesa.id);
-      if(p){ p.total=total; localStorage.setItem('telefoneList',JSON.stringify(telefoneList)); renderizarTelefone(); }
+      if(p){ p.total=total; salvarPedidoAvulsoFirebase('telefone', p); renderizarTelefone(); }
     }
   }
   try{
@@ -597,20 +591,43 @@ onValue(ref(db, '.info/connected'), (snap) => {
   }
 });
 
-window.balcoes = window.balcoes || [];
-window.deliveryList = window.deliveryList || [];
-window.telefoneList = window.telefoneList || [];
+let balcoes = [], deliveryList = [], telefoneList = [];
 window._tipoNovoPedido = 'delivery';
 
-window.novoBalcão = function() {
-  const num = String(balcoes.length + 1).padStart(2, '0');
-  const id = 'B' + num;
-  const nomePersonalizado = (prompt('Nome do cliente (opcional):') || '').trim();
-  balcoes.push({id, numero: num, abertoEm: Date.now(), nomePersonalizado, total: 0, itens: [], status: 'aberto'});
-  salvarBalcoes();
-  mesas.push({ id, status:'ocupada', inicio:Date.now(), pedido:[], virtual:true, canal:'balcao', nomeCliente:nomePersonalizado });
+function salvarPedidoAvulsoFirebase(canal, obj){
+  const caminho = canal==='balcao' ? 'balcoes' : canal==='delivery' ? 'delivery' : 'telefone';
+  set(ref(db, 'pedidos_avulsos/'+caminho+'/'+obj.id), obj).catch(e=>console.warn('Erro ao salvar pedido avulso:', e));
+}
+function removerPedidoAvulsoFirebase(canal, id){
+  const caminho = canal==='balcao' ? 'balcoes' : canal==='delivery' ? 'delivery' : 'telefone';
+  set(ref(db, 'pedidos_avulsos/'+caminho+'/'+id), null).catch(e=>console.warn('Erro ao remover pedido avulso:', e));
+}
+onValue(ref(db,'pedidos_avulsos/balcoes'), snap=>{
+  balcoes = Object.values(snap.val()||{});
   renderizarBalcoes();
-  mostrarAlerta(`Balcão ${num} aberto!`, 'verde');
+  reconciliarMesasVirtuais();
+});
+onValue(ref(db,'pedidos_avulsos/delivery'), snap=>{
+  deliveryList = Object.values(snap.val()||{});
+  renderizarDelivery();
+  reconciliarMesasVirtuais();
+});
+onValue(ref(db,'pedidos_avulsos/telefone'), snap=>{
+  telefoneList = Object.values(snap.val()||{});
+  renderizarTelefone();
+  reconciliarMesasVirtuais();
+});
+
+window.novoBalcão = function() {
+  const numero = String(balcoes.length + 1).padStart(2, '0');
+  const id = 'B' + Date.now();
+  const nomePersonalizado = (prompt('Nome do cliente (opcional):') || '').trim();
+  const balcaoObj = {id, numero, abertoEm: Date.now(), nomePersonalizado, total: 0, status: 'aberto'};
+  balcoes.push(balcaoObj);
+  salvarPedidoAvulsoFirebase('balcao', balcaoObj);
+  mesas.push({ id, status:'ocupada', inicio:Date.now(), pedido:[], virtual:true, canal:'balcao', nomeCliente:nomePersonalizado, numero });
+  renderizarBalcoes();
+  mostrarAlerta(`Balcão ${numero} aberto!`, 'verde');
   abrirMesaCx(id);
 };
 
@@ -626,7 +643,7 @@ function renderizarBalcoes() {
     const mins = Math.floor((Date.now() - b.abertoEm) / 60000);
     const card = document.createElement('div');
     card.className = 'balcao-card';
-    card.onclick = ()=>abrirMesaCx('B' + b.numero);
+    card.onclick = ()=>abrirMesaCx(b.id);
     card.innerHTML = `<div><div class="balcao-nome">Balcão ${b.numero}${b.nomePersonalizado?' — '+b.nomePersonalizado:''}</div><div class="balcao-info">R$ ${(b.total||0).toFixed(2).replace('.', ',')} · ${mins}min</div></div><span class="badge badge-aberto">Aberto</span>`;
     lista.appendChild(card);
   });
@@ -636,15 +653,6 @@ function renderizarBalcoes() {
   btn.textContent = `+ Abrir balcão ${proxNum}`;
   btn.onclick = novoBalcão;
   lista.appendChild(btn);
-}
-
-function salvarBalcoes() {
-  localStorage.setItem('balcoes', JSON.stringify(balcoes));
-}
-
-function carregarBalcoes() {
-  try { balcoes = JSON.parse(localStorage.getItem('balcoes') || '[]'); }
-  catch { balcoes = []; }
 }
 
 window._carrinhoPedidoModal = [];
@@ -946,11 +954,11 @@ window.confirmarNovoPedido = function() {
     const pedido = {id, tipo: canal, nome, telefone: tel, endereco: enderecoFinal, enderecoLabel: labelFinal, km, taxa, pagamento: pag, trocoPara: troco, observacao: obs, abertoEm: Date.now(), total: totalItens, itens: itensPedido, status: 'aguardando'};
     if (canal === 'delivery') {
       deliveryList.push(pedido);
-      localStorage.setItem('deliveryList', JSON.stringify(deliveryList));
+      salvarPedidoAvulsoFirebase('delivery', pedido);
       renderizarDelivery();
     } else {
       telefoneList.push(pedido);
-      localStorage.setItem('telefoneList', JSON.stringify(telefoneList));
+      salvarPedidoAvulsoFirebase('telefone', pedido);
       renderizarTelefone();
     }
     const novaMesa = {id, status: 'ocupada', inicio: Date.now(), pedido: itensPedido, virtual: true, canal, nomeCliente: nome, telefoneCliente: tel, endereco: enderecoFinal, km, taxa, observacao: obs};
@@ -1038,21 +1046,13 @@ window.concluirPedidoCard = function(ev, id, canal){
     salvarMesaCx(mesa);
   }
   mesas = mesas.filter(m=>m.id!==id);
-  if(canal==='delivery'){
-    deliveryList = deliveryList.filter(x=>x.id!==id);
-    localStorage.setItem('deliveryList', JSON.stringify(deliveryList));
-    renderizarDelivery();
-  }else{
-    telefoneList = telefoneList.filter(x=>x.id!==id);
-    localStorage.setItem('telefoneList', JSON.stringify(telefoneList));
-    renderizarTelefone();
-  }
-  mostrarAlerta('Pedido de '+nomeExibicao+' concluído — '+fmt(total), 'verde');
-  if(mesaAtualCx && mesaAtualCx.id===id){
-    mesaAtualCx = null;
-    voltarMesasCaixa();
-  }
-};
+    removerPedidoAvulsoFirebase(canal, id);
+    mostrarAlerta('Pedido de '+nomeExibicao+' concluído — '+fmt(total), 'verde');
+    if(mesaAtualCx && mesaAtualCx.id===id){
+      mesaAtualCx = null;
+      voltarMesasCaixa();
+    }
+  };
 
 window.avancarStatusEntregaCx = function(novoStatus){
   if(!mesaAtualCx) return;
@@ -1060,12 +1060,12 @@ window.avancarStatusEntregaCx = function(novoStatus){
   const p = lista.find(x=>x.id===mesaAtualCx.id);
   if(p){
     p.status = novoStatus;
-    localStorage.setItem(mesaAtualCx.canal==='delivery' ? 'deliveryList':'telefoneList', JSON.stringify(lista));
+    salvarPedidoAvulsoFirebase(mesaAtualCx.canal, p);
     if(mesaAtualCx.canal==='delivery') renderizarDelivery(); else renderizarTelefone();
   }
 };
 
-async function restaurarMesasVirtuais(){
+async function reconciliarMesasVirtuais(){
   const todas = [...balcoes.map(b=>({...b, canal:'balcao'})),...deliveryList.map(p=>({...p, canal:'delivery'})),...telefoneList.map(p=>({...p, canal:'telefone'}))];
   for(const item of todas){
     if(mesas.find(m=>m.id===item.id)) continue;
@@ -1075,24 +1075,18 @@ async function restaurarMesasVirtuais(){
       const dados = snap.val();
       if(dados && dados.pedido) pedidoSalvo = Object.values(dados.pedido);
     }catch(e){}
-    mesas.push({id:item.id, status:'ocupada', inicio:item.abertoEm||Date.now(), pedido:pedidoSalvo, virtual:true, canal:item.canal, nomeCliente:item.nome||item.nomePersonalizado||'', telefoneCliente:item.telefone||'', endereco:item.endereco||'', km:item.km||0, taxa:item.taxa||0, observacao:item.observacao||''});
+    mesas.push({id:item.id, status:'ocupada', inicio:item.abertoEm||Date.now(), pedido:pedidoSalvo, virtual:true, canal:item.canal, numero:item.numero||'', nomeCliente:item.nome||item.nomePersonalizado||'', telefoneCliente:item.telefone||'', endereco:item.endereco||'', km:item.km||0, taxa:item.taxa||0, observacao:item.observacao||''});
   }
+  const idsAtivos = new Set(todas.map(i=>i.id));
+  mesas = mesas.filter(m => !m.virtual || idsAtivos.has(m.id));
   renderMesasCaixa();
 }
 
 function inicializarNovoLayout() {
-  carregarBalcoes();
-  try {
-    deliveryList = JSON.parse(localStorage.getItem('deliveryList') || '[]');
-    telefoneList = JSON.parse(localStorage.getItem('telefoneList') || '[]');
-  } catch {
-    deliveryList = [];
-    telefoneList = [];
-  }
   renderizarBalcoes();
   renderizarDelivery();
   renderizarTelefone();
-  restaurarMesasVirtuais();
+  reconciliarMesasVirtuais();
   setInterval(() => {
     renderizarBalcoes();
     renderizarDelivery();
@@ -1113,46 +1107,3 @@ setTimeout(()=>{
 }, 500);
 
 setTimeout(inicializarNovoLayout, 1000);
-// ═══════════════════════════════════════════════════════════════
-// SINCRONISMO EM TEMPO REAL COM O CAIXA
-// ═══════════════════════════════════════════════════════════════
-
-// Monitora mudanças nas mesas (quando caixa ou outro garçom mexe)
-onValue(ref(db, 'mesas'), (snap) => {
-  const dados = snap.val();
-  if (!dados) return;
-  
-  Object.values(dados).forEach(m => {
-    const local = mesas.find(x => x.id === m.id);
-    if (local) {
-      local.status = m.status || 'livre';
-      local.inicio = m.inicio || null;
-      local.pedido = m.pedido ? Object.values(m.pedido) : [];
-    }
-  });
-  
-  // Atualiza a tela se estiver na aba mesas
-  if (document.getElementById('aba-mesas').classList.contains('ativa')) {
-    renderMesasCaixa();
-  }
-  
-  // Se tiver uma mesa aberta, atualiza o carrinho
-  if (mesaAtualCx && document.getElementById('screen-pedido').style.display === 'flex') {
-    const atualizada = mesas.find(x => x.id === mesaAtualCx.id);
-    if (atualizada) {
-      mesaAtualCx = atualizada;
-      renderCarrinhoCx();
-    }
-  }
-});
-
-// Monitora status da conexão
-onValue(ref(db, '.info/connected'), (snap) => {
-  const el = document.getElementById('sync-indicator');
-  const online = !!snap.val();
-  if (el) {
-    el.textContent = online ? '● Online' : '○ Offline';
-    el.style.background = online ? 'var(--verde-bg)' : '#3a1a1a';
-    el.style.color = online ? 'var(--verde)' : '#ff8080';
-  }
-});
