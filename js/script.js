@@ -391,20 +391,37 @@ function criarAlerta(titulo, subtitulo, itensHtml, onImprimir){
 function imprimirComanda(pedido){
   const popup = window.open('','_blank','width=420,height=580');
   if(!popup) return;
+  const isEntrega = pedido.canal === 'delivery' || pedido.canal === 'telefone';
+  const nomePagamento = {pix:'Pix', cartao:'Cartão', dinheiro:'Dinheiro'}[pedido.pagamento] || (pedido.pagamento || '—');
+  const tituloTopo = pedido.canal === 'delivery' ? '📱 PEDIDO WHATSAPP'
+    : pedido.canal === 'telefone' ? '📞 PEDIDO TELEFONE'
+    : 'Mesa ' + String(pedido.mesa).padStart(2,'0');
+  const blocoEntrega = isEntrega ? `
+    <div style="border:3px solid #000;border-radius:8px;padding:12px;margin-bottom:14px;">
+      <div style="font-size:11px;text-transform:uppercase;color:#555;margin-bottom:2px;">Cliente</div>
+      <div style="font-size:20px;font-weight:900;">${pedido.nomeCliente || '—'}</div>
+      <div style="font-size:11px;text-transform:uppercase;color:#555;margin-top:8px;margin-bottom:2px;">Telefone</div>
+      <div style="font-size:20px;font-weight:900;">${pedido.telefoneCliente || '—'}</div>
+      <div style="font-size:11px;text-transform:uppercase;color:#555;margin-top:8px;margin-bottom:2px;">Endereço</div>
+      <div style="font-size:20px;font-weight:900;">${pedido.endereco || '—'}</div>
+      <div style="font-size:11px;text-transform:uppercase;color:#555;margin-top:8px;margin-bottom:2px;">Pagamento</div>
+      <div style="font-size:20px;font-weight:900;">${nomePagamento}</div>
+    </div>` : '';
   const linhas = pedido.itens.map(it => `<div style="padding:8px 0;border-bottom:1px dashed #ccc;">
-    <div style="display:flex;justify-content:space-between;"><strong style="font-size:15px;">${it.qtd}x ${it.nome}</strong><span>${fmt(it.preco*it.qtd)}</span></div>
+    <div style="display:flex;justify-content:space-between;"><strong style="font-size:17px;">${it.qtd}x ${it.nome}</strong><span>${fmt(it.preco*it.qtd)}</span></div>
     ${it.obs ? `<div style="font-size:12px;color:#555;">→ ${it.obs}</div>` : ''}
     <div style="font-size:10px;color:#777;text-transform:uppercase;">${it.setor || ''}</div>
   </div>`).join('');
-  popup.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Cozinha Mesa ${String(pedido.mesa).padStart(2,'0')}</title>
+  popup.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Comanda ${String(pedido.mesa).padStart(2,'0')}</title>
   <style>body{font-family:Arial,sans-serif;margin:0;padding:16px;color:#000;}@media print{button{display:none;}}</style></head><body>
   <div style="max-width:300px;margin:0 auto;">
     <div style="text-align:center;border-bottom:2px dashed #000;padding-bottom:10px;margin-bottom:12px;">
       <div style="font-size:22px;font-weight:bold;">COMANDA</div>
-      <div style="font-size:18px;font-weight:bold;margin-top:6px;">Mesa ${String(pedido.mesa).padStart(2,'0')}</div>
+      <div style="font-size:18px;font-weight:bold;margin-top:6px;">${tituloTopo}</div>
       <div style="font-size:12px;margin-top:4px;">${pedido.data}</div>
       <div style="font-size:11px;">#${pedido.codigo}</div>
     </div>
+    ${blocoEntrega}
     ${linhas}
     <div style="margin-top:14px;text-align:center;font-size:11px;border-top:2px dashed #000;padding-top:10px;">🌙 Luar do Viena</div>
   </div></body></html>`);
