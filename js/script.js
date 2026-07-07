@@ -191,6 +191,7 @@ function renderMesasCaixa(){
 function labelOrigemVenda(v){
   if(v.canal === 'delivery') return '📱 ' + (v.cliente || 'Delivery');
   if(v.canal === 'telefone') return '📞 ' + (v.cliente || 'Telefone');
+  if(v.canal === 'pedidoaqui') return '🛵 PedirAqui #' + v.mesa;
   if(v.canal === 'balcao') return '🍽️ Balcão ' + String(v.mesa).replace('B','');
   return 'Mesa ' + String(v.mesa).padStart(2,'0');
 }
@@ -199,10 +200,14 @@ function agruparVendasPorCanal(vendas){
   const grupos = {
     zap:      {label:'📱 Zap (WhatsApp)', dinheiro:0, cartao:0, pix:0, taxa:0, qtd:0, total:0},
     telefone: {label:'📞 Telefone',       dinheiro:0, cartao:0, pix:0, taxa:0, qtd:0, total:0},
+    pedidoaqui:{label:'🛵 PedirAqui',      dinheiro:0, cartao:0, pix:0, taxa:0, qtd:0, total:0},
     salao:    {label:'🍽️ Mesas + Balcão', dinheiro:0, cartao:0, pix:0, taxa:0, qtd:0, total:0},
   };
   vendas.forEach(v => {
-    const g = v.canal === 'delivery' ? grupos.zap : v.canal === 'telefone' ? grupos.telefone : grupos.salao;
+    const g = v.canal === 'delivery' ? grupos.zap
+      : v.canal === 'telefone' ? grupos.telefone
+      : v.canal === 'pedidoaqui' ? grupos.pedidoaqui
+      : grupos.salao;
     g.qtd++;
     g.total += v.total || 0;
     g.taxa += v.taxa || 0;
@@ -1100,12 +1105,21 @@ window.enviarCozinhaCx = async function(){
     document.getElementById('cozinha-msg-cx').textContent = 'Todos os itens já foram enviados.';
     abrirModal('modal-cozinha-cx'); return;
   }
-  const codigo = mesaAtualCx.id + '-' + Date.now().toString().slice(-5);
+const codigo = mesaAtualCx.id + '-' + Date.now().toString().slice(-5);
   const dados = {
     mesa: mesaAtualCx.id, codigo,
     data: new Date().toLocaleString('pt-BR'),
     itens: todos.map(it => ({nome:it.nome, qtd:it.qtd, preco:it.preco, obs:it.obs || '', setor:it.setor || ''}))
   };
+  if(mesaAtualCx.virtual && (mesaAtualCx.canal === 'delivery' || mesaAtualCx.canal === 'telefone')){
+    const listaCanal = mesaAtualCx.canal === 'delivery' ? deliveryList : telefoneList;
+    const pedidoCanal = listaCanal.find(x => x.id === mesaAtualCx.id);
+    dados.canal = mesaAtualCx.canal;
+    dados.nomeCliente = mesaAtualCx.nomeCliente || '';
+    dados.telefoneCliente = mesaAtualCx.telefoneCliente || '';
+    dados.endereco = mesaAtualCx.endereco || '';
+    dados.pagamento = pedidoCanal ? pedidoCanal.pagamento : '';
+  }
   try{
     // 🔴 ESCREVE DIRETO — o próprio Caixa imprime (pois a impressora está nele)
     await push(ref(db, 'comandas_imprimir'), {...dados, status:'pendente', timestamp:Date.now()});
@@ -1422,6 +1436,15 @@ window.abrirModalParcialCx = function(){
   abrirModal('modal-parcial-cx');
 };
 
+window.ajustarQtdParcialCx = function(idx, delta){
+  const max = (mesaAtualCx.pedido[idx] || {}).qtd || 0;
+  let atual = (qtdSelCx[idx] || 0) + delta;
+  if(atual < 0) atual = 0;
+  if(atual > max) atual = max;
+  qtdSelCx[idx] = atual;
+  renderModalParcialCx();
+};
+
 function renderModalParcialCx(){
   const lista = document.getElementById('lista-parcial-cx');
   lista.innerHTML = '';
@@ -1429,17 +1452,19 @@ function renderModalParcialCx(){
     const sel = qtdSelCx[idx] || 0;
     const marcado = sel > 0;
     const row = document.createElement('div');
-    row.style.cssText = 'display:flex;align-items:center;gap:12px;padding:14px 12px;border-bottom:1px solid #2a322c;cursor:pointer;' + (marcado ? 'background:rgba(47,179,109,.08);' : '');
-    row.onclick = () => { qtdSelCx[idx] = marcado ? 0 : it.qtd; renderModalParcialCx(); };
-    row.innerHTML = `<div style="width:28px;height:28px;border-radius:8px;border:2px solid ${marcado ? 'var(--verde)' : 'var(--border3)'};background:${marcado ? 'var(--verde)' : 'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:15px;">${marcado ? '✓' : ''}</div>
-      <div style="flex:1;min-width:0;">
+    row.style.cssText = 'display:flex;align-items:center;gap:10px;padding:14px 12px;border-bottom:1px solid #2a322c;' + (marcado ? 'background:rgba(47,179,109,.08);' : '');
+    row.innerHTML = `<div style="flex:1;min-width:0;">
         <div style="font-size:14px;font-weight:600;">${it.nome}</div>
         ${it.obs ? `<div style="font-size:10px;color:var(--txt2);">${it.obs}</div>` : ''}
-        <div style="font-size:11px;color:var(--txt2);margin-top:2px;">${it.qtd} × ${fmt(it.preco)}</div>
+        <div style="font-size:11px;color:var(--txt2);margin-top:2px;">Restam no pedido: ${it.qtd} × ${fmt(it.preco)}</div>
       </div>
-      <div style="text-align:right;">
-        <div style="font-size:14px;font-weight:700;color:${marcado ? 'var(--verde)' : 'var(--txt2)'};">${fmt(it.preco * sel)}</div>
-        <div style="font-size:10px;color:var(--txt2);">${marcado ? sel + ' un.' : 'não selecionado'}</div>
+      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+        <button onclick="ajustarQtdParcialCx(${idx},-1)" style="background:#1f2521;border:1px solid #313a33;border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:16px;color:var(--txt);">-</button>
+        <span style="font-weight:700;min-width:20px;text-align:center;color:${marcado ? 'var(--verde)' : 'var(--txt)'};">${sel}</span>
+        <button onclick="ajustarQtdParcialCx(${idx},1)" style="background:#1f2521;border:1px solid #313a33;border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:16px;color:var(--txt);">+</button>
+      </div>
+      <div style="text-align:right;min-width:64px;">
+        <div style="font-size:13px;font-weight:700;color:${marcado ? 'var(--verde)' : 'var(--txt2)'};">${fmt(it.preco * sel)}</div>
       </div>`;
     lista.appendChild(row);
   });
@@ -1516,22 +1541,24 @@ window.salvarPreco = function(catKey, prodKey){
     .catch(() => alert('Erro ao salvar. Verifique a conexão.'));
 };
 
+
 // ══════════════════════════════════════════════════════════════
 // 20. 🔴 BALCÃO / DELIVERY / TELEFONE — VIA FIREBASE (SINCRONIZADO)
 // ══════════════════════════════════════════════════════════════
 window.balcoes = [];
 window.deliveryList = [];
 window.telefoneList = [];
+window.pedidoAquiList = [];
 window._tipoNovoPedido = 'delivery';
 
 // 🔴 Funções para salvar/remover do Firebase (fonte única de verdade)
 function salvarPedidoAvulsoFirebase(canal, obj){
-  const caminho = canal === 'balcao' ? 'balcoes' : canal === 'delivery' ? 'delivery' : 'telefone';
+  const caminho = canal === 'balcao' ? 'balcoes' : canal === 'delivery' ? 'delivery' : canal === 'pedidoaqui' ? 'pedidoaqui' : 'telefone';
   set(ref(db, 'pedidos_avulsos/' + caminho + '/' + obj.id), obj)
     .catch(e => console.warn('Erro ao salvar pedido avulso:', e));
 }
 function removerPedidoAvulsoFirebase(canal, id){
-  const caminho = canal === 'balcao' ? 'balcoes' : canal === 'delivery' ? 'delivery' : 'telefone';
+  const caminho = canal === 'balcao' ? 'balcoes' : canal === 'delivery' ? 'delivery' : canal === 'pedidoaqui' ? 'pedidoaqui' : 'telefone';
   set(ref(db, 'pedidos_avulsos/' + caminho + '/' + id), null)
     .catch(e => console.warn('Erro ao remover pedido avulso:', e));
 }
@@ -1551,6 +1578,10 @@ onValue(ref(db, 'pedidos_avulsos/telefone'), snap => {
   telefoneList = Object.values(snap.val() || {});
   renderizarTelefone();
   reconciliarMesasVirtuais();
+});
+onValue(ref(db, 'pedidos_avulsos/pedidoaqui'), snap => {
+  pedidoAquiList = Object.values(snap.val() || {});
+  renderizarPedidoAqui();
 });
 
 // 🔴 Mantém o array "mesas" sincronizado com as mesas virtuais do Firebase
@@ -2083,15 +2114,168 @@ function renderizarTelefone(){
       </button>`;
     lista.appendChild(card);
   });
-  const btn = document.createElement('button');
+const btn = document.createElement('button');
   btn.className = 'btn-outline-novo';
   btn.textContent = '+ Novo pedido telefone';
   btn.onclick = () => abrirModalNovoPedido('telefone');
   lista.appendChild(btn);
 }
 
-// 🔴 CONCLUIR PEDIDO — REMOVE DO FIREBASE
+// 🔴 PEDI AQUI — lista com botão Concluído
+function renderizarPedidoAqui(){
+  const lista = document.getElementById('pedidoAquiList');
+  if(!lista) return;
+  if(pedidoAquiList.length === 0){
+    lista.innerHTML = `<div class="balcao-empty">Nenhum pedido Pedi Aqui</div>`;
+  } else {
+    lista.innerHTML = '';
+    pedidoAquiList.forEach(p => {
+      const nomePagLocal = {pix:'Pix', cartao:'Cartão', dinheiro:'Dinheiro'}[p.pagamento] || (p.pagamento || 'Sem pagamento');
+      const card = document.createElement('div');
+      card.className = 'pedido-card aguardando';
+      card.innerHTML = `
+        <div class="pedido-header">
+          <div class="pedido-nome">Pedido #${p.numero}</div>
+          <span class="badge badge-aguardando">Aberto</span>
+        </div>
+        <div class="pedido-info">Taxa: ${fmt(p.taxa || 0)} · Total: ${fmt(p.total || 0)}<br>${nomePagLocal}</div>
+        <button type="button" onclick="concluirPedidoAqui('${p.id}')"
+          style="width:100%;margin-top:8px;padding:8px;background:linear-gradient(180deg,#2aa160,#1d7b49);border:1px solid #258754;border-radius:8px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;">
+          ✓ Concluído
+        </button>`;
+      lista.appendChild(card);
+    });
+  }
+  const btn = document.createElement('button');
+  btn.className = 'btn-outline-novo';
+  btn.textContent = '+ Novo pedido Pedi Aqui';
+  btn.onclick = abrirPedidoAquiModal;
+  lista.appendChild(btn);
+}
+
+window.abrirPedidoAquiModal = function(){
+  document.getElementById('pa-numero').value = '';
+  document.getElementById('pa-taxa').value = '';
+  document.getElementById('pa-valor').value = '';
+  window._paPagamento = null;
+  ['dinheiro','cartao','pix'].forEach(t => {
+    const el = document.getElementById('pa-btn-'+t);
+    if(el){ el.style.borderColor = 'var(--border3)'; el.style.opacity = '0.55'; }
+  });
+  abrirModal('modal-pedidoaqui');
+};
+
+window.selecionarPagPA = function(p){
+  window._paPagamento = p;
+  const cores = {pix:'#c89a2a', cartao:'#5e96ff', dinheiro:'var(--verde)'};
+  ['dinheiro','cartao','pix'].forEach(t => {
+    const el = document.getElementById('pa-btn-'+t);
+    if(!el) return;
+    const ativo = t === p;
+    el.style.borderColor = ativo ? cores[t] : 'var(--border3)';
+    el.style.opacity = ativo ? '1' : '0.55';
+  });
+};
+
+window.confirmarPedidoAqui = function(){
+  const numero = document.getElementById('pa-numero').value.trim();
+  const taxa = parseFloat(document.getElementById('pa-taxa').value) || 0;
+  const total = parseFloat(document.getElementById('pa-valor').value) || 0;
+  if(!numero){ mostrarAlerta('Informe o número do pedido', 'vermelho'); return; }
+  if(total <= 0){ mostrarAlerta('Informe o valor total', 'vermelho'); return; }
+  if(!window._paPagamento){ mostrarAlerta('Selecione a forma de pagamento', 'vermelho'); return; }
+  const id = 'PA' + Date.now();
+  const obj = {id, numero, taxa, total, pagamento: window._paPagamento, abertoEm: Date.now(), status:'aberto'};
+  pedidoAquiList.push(obj);
+  salvarPedidoAvulsoFirebase('pedidoaqui', obj);
+  renderizarPedidoAqui();
+  fecharModal('modal-pedidoaqui');
+  mostrarAlerta(`Pedido Pedi Aqui #${numero} lançado`, 'verde');
+};
+
+window.concluirPedidoAqui = async function(id){
+  const p = pedidoAquiList.find(x => x.id === id);
+  if(!p) return;
+  if(!confirm('Concluir pedido #' + p.numero + ' — ' + fmt(p.total) + '?')) return;
+  const hojeData = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
+  const subtotal = p.total - (p.taxa || 0);
+  const venda = {
+    id: Date.now(), mesa: p.numero, canal:'pedidoaqui',
+    cliente:'', telefone:'', endereco:'',
+    hora: new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}),
+    itens: [{nome:'Pedido PedirAqui #' + p.numero, preco: subtotal, qtd:1, obs:''}],
+    subtotal, desconto:0, taxa: p.taxa || 0, total: p.total,
+    pagamentos: [{tipo:p.pagamento, valor:p.total}],
+    pagamento: p.pagamento
+  };
+  try{
+    await set(ref(db, `caixa/${hojeData}/vendas/v${Date.now()}`), venda);
+    const snap = await get(ref(db, `caixa/${hojeData}`));
+    const atual = snap.val() || {};
+    const upd = {data: hojeData};
+    upd[p.pagamento] = (atual[p.pagamento] || 0) + p.total;
+    if(p.taxa) upd.taxa = (atual.taxa || 0) + p.taxa;
+    upd.canalPedirAqui = (atual.canalPedirAqui || 0) + 1;
+    await update(ref(db, `caixa/${hojeData}`), upd);
+    pedidoAquiList = pedidoAquiList.filter(x => x.id !== id);
+    removerPedidoAvulsoFirebase('pedidoaqui', id);
+    renderizarPedidoAqui();
+    mostrarAlerta('Pedido #' + p.numero + ' concluído — ' + fmt(p.total), 'verde');
+  }catch(e){
+    mostrarAlerta('Erro ao concluir: ' + e.message, 'vermelho');
+  }
+};
+
+// 🔴 CONCLUIR PEDIDO — REMOVE DO FIREBASE (com confirmação de pagamento se faltar)
+let _pedidoPendenteConclusao = null;
+let _pagamentoPendenteSelecionado = null;
+
 async function concluirPedidoPorId(id, canal){
+  const lista = canal === 'delivery' ? deliveryList : telefoneList;
+  const p = lista.find(x => x.id === id);
+  if(!p){ mostrarAlerta('Pedido não encontrado', 'vermelho'); return; }
+  if(!p.pagamento){
+    _pedidoPendenteConclusao = {id, canal};
+    _pagamentoPendenteSelecionado = null;
+    ['dinheiro','cartao','pix'].forEach(t => {
+      const el = document.getElementById('cp-btn-'+t);
+      if(el){ el.style.borderColor = 'var(--border3)'; el.style.opacity = '0.55'; }
+    });
+    abrirModal('modal-confirmar-pagamento');
+    return;
+  }
+  await finalizarConclusaoPedido(id, canal);
+}
+
+window.selecionarPagamentoPendente = function(pag){
+  _pagamentoPendenteSelecionado = pag;
+  const cores = {pix:'#c89a2a', cartao:'#5e96ff', dinheiro:'var(--verde)'};
+  ['dinheiro','cartao','pix'].forEach(t => {
+    const el = document.getElementById('cp-btn-'+t);
+    if(!el) return;
+    const ativo = t === pag;
+    el.style.borderColor = ativo ? cores[t] : 'var(--border3)';
+    el.style.opacity = ativo ? '1' : '0.55';
+  });
+};
+
+window.confirmarPagamentoPendenteEConcluir = async function(){
+  if(!_pagamentoPendenteSelecionado){ mostrarAlerta('Selecione a forma de pagamento', 'vermelho'); return; }
+  if(!_pedidoPendenteConclusao) return;
+  const {id, canal} = _pedidoPendenteConclusao;
+  const lista = canal === 'delivery' ? deliveryList : telefoneList;
+  const p = lista.find(x => x.id === id);
+  if(p){
+    p.pagamento = _pagamentoPendenteSelecionado;
+    salvarPedidoAvulsoFirebase(canal, p);
+  }
+  fecharModal('modal-confirmar-pagamento');
+  await finalizarConclusaoPedido(id, canal);
+  _pedidoPendenteConclusao = null;
+  _pagamentoPendenteSelecionado = null;
+};
+
+async function finalizarConclusaoPedido(id, canal){
   const mesa = mesas.find(m => m.id === id);
   const lista = canal === 'delivery' ? deliveryList : telefoneList;
   const p = lista.find(x => x.id === id);
@@ -2165,9 +2349,11 @@ document.getElementById('screen-main').style.display = 'flex';
 });
 
 // Renderiza as listas iniciais (os listeners onValue já vão atualizar quando o Firebase responder)
+// Renderiza as listas iniciais (os listeners onValue já vão atualizar quando o Firebase responder)
 setTimeout(() => {
   renderMesasCaixa();
   renderizarBalcoes();
   renderizarDelivery();
   renderizarTelefone();
+  renderizarPedidoAqui();
 }, 500);
