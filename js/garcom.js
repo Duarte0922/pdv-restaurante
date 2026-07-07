@@ -460,6 +460,15 @@ window.enviarCozinhaCx=async function(){
     data:new Date().toLocaleString('pt-BR'),
     itens:todos.map(it=>({nome:it.nome,qtd:it.qtd,preco:it.preco,obs:it.obs||'',setor:it.setor||''}))
   };
+  if(mesaAtualCx.virtual && (mesaAtualCx.canal==='delivery' || mesaAtualCx.canal==='telefone')){
+    const listaCanal = mesaAtualCx.canal==='delivery' ? deliveryList : telefoneList;
+    const pedidoCanal = listaCanal.find(x=>x.id===mesaAtualCx.id);
+    dados.canal = mesaAtualCx.canal;
+    dados.nomeCliente = mesaAtualCx.nomeCliente || '';
+    dados.telefoneCliente = mesaAtualCx.telefoneCliente || '';
+    dados.endereco = mesaAtualCx.endereco || '';
+    dados.pagamento = pedidoCanal ? pedidoCanal.pagamento : '';
+  }
   try{
     // 🔴 ESCREVE DIRETO EM comandas_imprimir — o Caixa imprime
     await push(ref(db,'comandas_imprimir'),{...dados, status:'pendente', timestamp:Date.now()});
