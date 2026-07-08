@@ -32,9 +32,53 @@
     <div class="aba ativa" onclick="mudarAba('mesas')">🪑 Mesas</div>
     <div class="aba" onclick="mudarAba('caixa')">💰 Caixa</div>
     <div class="aba" onclick="mudarAba('relatorio')">📊 Relatório</div>
+    <div class="aba" onclick="mudarAba('credario')">📒 Crediário</div>
     <div class="aba" onclick="mudarAba('precos')">🏷️ Preços</div>
   </div>
+  <!-- ═══ ABA CREDIÁRIO ═══ -->
+  <div id="aba-credario" class="aba-content">
+    <div class="credario-header">
+      <div>
+        <div style="font-size:18px;font-weight:800;">📒 Crediário</div>
+        <div style="font-size:12px;color:var(--txt2);margin-top:2px;">Clientes que pagarão depois</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn" onclick="filtrarCrediario('abertos')">🟡 Em aberto</button>
+        <button class="btn" onclick="filtrarCrediario('quitados')">✅ Quitados</button>
+        <button class="btn" onclick="filtrarCrediario('todos')">📋 Todos</button>
+      </div>
+    </div>
 
+    <!-- Resumo geral -->
+    <div class="credario-resumo">
+      <div class="credario-resumo-card">
+        <div class="total-label">💰 Total a Receber</div>
+        <div class="total-valor" style="color:#c89a2a;" id="cred-total-aberto">R$ 0,00</div>
+      </div>
+      <div class="credario-resumo-card">
+        <div class="total-label">✅ Total Recebido</div>
+        <div class="total-valor" style="color:var(--verde);" id="cred-total-recebido">R$ 0,00</div>
+      </div>
+      <div class="credario-resumo-card">
+        <div class="total-label">👥 Clientes Abertos</div>
+        <div class="total-valor" style="color:var(--azul);" id="cred-qtd-abertos">0</div>
+      </div>
+      <div class="credario-resumo-card">
+        <div class="total-label">📦 Total de Registros</div>
+        <div class="total-valor" id="cred-qtd-total">0</div>
+      </div>
+    </div>
+
+    <!-- Busca -->
+    <div style="margin-bottom:12px;">
+      <input type="text" id="busca-credario" placeholder="🔍 Buscar cliente por nome ou telefone..."
+        oninput="renderizarCrediario()"
+        style="width:100%;padding:12px 14px;background:#1a201c;border:1px solid var(--border3);border-radius:12px;color:var(--txt);font-size:14px;font-family:var(--font);">
+    </div>
+
+    <!-- Lista de clientes -->
+    <div id="credario-lista"></div>
+  </div>
   <!-- ABA MESAS COM NOVO LAYOUT -->
   <div class="aba-content ativa" id="aba-mesas">
     <div class="layout-principal">
@@ -441,6 +485,8 @@
           <button class="add-pag-btn" id="cx-addpag-dinheiro" onclick="addPagCx('dinheiro')" style="flex:1;">💵 Dinheiro</button>
           <button class="add-pag-btn" id="cx-addpag-cartao"   onclick="addPagCx('cartao')"   style="flex:1;">💳 Cartão</button>
           <button class="add-pag-btn" id="cx-addpag-pix"      onclick="addPagCx('pix')"      style="flex:1;">📲 Pix</button>
+          <button class="add-pag-btn" id="cx-addpag-credario" onclick="addPagCx('credario')" style="flex:1;">📒 Crediário</button>
+
         </div>
         <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;padding:6px 4px;margin-bottom:8px;border-bottom:1px solid var(--border2);">
           <span style="color:var(--txt2);">Total: <span id="cx-total-ref" style="color:var(--verde);">R$ 0,00</span></span>
@@ -689,7 +735,58 @@
         </div>
       </div>
     </div>
-<!-- MODAL PEDI AQUI -->
+<!-- ═══ MODAL REGISTRAR PAGAMENTO CREDIÁRIO ═══ -->
+<div id="modal-credario-pag" class="modal-overlay">
+  <div class="modal-box" style="max-width:420px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <div style="font-size:16px;font-weight:700;">💰 Registrar Pagamento</div>
+      <button onclick="fecharModal('modal-credario-pag')" style="background:none;border:none;color:var(--txt2);font-size:22px;cursor:pointer;">×</button>
+    </div>
+
+    <div id="cred-pag-info" style="background:rgba(20,26,21,.96);border:1px solid var(--border2);border-radius:12px;padding:12px;margin-bottom:14px;">
+      <!-- preenchido via JS -->
+    </div>
+
+    <div style="margin-bottom:12px;">
+      <label style="font-size:12px;color:var(--txt2);display:block;margin-bottom:4px;">Valor a pagar (R$)</label>
+      <input type="number" id="cred-pag-valor" step="0.01" min="0" placeholder="0,00"
+        style="width:100%;padding:12px;background:#1a201c;border:1px solid var(--border3);border-radius:10px;color:var(--txt);font-size:18px;font-weight:700;font-family:var(--font);text-align:right;">
+    </div>
+
+    <div style="margin-bottom:12px;">
+      <label style="font-size:12px;color:var(--txt2);display:block;margin-bottom:4px;">Data do pagamento</label>
+      <input type="date" id="cred-pag-data"
+        style="width:100%;padding:10px;background:#1a201c;border:1px solid var(--border3);border-radius:10px;color:var(--txt);font-family:var(--font);">
+    </div>
+
+    <div style="margin-bottom:14px;">
+      <label style="font-size:12px;color:var(--txt2);display:block;margin-bottom:4px;">Forma de recebimento</label>
+      <div style="display:flex;gap:6px;">
+        <button id="cred-pag-btn-dinheiro" class="btn" style="flex:1;" onclick="selecionarFormaRecCred('dinheiro')">💵 Dinheiro</button>
+        <button id="cred-pag-btn-cartao" class="btn" style="flex:1;" onclick="selecionarFormaRecCred('cartao')">💳 Cartão</button>
+        <button id="cred-pag-btn-pix" class="btn" style="flex:1;" onclick="selecionarFormaRecCred('pix')">📲 Pix</button>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;">
+      <button class="btn" onclick="fecharModal('modal-credario-pag')" style="flex:1;">Cancelar</button>
+      <button class="btn btn-verde" onclick="confirmarPagamentoCrediario()" style="flex:2;">✓ Confirmar Pagamento</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL DETALHES DO CREDIÁRIO ═══ -->
+<div id="modal-credario-detalhes" class="modal-overlay">
+  <div class="modal-box" style="max-width:500px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <div style="font-size:16px;font-weight:700;">📋 Detalhes do Crediário</div>
+      <button onclick="fecharModal('modal-credario-detalhes')" style="background:none;border:none;color:var(--txt2);font-size:22px;cursor:pointer;">×</button>
+    </div>
+    <div id="cred-detalhes-conteudo"></div>
+  </div>
+</div>
+
+    <!-- MODAL PEDI AQUI -->
 <div class="modal-overlay" id="modal-pedidoaqui">
   <div class="modal-box" style="max-width:340px;">
     <div style="font-size:16px;font-weight:700;margin-bottom:14px;">🛵 Pedido Pedi Aqui</div>
