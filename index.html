@@ -110,7 +110,19 @@
             <div class="balcao-empty">Nenhum pedido telefone</div>
           </div>
         </div>
-
+<!-- PEDI AQUI -->
+        <div class="secao-direita">
+          <div class="secao-header">
+            <div>
+              <div class="secao-titulo">🛵 Pedi Aqui</div>
+              <div class="secao-sub">Pedidos via totem / QR code</div>
+            </div>
+            <button class="btn-novo" onclick="abrirPedidoAquiModal()">+ Pedido</button>
+          </div>
+          <div class="pedido-list" id="pedidoAquiList">
+            <div class="balcao-empty">Nenhum pedido Pedi Aqui</div>
+          </div>
+        </div>
       </div>
 
     </div>
@@ -266,6 +278,44 @@
     <div style="display:flex;flex-direction:column;gap:8px;" id="mmp-borda-opcoes"></div>
     <button class="btn btn-verde" onclick="semBordaMMP()" style="width:100%;margin-top:14px;font-weight:700;">Sem borda — adicionar ao pedido</button>
     <button class="btn" onclick="fecharModal('modal-mmp-borda')" style="width:100%;margin-top:8px;color:var(--txt2);">Cancelar</button>
+  </div>
+</div>
+<!-- MODAL PEDI AQUI -->
+<div class="modal-overlay" id="modal-pedidoaqui">
+  <div class="modal-box">
+    <div style="font-size:16px;font-weight:700;margin-bottom:4px;">🛵 Novo Pedido — Pedi Aqui</div>
+    <div style="font-size:12px;color:var(--txt2);margin-bottom:14px;">Lançamento rápido do pedido feito pelo totem/QR</div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div>
+        <label style="font-size:12px;color:var(--txt2);">Número do pedido</label>
+        <input type="text" id="pa-numero" placeholder="Ex: 042"
+          style="width:100%;padding:10px;background:#1a201c;border:1px solid #303a33;border-radius:10px;color:var(--txt);font-size:14px;">
+      </div>
+      <div style="display:flex;gap:10px;">
+        <div style="flex:1;">
+          <label style="font-size:12px;color:var(--txt2);">Taxa (R$)</label>
+          <input type="number" id="pa-taxa" placeholder="0,00" min="0" step="0.01"
+            style="width:100%;padding:10px;background:#1a201c;border:1px solid #303a33;border-radius:10px;color:var(--txt);font-size:14px;">
+        </div>
+        <div style="flex:1;">
+          <label style="font-size:12px;color:var(--txt2);">Valor total (R$)</label>
+          <input type="number" id="pa-valor" placeholder="0,00" min="0" step="0.01"
+            style="width:100%;padding:10px;background:#1a201c;border:1px solid #303a33;border-radius:10px;color:var(--txt);font-size:14px;">
+        </div>
+      </div>
+      <div>
+        <label style="font-size:12px;color:var(--txt2);">Forma de pagamento</label>
+        <div style="display:flex;gap:8px;margin-top:6px;">
+          <button type="button" id="pa-btn-dinheiro" class="btn" onclick="selecionarPagPA('dinheiro')" style="flex:1;">💵 Dinheiro</button>
+          <button type="button" id="pa-btn-cartao" class="btn" onclick="selecionarPagPA('cartao')" style="flex:1;">💳 Cartão</button>
+          <button type="button" id="pa-btn-pix" class="btn" onclick="selecionarPagPA('pix')" style="flex:1;">📲 Pix</button>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:16px;">
+      <button class="btn" onclick="fecharModal('modal-pedidoaqui')" style="flex:1;">Cancelar</button>
+      <button class="btn btn-verde" onclick="confirmarPedidoAqui()" style="flex:1;font-weight:700;">✓ Lançar Pedido</button>
+    </div>
   </div>
 </div>
 
