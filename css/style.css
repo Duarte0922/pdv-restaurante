@@ -713,3 +713,65 @@ input[type=number]{background:#1a201c;border:1px solid var(--border3);border-rad
     grid-column: 1 / -1;
   }
 }
+/* ══════════════════════════════════════════════
+   CREDIÁRIO
+   ══════════════════════════════════════════════ */
+.credario-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-bottom:14px;
+}
+.credario-resumo{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:8px;
+  margin-bottom:14px;
+}
+@media(min-width:700px){
+  .credario-resumo{grid-template-columns:repeat(4,1fr);}
+}
+.credario-resumo-card{
+  background:rgba(20,26,21,.96);
+  border:1px solid var(--border2);
+  border-radius:var(--rad-lg);
+  padding:14px 12px;
+  text-align:center;
+}
+.cred-card{
+  background:linear-gradient(180deg,#1a201c,#131814);
+  border:1px solid var(--border2);
+  border-radius:16px;
+  padding:14px;
+  margin-bottom:10px;
+  cursor:pointer;
+  transition:all .15s;
+}
+.cred-card:hover{
+  border-color:var(--verde);
+  transform:translateY(-1px);
+}
+.cred-card:active{transform:scale(.99);}
+.cred-card-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:10px;
+  margin-bottom:10px;
+}
+.cred-card-valores{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:8px;
+  background:rgba(12,16,13,.6);
+  border-radius:10px;
+  padding:10px;
+}
+/* Botão crediário no fechamento */
+.add-pag-btn.usado{
+  background:linear-gradient(180deg,#2a1f3d,#1a1328) !important;
+  border-color:#b57aff !important;
+  color:#d4b3ff !important;
+}
