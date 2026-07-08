@@ -47,9 +47,10 @@ onAuthStateChanged(auth, (user) => {
 // 3. UTILITÁRIOS
 // ══════════════════════════════════════════════
 const fmt = v => 'R$ ' + Number(v).toFixed(2).replace('.', ',');
-const nomePag = p => ({dinheiro:'Dinheiro',cartao:'Cartão',pix:'Pix'}[p]||'—');
-const iconePag = p => ({dinheiro:'💵',cartao:'💳',pix:'📲'}[p]||'❓');
-const corPag = p => ({dinheiro:'#2fb36d',cartao:'#5e96ff',pix:'#c89a2a'}[p]||'#acb5ac');
+// Substitua estas 3 funções:
+const nomePag = p => ({dinheiro:'Dinheiro',cartao:'Cartão',pix:'Pix',credario:'Crediário'}[p]||'—');
+const iconePag = p => ({dinheiro:'💵',cartao:'💳',pix:'📲',credario:'📒'}[p]||'❓');
+const corPag = p => ({dinheiro:'#2fb36d',cartao:'#5e96ff',pix:'#c89a2a',credario:'#b57aff'}[p]||'#acb5ac');
 const abrirModal = id => document.getElementById(id).classList.add('open');
 const fecharModal = id => document.getElementById(id).classList.remove('open');
 window.fecharModal = fecharModal;
@@ -143,12 +144,13 @@ document.getElementById('caixa-data-hoje').textContent = 'Caixa — ' + new Date
 // ══════════════════════════════════════════════
 window.mudarAba = function(aba){
   document.querySelectorAll('.aba').forEach((el,i)=>{
-    const nomes = ['mesas','caixa','relatorio','precos'];
+    const nomes = ['mesas','caixa','credario','relatorio','precos'];  // ✅ com 'credario'
     el.classList.toggle('ativa', nomes[i] === aba);
   });
   document.querySelectorAll('.aba-content').forEach(el => el.classList.remove('ativa'));
   document.getElementById('aba-'+aba).classList.add('ativa');
   if(aba === 'precos') carregarProdutosPrecos();
+  if(aba === 'credario') renderizarCrediario();  // ✅ atualiza a lista
 };
 
 // ══════════════════════════════════════════════
@@ -192,22 +194,25 @@ function labelOrigemVenda(v){
   if(v.canal === 'delivery') return '📱 ' + (v.cliente || 'Delivery');
   if(v.canal === 'telefone') return '📞 ' + (v.cliente || 'Telefone');
   if(v.canal === 'pedidoaqui') return '🛵 PedirAqui #' + v.mesa;
+  if(v.canal === 'crediario') return '📒 Crediário — ' + (v.cliente || '');
   if(v.canal === 'balcao') return '🍽️ Balcão ' + String(v.mesa).replace('B','');
   return 'Mesa ' + String(v.mesa).padStart(2,'0');
 }
 
 function agruparVendasPorCanal(vendas){
   const grupos = {
-    zap:      {label:'📱 Zap (WhatsApp)', dinheiro:0, cartao:0, pix:0, taxa:0, qtd:0, total:0},
-    telefone: {label:'📞 Telefone',       dinheiro:0, cartao:0, pix:0, taxa:0, qtd:0, total:0},
-    pedidoaqui:{label:'🛵 PedirAqui',      dinheiro:0, cartao:0, pix:0, taxa:0, qtd:0, total:0},
-    salao:    {label:'🍽️ Mesas + Balcão', dinheiro:0, cartao:0, pix:0, taxa:0, qtd:0, total:0},
+    zap:        {label:'📱 Zap (WhatsApp)', dinheiro:0, cartao:0, pix:0, taxa:0, qtd:0, total:0},
+    telefone:   {label:'📞 Telefone',       dinheiro:0, cartao:0, pix:0, taxa:0, qtd:0, total:0},
+    pedidoaqui: {label:'🛵 PedirAqui',      dinheiro:0, cartao:0, pix:0, taxa:0, qtd:0, total:0},
+    crediario:  {label:'📒 Crediário (recebimentos)', dinheiro:0, cartao:0, pix:0, taxa:0, qtd:0, total:0},
+    salao:      {label:'🍽️ Mesas + Balcão', dinheiro:0, cartao:0, pix:0, taxa:0, qtd:0, total:0},
   };
   vendas.forEach(v => {
     const g = v.canal === 'delivery' ? grupos.zap
-      : v.canal === 'telefone' ? grupos.telefone
-      : v.canal === 'pedidoaqui' ? grupos.pedidoaqui
-      : grupos.salao;
+            : v.canal === 'telefone' ? grupos.telefone
+            : v.canal === 'pedidoaqui' ? grupos.pedidoaqui
+            : v.canal === 'crediario' ? grupos.crediario
+            : grupos.salao;
     g.qtd++;
     g.total += v.total || 0;
     g.taxa += v.taxa || 0;
@@ -1219,22 +1224,22 @@ window.setPagDivValCx = function(tipo, val){
 function totalPagDivCx(){ return pagDivCx.reduce((s,p) => s + (parseFloat(p.valor) || 0), 0); }
 
 function renderPagDivCx(){
-  ['dinheiro','cartao','pix'].forEach(t => {
+  ['dinheiro','cartao','pix','credario'].forEach(t => {
     const b = document.getElementById('cx-addpag-'+t);
     if(b) b.className = 'add-pag-btn' + (pagDivCx.find(p => p.tipo === t) ? ' usado' : '');
   });
   const lista = document.getElementById('pag-div-lista-cx');
   lista.innerHTML = '';
-  const icones = {dinheiro:'💵', cartao:'💳', pix:'📲'};
-  const nomes = {dinheiro:'Dinheiro', cartao:'Cartão', pix:'Pix'};
-  const bgs = {dinheiro:'#1a2e1e', cartao:'#1b3158', pix:'#3a2e0a'};
+  const icones = {dinheiro:'💵', cartao:'💳', pix:'📲', credario:'📒'};
+  const nomes = {dinheiro:'Dinheiro', cartao:'Cartão', pix:'Pix', credario:'Crediário'};
+  const bgs = {dinheiro:'#1a2e1e', cartao:'#1b3158', pix:'#3a2e0a', credario:'#2a1f3d'};
   pagDivCx.forEach(p => {
     const row = document.createElement('div');
     row.style.cssText = 'background:linear-gradient(180deg,#171c18,#131814);border:1px solid #252d28;border-radius:14px;padding:10px 12px;display:flex;align-items:center;gap:10px;margin-bottom:7px;';
     row.innerHTML = `<div style="width:30px;height:30px;border-radius:8px;background:${bgs[p.tipo]};display:flex;align-items:center;justify-content:center;font-size:16px;">${icones[p.tipo]}</div>
-      <span style="font-size:13px;font-weight:600;min-width:58px;">${nomes[p.tipo]}</span>
-      <input type="number" min="0" step="0.01" placeholder="0,00" value="${p.valor}" oninput="setPagDivValCx('${p.tipo}',this.value)" style="flex:1;padding:8px 10px;background:#1a201c;border:1px solid var(--border3);border-radius:10px;color:var(--txt);font-size:16px;font-weight:600;font-family:var(--font);text-align:right;"/>
-      <button onclick="remPagCx('${p.tipo}')" style="background:none;border:none;cursor:pointer;color:var(--txt2);font-size:18px;">×</button>`;
+    <span style="font-size:13px;font-weight:600;min-width:58px;">${nomes[p.tipo]}</span>
+    <input type="number" min="0" step="0.01" placeholder="0,00" value="${p.valor}" oninput="setPagDivValCx('${p.tipo}',this.value)" style="flex:1;padding:8px 10px;background:#1a201c;border:1px solid var(--border3);border-radius:10px;color:var(--txt);font-size:16px;font-weight:600;font-family:var(--font);text-align:right;"/>
+    <button onclick="remPagCx('${p.tipo}')" style="background:none;border:none;cursor:pointer;color:var(--txt2);font-size:18px;">×</button>`;
     lista.appendChild(row);
   });
   document.getElementById('cx-troco-box').style.display = pagDivCx.find(p => p.tipo === 'dinheiro') ? 'block' : 'none';
@@ -1327,6 +1332,22 @@ window.concluirVendaCx = async function(){
     await update(ref(db, `caixa/${hojeData}`), upd);
     await window.imprimirContaCx();
     if(taxaCobrar) mesaAtualCx._taxaCobrada = true;
+
+    // 🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢
+    // 🔴 NOVO: Se tem pagamento via Crediário, registra no módulo de Crediário
+    const pagCredario = pagDivCx.find(p => p.tipo === 'credario');
+    if(pagCredario && parseFloat(pagCredario.valor) > 0){
+      await registrarCrediario({
+        nome: mesaAtualCx.nomeCliente || ('Mesa ' + String(mesaAtualCx.id).padStart(2,'0')),
+        telefone: mesaAtualCx.telefoneCliente || '',
+        valorTotal: parseFloat(pagCredario.valor),
+        itens: (mesaAtualCx.pedido || []).map(it => ({nome:it.nome, qtd:it.qtd, preco:it.preco})),
+        origem: mesaAtualCx.virtual ? (mesaAtualCx.canal || 'balcao') : 'mesa',
+        mesaId: mesaAtualCx.id
+      });
+    }
+    // 🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢
+
     let fechouTotal = false;
     if(abaFechCx === 'parcial'){
       const novos = [];
@@ -1359,8 +1380,7 @@ window.concluirVendaCx = async function(){
         renderizarTelefone();
       }
     }
-
-    const pagDesc = pagDivCx.map(p => ({dinheiro:'💵',cartao:'💳',pix:'📲'}[p.tipo] + ' ' + fmt(parseFloat(p.valor) || 0))).join(' · ');
+    const pagDesc = pagDivCx.map(p => ({dinheiro:'💵',cartao:'💳',pix:'📲',credario:'📒'}[p.tipo] + ' ' + fmt(parseFloat(p.valor) || 0))).join(' · ');
     document.getElementById('ok-msg-cx').textContent = nomeExibicao + ' liberada · ' + fmt(total) + '\n' + pagDesc;
     mesaAtualCx = null;
     const fech = document.getElementById('screen-fechamento-cx');
@@ -1369,7 +1389,6 @@ window.concluirVendaCx = async function(){
     ok.style.display = 'flex'; ok.classList.add('active');
   }catch(e){ alert('Erro ao confirmar pagamento: ' + e.message); }
 };
-
 // ══════════════════════════════════════════════
 // 17. MEIO A MEIO (mesa)
 // ══════════════════════════════════════════════
@@ -2337,6 +2356,392 @@ async function finalizarConclusaoPedido(id, canal){
     mostrarAlerta('Erro ao concluir pedido: ' + e.message, 'vermelho');
   }
 }
+// ══════════════════════════════════════════════
+// 22. 🔴 MÓDULO CREDIÁRIO
+// ══════════════════════════════════════════════
+let crediarioLista = [];
+let credFiltroAtual = 'abertos';
+let credClienteSelecionado = null;
+let credFormaRecebimento = null;
+
+// 🔴 LISTENER do Firebase — sincroniza em tempo real
+onValue(ref(db, 'crediario'), (snap) => {
+  const dados = snap.val() || {};
+  crediarioLista = Object.values(dados).sort((a,b) => (b.dataCriacao || 0) - (a.dataCriacao || 0));
+  // Se a aba crediário está visível, atualiza
+  if(document.getElementById('aba-credario').classList.contains('ativa')){
+    renderizarCrediario();
+  }
+});
+
+// 🔴 REGISTRAR novo crediário (chamado ao fechar mesa com pagamento crediário)
+async function registrarCrediario({nome, telefone, valorTotal, itens, origem, mesaId}){
+  if(!valorTotal || valorTotal <= 0) return;
+  const id = 'CRED' + Date.now();
+  const registro = {
+    id,
+    nome: nome || 'Cliente',
+    telefone: telefone || '',
+    valorTotal: parseFloat(valorTotal),
+    totalPago: 0,
+    totalAberto: parseFloat(valorTotal),
+    itens: itens || [],
+    origem: origem || 'mesa',
+    mesaId: mesaId || '',
+    dataCriacao: Date.now(),
+    dataFormatada: new Date().toLocaleDateString('pt-BR'),
+    horaCriacao: new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}),
+    pagamentos: [],
+    status: 'aberto'
+  };
+  try{
+    await set(ref(db, 'crediario/' + id), registro);
+    mostrarAlerta(`📒 Crediário registrado: ${nome} — ${fmt(valorTotal)}`, 'verde');
+  }catch(e){
+    console.error('Erro ao registrar crediário:', e);
+    mostrarAlerta('Erro ao registrar crediário', 'vermelho');
+  }
+}
+window.registrarCrediario = registrarCrediario;
+
+// 🔴 FILTRAR crediário
+window.filtrarCrediario = function(tipo){
+  credFiltroAtual = tipo;
+  document.querySelectorAll('.credario-header .btn').forEach(b => {
+    b.style.borderColor = 'var(--border3)';
+    b.style.background = 'linear-gradient(180deg,#232a25,#171c18)';
+  });
+  event.target.style.borderColor = 'var(--verde)';
+  event.target.style.background = 'linear-gradient(180deg,#1a3d28,#11291b)';
+  renderizarCrediario();
+};
+
+// 🔴 RENDERIZAR lista do crediário
+window.renderizarCrediario = function(){
+  const lista = document.getElementById('credario-lista');
+  if(!lista) return;
+
+  const busca = (document.getElementById('busca-credario')?.value || '').toLowerCase().trim();
+
+  // Filtrar
+  let filtrados = crediarioLista.filter(c => {
+    if(credFiltroAtual === 'abertos' && c.status !== 'aberto') return false;
+    if(credFiltroAtual === 'quitados' && c.status !== 'quitado') return false;
+    if(busca){
+      const nomeOk = (c.nome || '').toLowerCase().includes(busca);
+      const telOk = (c.telefone || '').includes(busca);
+      if(!nomeOk && !telOk) return false;
+    }
+    return true;
+  });
+
+  // Resumo
+  const abertos = crediarioLista.filter(c => c.status === 'aberto');
+  const totalAberto = abertos.reduce((s,c) => s + (c.totalAberto || 0), 0);
+  const totalRecebido = crediarioLista.reduce((s,c) => s + (c.totalPago || 0), 0);
+
+  const elTA = document.getElementById('cred-total-aberto');
+  const elTR = document.getElementById('cred-total-recebido');
+  const elQA = document.getElementById('cred-qtd-abertos');
+  const elQT = document.getElementById('cred-qtd-total');
+  if(elTA) elTA.textContent = fmt(totalAberto);
+  if(elTR) elTR.textContent = fmt(totalRecebido);
+  if(elQA) elQA.textContent = abertos.length;
+  if(elQT) elQT.textContent = crediarioLista.length;
+
+  if(!filtrados.length){
+    lista.innerHTML = `<div style="text-align:center;padding:40px;color:var(--txt2);font-size:13px;">
+      ${crediarioLista.length === 0 ? '📒 Nenhum registro no crediário ainda' : 'Nenhum cliente encontrado com esse filtro'}
+    </div>`;
+    return;
+  }
+
+  lista.innerHTML = filtrados.map(c => {
+    const pct = c.valorTotal > 0 ? Math.min(100, (c.totalPago / c.valorTotal) * 100) : 0;
+    const corStatus = c.status === 'quitado' ? 'var(--verde)' : '#c89a2a';
+    const labelStatus = c.status === 'quitado' ? '✅ QUITADO' : '🟡 EM ABERTO';
+    const origemLabel = {mesa:'🪑 Mesa',balcao:'🍽️ Balcão',delivery:'📱 Delivery',telefone:'📞 Telefone'}[c.origem] || c.origem;
+
+    return `
+    <div class="cred-card" onclick="abrirDetalhesCrediario('${c.id}')">
+      <div class="cred-card-header">
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+            <span style="font-size:15px;font-weight:800;color:var(--txt);">${c.nome}</span>
+            <span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:999px;background:rgba(${c.status==='quitado'?'47,179,109':'200,154,42'},.15);color:${corStatus};border:1px solid ${corStatus}33;">${labelStatus}</span>
+          </div>
+          <div style="font-size:11px;color:var(--txt2);">
+            ${c.telefone ? '📞 '+c.telefone+' · ' : ''}${origemLabel} · ${c.dataFormatada} ${c.horaCriacao ? 'às '+c.horaCriacao : ''}
+          </div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:11px;color:var(--txt2);">Total</div>
+          <div style="font-size:16px;font-weight:800;color:var(--txt);">${fmt(c.valorTotal)}</div>
+        </div>
+      </div>
+
+      <div class="cred-card-valores">
+        <div>
+          <div style="font-size:10px;color:var(--txt2);">Já pago</div>
+          <div style="font-size:13px;font-weight:700;color:var(--verde);">${fmt(c.totalPago || 0)}</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-size:10px;color:var(--txt2);">Falta</div>
+          <div style="font-size:13px;font-weight:700;color:${c.totalAberto > 0 ? '#c89a2a' : 'var(--verde)'};">${fmt(c.totalAberto || 0)}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:10px;color:var(--txt2);">Progresso</div>
+          <div style="font-size:13px;font-weight:700;color:var(--azul);">${pct.toFixed(0)}%</div>
+        </div>
+      </div>
+
+      <div style="background:#0c100d;border-radius:999px;height:6px;overflow:hidden;margin-top:8px;">
+        <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,var(--verde),#4fd68a);transition:width .3s;"></div>
+      </div>
+
+      ${c.status === 'aberto' ? `
+      <button class="btn btn-verde" onclick="event.stopPropagation();abrirPagamentoCrediario('${c.id}')" style="width:100%;margin-top:10px;padding:10px;font-size:13px;">
+        💰 Registrar Pagamento
+      </button>` : `
+      <button class="btn" onclick="event.stopPropagation();abrirDetalhesCrediario('${c.id}')" style="width:100%;margin-top:10px;padding:10px;font-size:12px;">
+        📋 Ver histórico
+      </button>`}
+    </div>`;
+  }).join('');
+};
+
+// 🔴 ABRIR detalhes do crediário
+window.abrirDetalhesCrediario = function(id){
+  const c = crediarioLista.find(x => x.id === id);
+  if(!c) return;
+  credClienteSelecionado = c;
+
+  const pct = c.valorTotal > 0 ? Math.min(100, (c.totalPago / c.valorTotal) * 100) : 0;
+  const conteudo = document.getElementById('cred-detalhes-conteudo');
+  if(!conteudo) return;
+
+  const itensHtml = (c.itens || []).map(it =>
+    `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border2);font-size:12px;">
+      <span>${it.qtd}x ${it.nome}</span>
+      <span style="font-weight:600;">${fmt(it.preco * it.qtd)}</span>
+    </div>`
+  ).join('') || '<div style="color:var(--txt2);font-size:12px;padding:8px 0;">Sem itens registrados</div>';
+
+  const pagsHtml = (c.pagamentos || []).length ? c.pagamentos.map(p =>
+    `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:rgba(47,179,109,.06);border:1px solid rgba(47,179,109,.2);border-radius:10px;margin-bottom:6px;font-size:12px;">
+      <div>
+        <div style="font-weight:700;color:var(--verde);">${fmt(p.valor)}</div>
+        <div style="font-size:10px;color:var(--txt2);">${p.dataFmt} · ${iconePag(p.forma)} ${nomePag(p.forma)}</div>
+      </div>
+      <button onclick="estornarPagCrediario('${c.id}','${p.id}')" style="background:#3a1a1a;border:1px solid #cc3333;border-radius:8px;color:#ff8080;font-size:10px;padding:4px 8px;cursor:pointer;">✕ Estornar</button>
+    </div>`
+  ).join('') : '<div style="color:var(--txt2);font-size:12px;padding:8px 0;text-align:center;">Nenhum pagamento registrado ainda</div>';
+
+  conteudo.innerHTML = `
+    <div style="background:rgba(20,26,21,.96);border:1px solid var(--border2);border-radius:12px;padding:14px;margin-bottom:12px;">
+      <div style="font-size:16px;font-weight:800;margin-bottom:4px;">${c.nome}</div>
+      <div style="font-size:12px;color:var(--txt2);">📞 ${c.telefone || '—'} · 📅 ${c.dataFormatada}</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;">
+      <div class="total-card">
+        <div class="total-label">Total</div>
+        <div class="total-valor" style="font-size:16px;">${fmt(c.valorTotal)}</div>
+      </div>
+      <div class="total-card">
+        <div class="total-label">Pago</div>
+        <div class="total-valor" style="font-size:16px;color:var(--verde);">${fmt(c.totalPago || 0)}</div>
+      </div>
+      <div class="total-card">
+        <div class="total-label">Aberto</div>
+        <div class="total-valor" style="font-size:16px;color:#c89a2a;">${fmt(c.totalAberto || 0)}</div>
+      </div>
+    </div>
+
+    <div style="background:#0c100d;border-radius:999px;height:8px;overflow:hidden;margin-bottom:14px;">
+      <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,var(--verde),#4fd68a);"></div>
+    </div>
+
+    <div style="font-size:13px;font-weight:700;margin-bottom:8px;">🛒 Itens da compra</div>
+    <div style="background:rgba(20,26,21,.96);border:1px solid var(--border2);border-radius:12px;padding:10px 12px;margin-bottom:14px;">
+      ${itensHtml}
+    </div>
+
+    <div style="font-size:13px;font-weight:700;margin-bottom:8px;">💰 Histórico de pagamentos</div>
+    <div style="margin-bottom:14px;">
+      ${pagsHtml}
+    </div>
+
+    ${c.status === 'aberto' ? `
+    <button class="btn btn-verde" onclick="fecharModal('modal-credario-detalhes');abrirPagamentoCrediario('${c.id}')" style="width:100%;padding:13px;font-size:14px;font-weight:700;">
+      💰 Registrar Novo Pagamento
+    </button>` : `
+    <div style="text-align:center;padding:12px;background:rgba(47,179,109,.1);border:1px solid var(--verde);border-radius:12px;color:var(--verde);font-weight:700;">
+      ✅ Conta quitada em ${c.dataQuitada || ''}
+    </div>`}
+  `;
+  abrirModal('modal-credario-detalhes');
+};
+
+// 🔴 ESTORNAR pagamento
+window.estornarPagCrediario = async function(credId, pagId){
+  if(!confirm('Estornar este pagamento? O valor voltará como saldo em aberto.')) return;
+  const c = crediarioLista.find(x => x.id === credId);
+  if(!c) return;
+  const p = c.pagamentos.find(x => x.id === pagId);
+  if(!p) return;
+
+  c.pagamentos = c.pagamentos.filter(x => x.id !== pagId);
+  c.totalPago = Math.max(0, (c.totalPago || 0) - p.valor);
+  c.totalAberto = c.valorTotal - c.totalPago;
+  c.status = c.totalAberto > 0.01 ? 'aberto' : 'quitado';
+
+  try{
+    await set(ref(db, 'crediario/' + credId), c);
+    mostrarAlerta('Pagamento estornado', 'verde');
+    abrirDetalhesCrediario(credId);
+  }catch(e){
+    mostrarAlerta('Erro ao estornar', 'vermelho');
+  }
+};
+
+// 🔴 ABRIR modal de pagamento
+window.abrirPagamentoCrediario = function(id){
+  const c = crediarioLista.find(x => x.id === id);
+  if(!c) return;
+  credClienteSelecionado = c;
+  credFormaRecebimento = null;
+
+  const info = document.getElementById('cred-pag-info');
+  if(info){
+    info.innerHTML = `
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+        <span style="font-size:13px;font-weight:700;">${c.nome}</span>
+        <span style="font-size:11px;color:var(--txt2);">${c.telefone || ''}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;">
+        <span style="color:var(--txt2);">Total da compra:</span>
+        <strong>${fmt(c.valorTotal)}</strong>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;">
+        <span style="color:var(--txt2);">Já pago:</span>
+        <strong style="color:var(--verde);">${fmt(c.totalPago || 0)}</strong>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-top:4px;padding-top:6px;border-top:1px solid var(--border2);">
+        <span style="font-weight:700;">Falta pagar:</span>
+        <strong style="color:#c89a2a;font-size:15px;">${fmt(c.totalAberto || 0)}</strong>
+      </div>
+    `;
+  }
+
+  const inpVal = document.getElementById('cred-pag-valor');
+  if(inpVal) inpVal.value = (c.totalAberto || 0).toFixed(2);
+
+  const inpData = document.getElementById('cred-pag-data');
+  if(inpData) inpData.value = new Date().toISOString().slice(0,10);
+
+  // Reset botões de forma
+  ['dinheiro','cartao','pix'].forEach(t => {
+    const b = document.getElementById('cred-pag-btn-'+t);
+    if(b){
+      b.style.borderColor = 'var(--border3)';
+      b.style.opacity = '0.6';
+    }
+  });
+
+  abrirModal('modal-credario-pag');
+};
+
+// 🔴 Selecionar forma de recebimento
+window.selecionarFormaRecCred = function(forma){
+  credFormaRecebimento = forma;
+  const cores = {pix:'#c89a2a', cartao:'#5e96ff', dinheiro:'var(--verde)'};
+  ['dinheiro','cartao','pix'].forEach(t => {
+    const b = document.getElementById('cred-pag-btn-'+t);
+    if(!b) return;
+    const ativo = t === forma;
+    b.style.borderColor = ativo ? cores[t] : 'var(--border3)';
+    b.style.opacity = ativo ? '1' : '0.6';
+    b.style.background = ativo
+      ? (t==='dinheiro'?'linear-gradient(180deg,#1a3d28,#11291b)':t==='cartao'?'linear-gradient(180deg,#1b3158,#0f1829)':'linear-gradient(180deg,#3a2e0a,#2a2008)')
+      : 'linear-gradient(180deg,#232a25,#171c18)';
+  });
+};
+
+// 🔴 CONFIRMAR pagamento do crediário
+window.confirmarPagamentoCrediario = async function(){
+  if(!credClienteSelecionado){ mostrarAlerta('Cliente não encontrado','vermelho'); return; }
+  if(!credFormaRecebimento){ mostrarAlerta('Selecione a forma de recebimento','vermelho'); return; }
+
+  const valor = parseFloat(document.getElementById('cred-pag-valor').value) || 0;
+  const dataPag = document.getElementById('cred-pag-data').value;
+
+  if(valor <= 0){ mostrarAlerta('Informe um valor maior que zero','vermelho'); return; }
+  if(!dataPag){ mostrarAlerta('Informe a data do pagamento','vermelho'); return; }
+
+  const c = credClienteSelecionado;
+  if(valor > c.totalAberto + 0.01){
+    if(!confirm(`O valor (${fmt(valor)}) é maior que o saldo em aberto (${fmt(c.totalAberto)}). Confirmar mesmo assim?`)) return;
+  }
+
+  // Registrar pagamento
+  const pag = {
+    id: 'P' + Date.now(),
+    valor: valor,
+    data: dataPag,
+    dataFmt: new Date(dataPag+'T12:00:00').toLocaleDateString('pt-BR'),
+    forma: credFormaRecebimento,
+    registradoEm: Date.now()
+  };
+
+  c.pagamentos = c.pagamentos || [];
+  c.pagamentos.push(pag);
+  c.totalPago = (c.totalPago || 0) + valor;
+  c.totalAberto = Math.max(0, c.valorTotal - c.totalPago);
+
+  if(c.totalAberto < 0.01){
+    c.status = 'quitado';
+    c.dataQuitada = new Date().toLocaleDateString('pt-BR');
+  }
+
+  try{
+    await set(ref(db, 'crediario/' + c.id), c);
+
+    // 🔴 Também registra no caixa do dia como ENTRADA (quando o cliente paga o crediário)
+    const hojeData = new Date().toLocaleDateString('pt-BR').replace(/\//g,'-');
+    const snap = await get(ref(db, `caixa/${hojeData}`));
+    const atual = snap.val() || {};
+    const upd = {data: hojeData};
+    upd[credFormaRecebimento] = (atual[credFormaRecebimento] || 0) + valor;
+    upd.canalCrediario = (atual.canalCrediario || 0) + 1;
+
+    // Registra como venda de "recebimento de crediário"
+    await set(ref(db, `caixa/${hojeData}/vendas/v${Date.now()}`), {
+      id: Date.now(),
+      mesa: 'CRED',
+      canal: 'crediario',
+      cliente: c.nome,
+      telefone: c.telefone || '',
+      endereco: '',
+      hora: new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}),
+      itens: [{nome:'Recebimento Crediário — '+c.nome, preco:valor, qtd:1, obs:''}],
+      subtotal: valor, desconto:0, taxa:0, total: valor,
+      pagamentos: [{tipo:credFormaRecebimento, valor}],
+      pagamento: credFormaRecebimento,
+      credarioId: c.id
+    });
+    await update(ref(db, `caixa/${hojeData}`), upd);
+
+    fecharModal('modal-credario-pag');
+    mostrarAlerta(`✓ Pagamento de ${fmt(valor)} registrado! ${c.totalAberto < 0.01 ? '— Conta QUITADA!' : '— Falta '+fmt(c.totalAberto)}`, 'verde');
+    credClienteSelecionado = null;
+    credFormaRecebimento = null;
+    renderizarCrediario();
+  }catch(e){
+    console.error(e);
+    mostrarAlerta('Erro ao registrar: '+e.message,'vermelho');
+  }
+};
 
 // ══════════════════════════════════════════════
 // 21. INICIALIZAÇÃO
