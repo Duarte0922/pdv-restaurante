@@ -1206,6 +1206,20 @@ window.aplicarDescontoCx = function(pct){
 
 window.addPagCx = function(tipo){
   if(pagDivCx.find(p => p.tipo === tipo)) return;
+
+  // 🔴 NOVO: se for Crediário e a mesa ainda não tem nome de cliente, pergunta
+  if(tipo === 'credario' && !mesaAtualCx.nomeCliente){
+    const nome = prompt('📒 Crediário — Nome do cliente:');
+    if(!nome || !nome.trim()){
+      mostrarAlerta('Informe o nome do cliente para usar o Crediário', 'vermelho');
+      return; // cancela a adição do pagamento
+    }
+    const tel = prompt('Telefone do cliente (opcional, ajuda a localizar depois):') || '';
+    mesaAtualCx.nomeCliente = nome.trim();
+    mesaAtualCx.telefoneCliente = tel.trim();
+    salvarMesaCx(mesaAtualCx); // já persiste no Firebase
+  }
+
   pagDivCx.push({tipo, valor:''});
   renderPagDivCx();
 };
