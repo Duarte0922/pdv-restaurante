@@ -4,7 +4,8 @@ import { getDatabase, ref, set, onValue, update, push, get, query, orderByChild,
 from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, setPersistence, browserLocalPersistence }
 from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-
+import { getDatabase, ref, set, onValue, update, push, get, query, orderByChild, equalTo, onChildAdded, onChildChanged }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 const FB = {
   apiKey: "AIzaSyAXMDwp1-VT3FdBMHkihTPESWL8smJLZcc",
   authDomain: "pdv-restaurante-a7b75.firebaseapp.com",
@@ -540,19 +541,18 @@ onValue(ref(db, 'config/numMesas'), (snap) => {
   }
 });
 
-onValue(ref(db, 'mesas'), (snap) => {
-  const dados = snap.val();
-  if (!dados) return;
-  Object.values(dados).forEach(m => {
-    const local = mesas.find(x => x.id === m.id);
-    if (local) {
-      local.status = m.status || 'livre';
-      local.inicio = m.inicio || null;
-      local.pedido = m.pedido ? Object.values(m.pedido) : [];
-    }
-  });
+function aplicarDadosMesa(m){
+  if(!m) return;
+  const local = mesas.find(x => x.id === m.id);
+  if (local) {
+    local.status = m.status || 'livre';
+    local.inicio = m.inicio || null;
+    local.pedido = m.pedido ? Object.values(m.pedido) : [];
+  }
   renderMesasCaixa();
-});
+}
+onChildAdded(ref(db, 'mesas'), (snap) => aplicarDadosMesa(snap.val()));
+onChildChanged(ref(db, 'mesas'), (snap) => aplicarDadosMesa(snap.val()));
 
 onValue(ref(db, '.info/connected'), (snap) => {
   const el = document.getElementById('sync-indicator');
