@@ -6,7 +6,8 @@ import { getDatabase, ref, set, onValue, update, remove, push, get, query, order
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, setPersistence, browserLocalPersistence }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-
+import { getDatabase, ref, set, onValue, update, push, get, query, orderByChild, equalTo, onChildAdded, onChildChanged }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 const FB = {
   apiKey: "AIzaSyAXMDwp1-VT3FdBMHkihTPESWL8smJLZcc",
   authDomain: "pdv-restaurante-a7b75.firebaseapp.com",
@@ -660,19 +661,18 @@ onValue(ref(db, 'config/numMesas'), (snap) => {
 });
 
 // 2. Dados das Mesas (ocupação e pedidos)
-onValue(ref(db, 'mesas'), (snap) => {
-  const dados = snap.val();
-  if(!dados) return;
-  Object.values(dados).forEach(m => {
-    const local = mesas.find(x => x.id === m.id);
-    if(local){
-      local.status = m.status || 'livre';
-      local.inicio = m.inicio || null;
-      local.pedido = m.pedido ? Object.values(m.pedido) : [];
-    }
-  });
+function aplicarDadosMesa(m){
+  if(!m) return;
+  const local = mesas.find(x => x.id === m.id);
+  if (local) {
+    local.status = m.status || 'livre';
+    local.inicio = m.inicio || null;
+    local.pedido = m.pedido ? Object.values(m.pedido) : [];
+  }
   renderMesasCaixa();
-});
+}
+onChildAdded(ref(db, 'mesas'), (snap) => aplicarDadosMesa(snap.val()));
+onChildChanged(ref(db, 'mesas'), (snap) => aplicarDadosMesa(snap.val()));
 
 // 3. Caixa do Dia (financeiro)
 onValue(ref(db, 'caixa/' + hoje), (snap) => {
