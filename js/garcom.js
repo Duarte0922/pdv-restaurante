@@ -1,10 +1,9 @@
 // garcom.js - VERSÃO FINAL CORRIGIDA
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-// Apenas UM import do database com todas as funções necessárias (incluindo o onChildChanged)
-import { getDatabase, ref, set, onValue, update, push, get, query, orderByChild, equalTo, onChildAdded, onChildChanged } 
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, setPersistence, browserLocalPersistence }
+from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getDatabase, ref, set, onValue, update, push, get, query, orderByChild, equalTo, onChildAdded, onChildChanged }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, setPersistence, browserLocalPersistence } 
-  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 const FB = {
   apiKey: "AIzaSyAXMDwp1-VT3FdBMHkihTPESWL8smJLZcc",
   authDomain: "pdv-restaurante-a7b75.firebaseapp.com",
