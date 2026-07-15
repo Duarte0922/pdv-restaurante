@@ -664,12 +664,9 @@ function renderizarPedidoAqui(){
 window.abrirPedidoAquiModal = function(){
   document.getElementById('pa-numero').value = '';
   document.getElementById('pa-taxa').value = '';
-  document.getElementById('pa-valor').value = '';
-  window._paPagamento = null;
-  ['dinheiro','cartao','pix'].forEach(t => {
-    const el = document.getElementById('pa-btn-'+t);
-    if(el){ el.style.borderColor = 'var(--border3)'; el.style.opacity = '0.55'; }
-  });
+  document.getElementById('pa-valor-dinheiro').value = '';
+  document.getElementById('pa-valor-cartao').value = '';
+  document.getElementById('pa-valor-pix').value = '';
   abrirModal('modal-pedidoaqui');
 };
 
