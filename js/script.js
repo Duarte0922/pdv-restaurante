@@ -1786,7 +1786,7 @@ window.abrirModalNovoPedido = function(tipo){
     titulo.textContent = '📞 Novo Pedido Telefone';
     sub.textContent = 'Pedido por ligação';
   }
-  ['np-nome','np-telefone','np-endereco-novo','np-endereco-label','np-km','np-taxa','np-troco','np-obs','np-busca-produto'].forEach(id => {
+  ['np-nome','np-telefone','np-endereco-novo','np-endereco-label','np-km','np-taxa','np-valor-dinheiro','np-valor-cartao','np-valor-pix','np-troco','np-obs','np-busca-produto'].forEach(id => {
     const el = document.getElementById(id);
     if(el) el.value = '';
   });
@@ -1991,7 +1991,13 @@ window.confirmarNovoPedido = async function() {
   try{
     const nome = document.getElementById('np-nome').value.trim();
     const tel = document.getElementById('np-telefone').value.trim();
-    const pag = document.getElementById('np-pagamento').value;
+    const vDin = parseFloat(document.getElementById('np-valor-dinheiro').value) || 0;
+    const vCar = parseFloat(document.getElementById('np-valor-cartao').value) || 0;
+    const vPix = parseFloat(document.getElementById('np-valor-pix').value) || 0;
+    const pagamentos = [];
+    if(vDin > 0) pagamentos.push({tipo:'dinheiro', valor:vDin});
+    if(vCar > 0) pagamentos.push({tipo:'cartao', valor:vCar});
+    if(vPix > 0) pagamentos.push({tipo:'pix', valor:vPix});
     const troco = parseFloat(document.getElementById('np-troco').value) || 0;
     const obs = document.getElementById('np-obs').value.trim();
     const km = parseFloat(document.getElementById('np-km').value) || 0;
@@ -2011,6 +2017,7 @@ window.confirmarNovoPedido = async function() {
     if (!tel) { mostrarAlerta('Informe o telefone do cliente', 'vermelho'); return; }
     if (!enderecoFinal) { mostrarAlerta('Informe ou selecione um endereço', 'vermelho'); return; }
     if (!window._carrinhoPedidoModal.length) { mostrarAlerta('Adicione pelo menos um produto', 'vermelho'); return; }
+    if (!pagamentos.length) { mostrarAlerta('Informe pelo menos um valor de pagamento', 'vermelho'); return; }
     
     salvarOuAtualizarCliente({ nome, telefone: tel, endereco:{ label:labelFinal, endereco:enderecoFinal, km, taxa } });
     
@@ -2026,7 +2033,7 @@ window.confirmarNovoPedido = async function() {
     const pedido = {
       id, tipo: canal, nome, telefone: tel, 
       endereco: enderecoFinal, enderecoLabel: labelFinal, km, taxa, 
-      pagamento: pag, trocoPara: troco, observacao: obs, 
+      pagamentos, pagamento: pagamentos[0].tipo, trocoPara: troco, observacao: obs, 
       abertoEm: Date.now(), total: totalItens, itens: itensPedido, status: 'aguardando'
     };
     
@@ -2189,41 +2196,32 @@ function renderizarPedidoAqui(){
 window.abrirPedidoAquiModal = function(){
   document.getElementById('pa-numero').value = '';
   document.getElementById('pa-taxa').value = '';
-  document.getElementById('pa-valor').value = '';
-  window._paPagamento = null;
-  ['dinheiro','cartao','pix'].forEach(t => {
-    const el = document.getElementById('pa-btn-'+t);
-    if(el){ el.style.borderColor = 'var(--border3)'; el.style.opacity = '0.55'; }
-  });
+  document.getElementById('pa-valor-dinheiro').value = '';
+  document.getElementById('pa-valor-cartao').value = '';
+  document.getElementById('pa-valor-pix').value = '';
   abrirModal('modal-pedidoaqui');
-};
-
-window.selecionarPagPA = function(p){
-  window._paPagamento = p;
-  const cores = {pix:'#c89a2a', cartao:'#5e96ff', dinheiro:'var(--verde)'};
-  ['dinheiro','cartao','pix'].forEach(t => {
-    const el = document.getElementById('pa-btn-'+t);
-    if(!el) return;
-    const ativo = t === p;
-    el.style.borderColor = ativo ? cores[t] : 'var(--border3)';
-    el.style.opacity = ativo ? '1' : '0.55';
-  });
 };
 
 window.confirmarPedidoAqui = function(){
   const numero = document.getElementById('pa-numero').value.trim();
   const taxa = parseFloat(document.getElementById('pa-taxa').value) || 0;
-  const total = parseFloat(document.getElementById('pa-valor').value) || 0;
+  const vDin = parseFloat(document.getElementById('pa-valor-dinheiro').value) || 0;
+  const vCar = parseFloat(document.getElementById('pa-valor-cartao').value) || 0;
+  const vPix = parseFloat(document.getElementById('pa-valor-pix').value) || 0;
+  const pagamentos = [];
+  if(vDin > 0) pagamentos.push({tipo:'dinheiro', valor:vDin});
+  if(vCar > 0) pagamentos.push({tipo:'cartao', valor:vCar});
+  if(vPix > 0) pagamentos.push({tipo:'pix', valor:vPix});
+  const total = pagamentos.reduce((s,p)=>s+p.valor,0);
   if(!numero){ mostrarAlerta('Informe o número do pedido', 'vermelho'); return; }
-  if(total <= 0){ mostrarAlerta('Informe o valor total', 'vermelho'); return; }
-  if(!window._paPagamento){ mostrarAlerta('Selecione a forma de pagamento', 'vermelho'); return; }
+  if(total <= 0){ mostrarAlerta('Informe pelo menos um valor de pagamento', 'vermelho'); return; }
   const id = 'PA' + Date.now();
-  const obj = {id, numero, taxa, total, pagamento: window._paPagamento, abertoEm: Date.now(), status:'aberto'};
+  const obj = {id, numero, taxa, total, pagamentos, abertoEm: Date.now(), status:'aberto'};
   pedidoAquiList.push(obj);
   salvarPedidoAvulsoFirebase('pedidoaqui', obj);
   renderizarPedidoAqui();
   fecharModal('modal-pedidoaqui');
-  mostrarAlerta(`Pedido Pedi Aqui #${numero} lançado`, 'verde');
+  mostrarAlerta(`Pedido Pedi Aqui #${numero} lançado — ${fmt(total)}`, 'verde');
 };
 
 window.concluirPedidoAqui = async function(id){
@@ -2238,15 +2236,15 @@ window.concluirPedidoAqui = async function(id){
     hora: new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}),
     itens: [{nome:'Pedido PedirAqui #' + p.numero, preco: subtotal, qtd:1, obs:''}],
     subtotal, desconto:0, taxa: p.taxa || 0, total: p.total,
-    pagamentos: [{tipo:p.pagamento, valor:p.total}],
-    pagamento: p.pagamento
+    pagamentos: p.pagamentos || [{tipo:'dinheiro', valor:p.total}],
+    pagamento: (p.pagamentos && p.pagamentos[0]) ? p.pagamentos[0].tipo : 'dinheiro'
   };
   try{
     await set(ref(db, `caixa/${hojeData}/vendas/v${Date.now()}`), venda);
     const snap = await get(ref(db, `caixa/${hojeData}`));
     const atual = snap.val() || {};
     const upd = {data: hojeData};
-    upd[p.pagamento] = (atual[p.pagamento] || 0) + p.total;
+    (p.pagamentos || []).forEach(pg => { upd[pg.tipo] = (atual[pg.tipo] || 0) + pg.valor; });
     if(p.taxa) upd.taxa = (atual.taxa || 0) + p.taxa;
     upd.canalPedirAqui = (atual.canalPedirAqui || 0) + 1;
     await update(ref(db, `caixa/${hojeData}`), upd);
@@ -2321,7 +2319,7 @@ async function finalizarConclusaoPedido(id, canal){
   const nomeExibicao = p.nome || (mesa && mesa.nomeCliente) || (canal === 'delivery' ? 'Delivery' : 'Telefone');
   if(!confirm('Concluir pedido de ' + nomeExibicao + ' — ' + fmt(total) + '?')) return;
 
-  const pagamento = p.pagamento || 'dinheiro';
+  const pagamentosFinal = (p.pagamentos && p.pagamentos.length) ? p.pagamentos : [{tipo: p.pagamento || 'dinheiro', valor: total}];
   const hojeData = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
   const venda = {
     id: Date.now(), mesa: id, canal, cliente: nomeExibicao,
@@ -2330,15 +2328,15 @@ async function finalizarConclusaoPedido(id, canal){
     hora: new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}),
     itens: itens.map(it => ({nome:it.nome, qtd:it.qtd, preco:it.preco, obs:it.obs || ''})),
     subtotal, desconto:0, taxa, total,
-    pagamentos: [{tipo:pagamento, valor:total}],
-    pagamento
+    pagamentos: pagamentosFinal,
+    pagamento: pagamentosFinal[0].tipo
   };
   try{
     await set(ref(db, `caixa/${hojeData}/vendas/v${Date.now()}`), venda);
     const snap = await get(ref(db, `caixa/${hojeData}`));
     const atual = snap.val() || {};
     const upd = {data:hojeData};
-    upd[pagamento] = (atual[pagamento] || 0) + total;
+    pagamentosFinal.forEach(pg => { upd[pg.tipo] = (atual[pg.tipo] || 0) + pg.valor; });
     if(taxa) upd.taxa = (atual.taxa || 0) + taxa;
     if(canal === 'delivery') upd.canalWhatsapp = (atual.canalWhatsapp || 0) + 1;
     if(canal === 'telefone') upd.canalTelefone = (atual.canalTelefone || 0) + 1;
