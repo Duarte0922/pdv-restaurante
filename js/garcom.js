@@ -793,7 +793,6 @@ function renderCarrinhoModalPedido(){
   const total = carrinho.reduce((s,i)=>s+i.preco*i.qtd,0);
   document.getElementById('np-carrinho-total').textContent = fmt(total);
 }
-
 window.abrirModalNovoPedido = function(tipo) {
   _tipoNovoPedido = tipo;
   const titulo = document.getElementById('modal-np-titulo');
@@ -805,7 +804,7 @@ window.abrirModalNovoPedido = function(tipo) {
     titulo.textContent = '📞 Novo Pedido Telefone';
     sub.textContent = 'Pedido por ligação';
   }
-  ['np-nome','np-telefone','np-endereco-novo','np-endereco-label','np-km','np-taxa','np-troco','np-obs','np-busca-produto'].forEach(id => {
+  ['np-nome','np-telefone','np-endereco-novo','np-endereco-label','np-km','np-taxa','np-valor-dinheiro','np-valor-cartao','np-valor-pix','np-troco','np-obs','np-busca-produto'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
@@ -998,7 +997,13 @@ window.confirmarNovoPedido = async function() {
   try{
     const nome = document.getElementById('np-nome').value.trim();
     const tel = document.getElementById('np-telefone').value.trim();
-    const pag = document.getElementById('np-pagamento').value;
+    const vDin = parseFloat(document.getElementById('np-valor-dinheiro').value) || 0;
+    const vCar = parseFloat(document.getElementById('np-valor-cartao').value) || 0;
+    const vPix = parseFloat(document.getElementById('np-valor-pix').value) || 0;
+    const pagamentos = [];
+    if(vDin > 0) pagamentos.push({tipo:'dinheiro', valor:vDin});
+    if(vCar > 0) pagamentos.push({tipo:'cartao', valor:vCar});
+    if(vPix > 0) pagamentos.push({tipo:'pix', valor:vPix});
     const troco = parseFloat(document.getElementById('np-troco').value) || 0;
     const obs = document.getElementById('np-obs').value.trim();
     const km = parseFloat(document.getElementById('np-km').value) || 0;
@@ -1018,9 +1023,9 @@ window.confirmarNovoPedido = async function() {
     if (!tel) { mostrarAlerta('Informe o telefone do cliente', 'vermelho'); return; }
     if (!enderecoFinal) { mostrarAlerta('Informe ou selecione um endereço', 'vermelho'); return; }
     if (!window._carrinhoPedidoModal.length) { mostrarAlerta('Adicione pelo menos um produto', 'vermelho'); return; }
+    if (!pagamentos.length) { mostrarAlerta('Informe pelo menos um valor de pagamento', 'vermelho'); return; }
     
-    salvarOuAtualizarCliente({ nome, telefone: tel, endereco:{ label:labelFinal, endereco:enderecoFinal, km, taxa } });
-    
+    salvarOuAtualizarCliente({ nome, telefone: tel, endereco:{ label:labelFinal, endereco:enderecoFinal, km, taxa } });    
     const canal = _tipoNovoPedido;
     const id = (canal === 'delivery' ? 'D' : 'T') + Date.now();
     const itensPedido = window._carrinhoPedidoModal.map(it=>({
@@ -1033,7 +1038,7 @@ window.confirmarNovoPedido = async function() {
     const pedido = {
       id, tipo: canal, nome, telefone: tel, 
       endereco: enderecoFinal, enderecoLabel: labelFinal, km, taxa, 
-      pagamento: pag, trocoPara: troco, observacao: obs, 
+      pagamentos, pagamento: pagamentos[0].tipo, trocoPara: troco, observacao: obs, 
       abertoEm: Date.now(), total: totalItens, itens: itensPedido, status: 'aguardando'
     };
     
