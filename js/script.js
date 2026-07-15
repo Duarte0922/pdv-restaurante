@@ -922,11 +922,12 @@ window.buscarProdutoCx = function(termo){
 };
 
 function renderCategoriasCx(){
-  const list = document.getElementById('cat-list-cx');
-  list.innerHTML = '';
-  categoriasCx.forEach((c,i) => {
-    const el = document.createElement('div');
-    el.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:72px;border-radius:14px;padding:6px 3px;gap:4px;font-size:9px;line-height:1.2;text-align:center;border:1px solid var(--border3);background:linear-gradient(180deg,#232a25,#171c18);color:var(--txt);cursor:pointer;transition:all .15s;';
+  const list=document.getElementById('cat-list-cx');
+  list.style.cssText='display:flex;gap:6px;width:100%;';
+  list.innerHTML='';
+  categoriasCx.forEach((c,i)=>{
+    const el=document.createElement('div');
+    el.style.cssText='flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:72px;border-radius:14px;padding:6px 3px;gap:4px;font-size:9px;line-height:1.2;text-align:center;border:1px solid var(--border3);background:linear-gradient(180deg,#232a25,#171c18);color:var(--txt);cursor:pointer;transition:all .15s;';
     el.innerHTML = `${getIconHTML(c, '36px')}<span style="font-weight:500;">${c.nome}</span>`;
     if(i === 0){
       el.style.background = 'linear-gradient(180deg,#2f5e9f,#1f355c)';
