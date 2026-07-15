@@ -286,8 +286,8 @@ function renderCategoriasCx(){
   list.innerHTML='';
   categoriasCx.forEach((c,i)=>{
     const el=document.createElement('div');
-    el.style.cssText='flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:72px;border-radius:14px;padding:6px 3px;gap:4px;font-size:9px;line-height:1.2;text-align:center;border:1px solid var(--border3);background:linear-gradient(180deg,#232a25,#171c18);color:var(--txt);cursor:pointer;transition:all .15s;';
-    el.innerHTML = `${getIconHTML(c, '36px')}<span style="font-weight:500;">${c.nome}</span>`;
+    el.style.cssText='flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:110px;border-radius:14px;padding:10px 6px;gap:8px;font-size:14px;line-height:1.2;text-align:center;border:1px solid var(--border3);background:linear-gradient(180deg,#232a25,#171c18);color:var(--txt);cursor:pointer;transition:all .15s;';
+    el.innerHTML = `${getIconHTML(c, '60px')}<span style="font-weight:600;">${c.nome}</span>`;
     if(i===0){el.style.background='linear-gradient(180deg,#2f5e9f,#1f355c)';el.style.borderColor='var(--azul)';}
     el.onclick=()=>{
       document.querySelectorAll('#cat-list-cx div').forEach(b=>{b.style.background='linear-gradient(180deg,#232a25,#171c18)';b.style.borderColor='var(--border3)';});
