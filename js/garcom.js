@@ -672,34 +672,27 @@ window.abrirPedidoAquiModal = function(){
   abrirModal('modal-pedidoaqui');
 };
 
-window.selecionarPagPA = function(p){
-  window._paPagamento = p;
-  const cores = {pix:'#c89a2a', cartao:'#5e96ff', dinheiro:'var(--verde)'};
-  ['dinheiro','cartao','pix'].forEach(t => {
-    const el = document.getElementById('pa-btn-'+t);
-    if(!el) return;
-    const ativo = t === p;
-    el.style.borderColor = ativo ? cores[t] : 'var(--border3)';
-    el.style.opacity = ativo ? '1' : '0.55';
-  });
-};
-
 window.confirmarPedidoAqui = function(){
   const numero = document.getElementById('pa-numero').value.trim();
   const taxa = parseFloat(document.getElementById('pa-taxa').value) || 0;
-  const total = parseFloat(document.getElementById('pa-valor').value) || 0;
+  const vDin = parseFloat(document.getElementById('pa-valor-dinheiro').value) || 0;
+  const vCar = parseFloat(document.getElementById('pa-valor-cartao').value) || 0;
+  const vPix = parseFloat(document.getElementById('pa-valor-pix').value) || 0;
+  const pagamentos = [];
+  if(vDin > 0) pagamentos.push({tipo:'dinheiro', valor:vDin});
+  if(vCar > 0) pagamentos.push({tipo:'cartao', valor:vCar});
+  if(vPix > 0) pagamentos.push({tipo:'pix', valor:vPix});
+  const total = pagamentos.reduce((s,p)=>s+p.valor,0);
   if(!numero){ mostrarAlerta('Informe o número do pedido', 'vermelho'); return; }
-  if(total <= 0){ mostrarAlerta('Informe o valor total', 'vermelho'); return; }
-  if(!window._paPagamento){ mostrarAlerta('Selecione a forma de pagamento', 'vermelho'); return; }
+  if(total <= 0){ mostrarAlerta('Informe pelo menos um valor de pagamento', 'vermelho'); return; }
   const id = 'PA' + Date.now();
-  const obj = {id, numero, taxa, total, pagamento: window._paPagamento, abertoEm: Date.now(), status:'aberto'};
+  const obj = {id, numero, taxa, total, pagamentos, abertoEm: Date.now(), status:'aberto'};
   pedidoAquiList.push(obj);
   salvarPedidoAvulsoFirebase('pedidoaqui', obj);
   renderizarPedidoAqui();
   fecharModal('modal-pedidoaqui');
-  mostrarAlerta(`Pedido Pedi Aqui #${numero} lançado`, 'verde');
+  mostrarAlerta(`Pedido Pedi Aqui #${numero} lançado — ${fmt(total)}`, 'verde');
 };
-
 window.concluirPedidoAqui = async function(id){
   const p = pedidoAquiList.find(x => x.id === id);
   if(!p) return;
