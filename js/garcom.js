@@ -80,45 +80,7 @@ function salvarOuAtualizarCliente({nome,telefone,endereco}){
   set(ref(db,'clientes/'+key), registro).catch(e=>console.warn('Erro ao salvar cliente:',e));
   return registro;
 }
-.produto-card {
-  background: linear-gradient(180deg, #171c18, #131814);
-  border: 1px solid #252d28;
-  border-radius: 12px;
-  padding: 10px;
-  cursor: pointer;
-  transition: all 0.15s;
-}
 
-.produto-card:hover {
-  border-color: var(--verde);
-  transform: translateY(-2px);
-}
-
-.produto-img {
-  width: 100%;
-  height: 80px;
-  object-fit: cover;
-  border-radius: 8px;
-  margin-bottom: 6px;
-}
-
-.produto-nome {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--txt);
-  margin-bottom: 4px;
-}
-
-.produto-preco {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--verde);
-}
-
-.produto-tamanhos {
-  font-size: 10px;
-  color: var(--txt2);
-}
 function salvarPedidoHistoricoCliente(telefone, itens, total){
   const key=normalizarTel(telefone);
   if(!key || !itens || !itens.length) return;
@@ -702,9 +664,12 @@ function renderizarPedidoAqui(){
 window.abrirPedidoAquiModal = function(){
   document.getElementById('pa-numero').value = '';
   document.getElementById('pa-taxa').value = '';
-  document.getElementById('pa-valor-dinheiro').value = '';
-  document.getElementById('pa-valor-cartao').value = '';
-  document.getElementById('pa-valor-pix').value = '';
+  document.getElementById('pa-valor').value = '';
+  window._paPagamento = null;
+  ['dinheiro','cartao','pix'].forEach(t => {
+    const el = document.getElementById('pa-btn-'+t);
+    if(el){ el.style.borderColor = 'var(--border3)'; el.style.opacity = '0.55'; }
+  });
   abrirModal('modal-pedidoaqui');
 };
 
@@ -1070,7 +1035,7 @@ window.confirmarNovoPedido = async function() {
     const totalItens = itensPedido.reduce((s,i)=>s+i.preco*i.qtd,0);
     salvarPedidoHistoricoCliente(tel, itensPedido, totalItens);
     
-    const pedido = {
+  const pedido = {
       id, tipo: canal, nome, telefone: tel, 
       endereco: enderecoFinal, enderecoLabel: labelFinal, km, taxa, 
       pagamentos, pagamento: pagamentos[0].tipo, trocoPara: troco, observacao: obs, 
