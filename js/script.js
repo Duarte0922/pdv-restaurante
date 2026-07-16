@@ -759,6 +759,7 @@ const categoriasCx = [
     {nome:'Caip Orlof — Abacaxi',preco:20},{nome:'Caip Orlof — Morango',preco:20},
     {nome:'Caip Orlof — Limão',preco:20},{nome:'Caip Orlof — Maracujá',preco:20},
     {nome:'Pinga 51',preco:5,bar:true},{nome:'Vodka Orlof',preco:7,bar:true},
+    {nome:'Caipirinha',preco:18,bar:true}, {nome:'Corona',preco:10,bar:true}, 
   ])},
   {nome:'Espaguete', icon:'🍝', img:'img/espaguete.jpg', produtos: adicionarImagem([
     {nome:'Espaguete na Chapa — Pequeno',preco:19.9},
