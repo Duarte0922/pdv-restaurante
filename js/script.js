@@ -734,7 +734,7 @@ const categoriasCx = [
     {nome:'Arroz na Chapa',preco:24.9},{nome:'Arroz com Pernil',preco:36.9},
     {nome:'Porção Mista',preco:136.9},{nome:'Filé de Peito de Frango',preco:42.9},
     {nome:'Picanha',preco:96.9},{nome:'Costelinha c/ Mandioca',preco:67.9},
-    {nome:'Coxinha da Asa 1kg',preco:50.9},
+    {nome:'Coxinha da Asa 1kg',preco:50.9},{nome:'molho da casa',preco:1.50},
   ])},
   {nome:'Peixes', icon:'🐟', img:'img/peixes.jpg', produtos: adicionarImagem([
     {nome:'Tilápia 400g Molho Especial',preco:53.9},{nome:'Tilápia 400g c/ Batata',preco:68.9},
@@ -747,7 +747,7 @@ const categoriasCx = [
     {nome:'Polpa Graviola/Cacau/Maracujá/Açaí',preco:8},
     {nome:'Refri 1L Guaraná',preco:9,bar:true},{nome:'Refri 1L Coca-Cola',preco:12,bar:true},
     {nome:'Refri 2L Fanta/Guaraná',preco:15,bar:true},{nome:'Refri 2L Coca-Cola',preco:17,bar:true},
-    {nome:'Refrigerante Lata',preco:6,bar:true},
+    {nome:'Refrigerante Lata',preco:6,bar:true}, 
   ])},
   {nome:'Cervejas', icon:'🍺', img:'img/cervejas.jpg', produtos: adicionarImagem([
     {nome:'Brahma / Skol 600ml',preco:10,bar:true},{nome:'Kaiser 600ml',preco:8,bar:true},
@@ -759,7 +759,10 @@ const categoriasCx = [
     {nome:'Caip Orlof — Abacaxi',preco:20},{nome:'Caip Orlof — Morango',preco:20},
     {nome:'Caip Orlof — Limão',preco:20},{nome:'Caip Orlof — Maracujá',preco:20},
     {nome:'Pinga 51',preco:5,bar:true},{nome:'Vodka Orlof',preco:7,bar:true},
-    {nome:'Caipirinha',preco:18,bar:true}, {nome:'Corona',preco:10,bar:true}, 
+    {nome:'Caipirinha',preco:18,bar:true}, {nome:'Corona',preco:10,bar:true},
+    {nome:'Pinga da Roça',preco:4,bar:true},{nome:'Campari',preco:13,bar:true},
+    {nome:'Conhaque',preco:5,bar:true},{nome:'Rum Bacardi',preco:10,bar:true}, 
+    {nome:'seleta/salinas',preco:7,bar:true}, 
   ])},
   {nome:'Espaguete', icon:'🍝', img:'img/espaguete.jpg', produtos: adicionarImagem([
     {nome:'Espaguete na Chapa — Pequeno',preco:19.9},
