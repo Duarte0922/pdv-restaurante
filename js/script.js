@@ -990,6 +990,21 @@ function adicionarItemCx(p, catNome, pizza){
   abrirModal('modal-obs-cx');
 }
 
+window.abrirItemAvulsoCx = function(){
+  document.getElementById('avulso-nome-cx').value = '';
+  document.getElementById('avulso-preco-cx').value = '';
+  abrirModal('modal-avulso-cx');
+};
+
+window.confirmarItemAvulsoCx = function(){
+  const nome = document.getElementById('avulso-nome-cx').value.trim();
+  const preco = parseFloat(document.getElementById('avulso-preco-cx').value);
+  if(!nome){ mostrarAlerta('Informe o nome do item', 'vermelho'); return; }
+  if(isNaN(preco) || preco <= 0){ mostrarAlerta('Informe um preço válido', 'vermelho'); return; }
+  fecharModal('modal-avulso-cx');
+  pushItemCx({nome, preco}, '', 'Avulso');
+};
+
 window.escolherTamanhoCx = function(tam){
   const p = itemPendenteCx; if(!p) return;
   abrirBordaCx(p.nome, tam, p.tamanhos[tam], p.categoria);
