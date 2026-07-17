@@ -110,11 +110,14 @@
     </div>
   </div>
 
-  <div id="pedido-body-cx">
+<div id="pedido-body-cx">
     <!-- LADO ESQUERDO: Categorias + Produtos -->
     <div id="lado-esquerdo-cx">
       <input type="text" id="busca-produto-cx" placeholder="🔍 Buscar produto..." oninput="buscarProdutoCx(this.value)"
         style="width:100%;padding:9px 12px;margin-bottom:8px;background:#1a201c;border:1px solid #303a33;border-radius:10px;color:var(--txt);font-size:13px;">
+      <button onclick="abrirItemAvulsoCx()" style="width:100%;margin-bottom:8px;padding:10px;background:linear-gradient(180deg,#3d2e1a,#2a1f10);border:1px solid #c89a2a;border-radius:10px;color:#f0c96b;font-size:12px;font-weight:700;cursor:pointer;">
+        ➕ Item Avulso (não cadastrado)
+      </button>
       <div id="cat-list-cx"></div>
       <div id="produto-area-cx">
         <div id="cat-titulo-cx" style="font-size:11px;color:var(--txt2);margin-bottom:6px;padding:0 2px;"></div>
