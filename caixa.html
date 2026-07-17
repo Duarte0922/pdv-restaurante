@@ -4,10 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="mobile-web-app-capable" content="yes">
-  <title>🌙 Luar do Viena — Caixa</title>
+  <title>🌙 Luar do Viena — Garçom</title>
   
   <!-- CSS EXTERNO -->
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/garcom.css">
 </head>
 <body>
 
@@ -19,7 +19,7 @@
 <div id="screen-main" class="screen">
   <div class="header">
     <div>
-      <div class="header-title">🌙 Luar do Viena — Caixa</div>
+      <div class="header-title">🌙 Luar do Viena — Garçom</div>
     </div>
     <div style="display:flex;gap:8px;align-items:center;">
       <div id="sync-indicator" style="font-size:10px;padding:4px 10px;border-radius:999px;background:var(--verde-bg);color:var(--verde);">● Online</div>
@@ -27,63 +27,16 @@
     </div>
   </div>
 
-  <!-- ABAS -->
+  <!-- ABAS (só Mesas agora) -->
   <div id="nav-abas">
     <div class="aba ativa" onclick="mudarAba('mesas')">🪑 Mesas</div>
-    <div class="aba" onclick="mudarAba('caixa')">💰 Caixa</div>
-    <div class="aba" onclick="mudarAba('relatorio')">📊 Relatório</div>
-    <div class="aba" onclick="mudarAba('credario')">📒 Crediário</div>
-    <div class="aba" onclick="mudarAba('precos')">🏷️ Preços</div>
   </div>
-  <!-- ═══ ABA CREDIÁRIO ═══ -->
-  <div id="aba-credario" class="aba-content">
-    <div class="credario-header">
-      <div>
-        <div style="font-size:18px;font-weight:800;">📒 Crediário</div>
-        <div style="font-size:12px;color:var(--txt2);margin-top:2px;">Clientes que pagarão depois</div>
-      </div>
-      <div style="display:flex;gap:8px;">
-        <button class="btn" onclick="filtrarCrediario('abertos')">🟡 Em aberto</button>
-        <button class="btn" onclick="filtrarCrediario('quitados')">✅ Quitados</button>
-        <button class="btn" onclick="filtrarCrediario('todos')">📋 Todos</button>
-      </div>
-    </div>
 
-    <!-- Resumo geral -->
-    <div class="credario-resumo">
-      <div class="credario-resumo-card">
-        <div class="total-label">💰 Total a Receber</div>
-        <div class="total-valor" style="color:#c89a2a;" id="cred-total-aberto">R$ 0,00</div>
-      </div>
-      <div class="credario-resumo-card">
-        <div class="total-label">✅ Total Recebido</div>
-        <div class="total-valor" style="color:var(--verde);" id="cred-total-recebido">R$ 0,00</div>
-      </div>
-      <div class="credario-resumo-card">
-        <div class="total-label">👥 Clientes Abertos</div>
-        <div class="total-valor" style="color:var(--azul);" id="cred-qtd-abertos">0</div>
-      </div>
-      <div class="credario-resumo-card">
-        <div class="total-label">📦 Total de Registros</div>
-        <div class="total-valor" id="cred-qtd-total">0</div>
-      </div>
-    </div>
-
-    <!-- Busca -->
-    <div style="margin-bottom:12px;">
-      <input type="text" id="busca-credario" placeholder="🔍 Buscar cliente por nome ou telefone..."
-        oninput="renderizarCrediario()"
-        style="width:100%;padding:12px 14px;background:#1a201c;border:1px solid var(--border3);border-radius:12px;color:var(--txt);font-size:14px;font-family:var(--font);">
-    </div>
-
-    <!-- Lista de clientes -->
-    <div id="credario-lista"></div>
-  </div>
-  <!-- ABA MESAS COM NOVO LAYOUT -->
+  <!-- ABA MESAS -->
   <div class="aba-content ativa" id="aba-mesas">
     <div class="layout-principal">
 
-      <!-- COLUNA MESAS (o Balcão fica embaixo, mesmo raciocínio visual das mesas) -->
+      <!-- COLUNA MESAS -->
       <div class="coluna-mesas">
 
         <!-- Indicadores de Status -->
@@ -93,7 +46,7 @@
           <span><span class="dot-status" style="background:#c89a2a;"></span>Conta</span>
         </div>
 
-        <!-- Grid unificado: mesas ocupam toda a largura, balcão ocupa a largura da mesa 1 até a mesa 3 -->
+        <!-- Grid unificado -->
         <div class="mesas-balcao-grid-wrapper">
           <div class="mesas-full-linha">
             <div class="mesas-container-novo">
@@ -109,7 +62,7 @@
             </div>
           </div>
 
-          <!-- BALCÃO — largura = mesa 1 até mesa 3, mesmo estilo de card das mesas -->
+          <!-- BALCÃO -->
           <div class="balcao-secao-abaixo-mesas">
             <div class="secao-header">
               <div>
@@ -140,12 +93,11 @@
             <button class="btn-novo" onclick="abrirModalNovoPedido('delivery')">+ Pedido</button>
           </div>
           <div class="pedido-list" id="deliveryList">
-            <!-- Pedidos delivery gerados via JS -->
             <div class="balcao-empty">Nenhum pedido delivery</div>
           </div>
         </div>
 
-<!-- TELEFONE -->
+        <!-- TELEFONE -->
         <div class="secao-direita">
           <div class="secao-header">
             <div>
@@ -155,17 +107,15 @@
             <button class="btn-novo" onclick="abrirModalNovoPedido('telefone')">+ Pedido</button>
           </div>
           <div class="pedido-list" id="telefoneList">
-            <!-- Pedidos telefone gerados via JS -->
             <div class="balcao-empty">Nenhum pedido telefone</div>
           </div>
         </div>
-
-        <!-- PEDI AQUI -->
+<!-- PEDI AQUI -->
         <div class="secao-direita">
           <div class="secao-header">
             <div>
               <div class="secao-titulo">🛵 Pedi Aqui</div>
-              <div class="secao-sub">Pedidos do sistema PedirAqui</div>
+              <div class="secao-sub">Pedidos via totem / QR code</div>
             </div>
             <button class="btn-novo" onclick="abrirPedidoAquiModal()">+ Pedido</button>
           </div>
@@ -173,11 +123,12 @@
             <div class="balcao-empty">Nenhum pedido Pedi Aqui</div>
           </div>
         </div>
-
       </div>
 
     </div>
   </div>
+
+</div><!-- /screen-main -->
 
 <!-- ═══════════════════════════════════════════════════════════════ -->
 <!-- MODAL NOVO PEDIDO (Delivery / Telefone) -->
@@ -226,9 +177,10 @@
             style="width:100%;padding:10px;background:#1a201c;border:1px solid #303a33;border-radius:10px;color:var(--txt);font-size:14px;">
         </div>
       </div>
-     <div>
-        <label style="font-size:12px;color:var(--txt2);">Valores por forma de pagamento</label>
-        <div style="display:flex;gap:8px;margin-top:4px;">
+      <div>
+        <label style="font-size:12px;color:var(--txt2);font-weight:700;">💰 Forma(s) de pagamento</label>
+        <div style="font-size:11px;color:var(--txt2);margin-bottom:4px;">Preencha um ou mais valores para dividir o pagamento</div>
+        <div style="display:flex;gap:8px;">
           <div style="flex:1;">
             <div style="font-size:11px;color:var(--verde);margin-bottom:3px;">💵 Dinheiro</div>
             <input type="number" id="np-valor-dinheiro" placeholder="0,00" min="0" step="0.01"
@@ -245,11 +197,11 @@
               style="width:100%;padding:10px;background:#1a201c;border:1px solid #303a33;border-radius:10px;color:var(--txt);font-size:14px;">
           </div>
         </div>
-      </div>
-      <div>
-        <label style="font-size:12px;color:var(--txt2);">Troco p/ (se dinheiro)</label>
-        <input type="number" id="np-troco" placeholder="0,00" min="0" step="0.01"
-          style="width:100%;padding:10px;background:#1a201c;border:1px solid #303a33;border-radius:10px;color:var(--txt);font-size:14px;">
+        <div style="margin-top:8px;">
+          <label style="font-size:12px;color:var(--txt2);">Troco p/ (se pagar em dinheiro)</label>
+          <input type="number" id="np-troco" placeholder="0,00" min="0" step="0.01"
+            style="width:100%;padding:10px;background:#1a201c;border:1px solid #303a33;border-radius:10px;color:var(--txt);font-size:14px;">
+        </div>
       </div>
       <div>
         <label style="font-size:12px;color:var(--txt2);">Observação</label>
@@ -338,209 +290,94 @@
     <button class="btn" onclick="fecharModal('modal-mmp-borda')" style="width:100%;margin-top:8px;color:var(--txt2);">Cancelar</button>
   </div>
 </div>
-  <!-- ABA CAIXA (dia atual) -->
-  <div class="aba-content" id="aba-caixa">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-      <div style="font-size:13px;font-weight:600;" id="caixa-data-hoje"></div>
-      <div style="display:flex;gap:6px;">
-        <button class="btn btn-azul" onclick="imprimirCaixaHoje()" style="font-size:12px;padding:7px 10px;">🖨 Imprimir</button>
-        <button class="btn btn-red" onclick="confirmarFecharCaixa()" style="font-size:12px;padding:7px 10px;">🔒 Fechar</button>
-      </div>
-    </div>
-    <div class="totais-grid" id="caixa-totais-hoje"></div>
-    <div id="caixa-canais-hoje" style="margin-top:8px;"></div>
-    <div style="background:linear-gradient(180deg,#1a2e1e,#111912);border:1px solid #2a4a30;border-radius:var(--rad-lg);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;margin-top:10px;">
-      <span style="font-size:14px;font-weight:600;color:#8ecfaa;">Total do Dia</span>
-      <span style="font-size:28px;font-weight:700;color:var(--verde);" id="caixa-total-hoje">R$ 0,00</span>
-    </div>
-    <div style="background:rgba(20,26,21,.96);border:1px solid var(--border2);border-radius:var(--rad-lg);overflow:hidden;">
-      <div style="padding:10px 14px;border-bottom:1px solid var(--border2);display:flex;justify-content:space-between;align-items:center;">
-        <span style="font-size:13px;font-weight:600;">Pedidos Fechados</span>
-        <span style="font-size:12px;color:var(--txt2);" id="caixa-qtd-hoje">0 vendas</span>
-      </div>
-      <div id="caixa-historico-hoje" style="padding:6px 8px;max-height:300px;overflow-y:auto;"></div>
-    </div>
-  </div>
-
-  <!-- ABA RELATÓRIO POR DATA -->
-  <div class="aba-content" id="aba-relatorio">
-    <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
+<!-- MODAL PEDI AQUI -->
+<div class="modal-overlay" id="modal-pedidoaqui">
+  <div class="modal-box">
+    <div style="font-size:16px;font-weight:700;margin-bottom:4px;">🛵 Novo Pedido — Pedi Aqui</div>
+    <div style="font-size:12px;color:var(--txt2);margin-bottom:14px;">Lançamento rápido do pedido feito pelo totem/QR</div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
       <div>
-        <div style="font-size:11px;color:var(--txt2);margin-bottom:4px;">Selecione a data:</div>
-        <input type="date" id="data-relatorio">
+        <label style="font-size:12px;color:var(--txt2);">Número do pedido</label>
+        <input type="text" id="pa-numero" placeholder="Ex: 042"
+          style="width:100%;padding:10px;background:#1a201c;border:1px solid #303a33;border-radius:10px;color:var(--txt);font-size:14px;">
       </div>
-      <button class="btn btn-verde" onclick="carregarRelatorio()" style="align-self:flex-end;padding:9px 16px;">Buscar</button>
-      <button class="btn btn-azul" onclick="imprimirRelatorio()" style="align-self:flex-end;padding:9px 16px;">🖨 Imprimir</button>
+<div>
+        <label style="font-size:12px;color:var(--txt2);">Taxa (R$)</label>
+        <input type="number" id="pa-taxa" placeholder="0,00" min="0" step="0.01"
+          style="width:100%;padding:10px;background:#1a201c;border:1px solid #303a33;border-radius:10px;color:var(--txt);font-size:14px;">
+      </div>
+      <div>
+        <label style="font-size:12px;color:var(--txt2);">Valores por forma de pagamento (preencha só o usado)</label>
+        <div style="display:flex;gap:8px;margin-top:4px;">
+          <div style="flex:1;">
+            <div style="font-size:11px;color:var(--verde);margin-bottom:3px;">💵 Dinheiro</div>
+            <input type="number" id="pa-valor-dinheiro" placeholder="0,00" min="0" step="0.01"
+              style="width:100%;padding:10px;background:#1a201c;border:1px solid #303a33;border-radius:10px;color:var(--txt);font-size:14px;">
+          </div>
+          <div style="flex:1;">
+            <div style="font-size:11px;color:#5e96ff;margin-bottom:3px;">💳 Cartão</div>
+            <input type="number" id="pa-valor-cartao" placeholder="0,00" min="0" step="0.01"
+              style="width:100%;padding:10px;background:#1a201c;border:1px solid #303a33;border-radius:10px;color:var(--txt);font-size:14px;">
+          </div>
+          <div style="flex:1;">
+            <div style="font-size:11px;color:#c89a2a;margin-bottom:3px;">📲 Pix</div>
+            <input type="number" id="pa-valor-pix" placeholder="0,00" min="0" step="0.01"
+              style="width:100%;padding:10px;background:#1a201c;border:1px solid #303a33;border-radius:10px;color:var(--txt);font-size:14px;">
+          </div>
+        </div>
+      </div>
     </div>
-    <div id="relatorio-resultado">
-      <div style="text-align:center;padding:40px;color:var(--txt2);">Selecione uma data e clique em Buscar</div>
+    <div style="display:flex;gap:8px;margin-top:16px;">
+      <button class="btn" onclick="fecharModal('modal-pedidoaqui')" style="flex:1;">Cancelar</button>
+      <button class="btn btn-verde" onclick="confirmarPedidoAqui()" style="flex:1;font-weight:700;">✓ Lançar Pedido</button>
     </div>
   </div>
-    <!-- ABA PREÇOS -->
-    <div class="aba-content" id="aba-precos">
-        <div style="padding:8px 0 14px;">
-        <input type="text" id="busca-produto" placeholder="🔍 Buscar produto..."
-            oninput="filtrarProdutos()"
-            style="width:100%;background:#1a201c;border:1px solid #303a33;border-radius:10px;
-            color:#f4f7f1;font-size:14px;padding:10px 14px;margin-bottom:12px;">
-        <div id="lista-precos"></div>
-        </div>
-    </div>
- </div>
+</div>
 
 <!-- TELA PEDIDO -->
-<div id="screen-pedido" class="screen">
-  <div class="header">
-    <div style="display:flex;align-items:center;gap:8px;">
-      <button class="btn" onclick="voltarMesasCaixa()" style="padding:8px 12px;font-size:13px;">← Mesas</button>
-      <div>
-        <div class="header-title" id="titulo-mesa-cx">Mesa 01</div>
-        <div style="font-size:11px;color:var(--txt2);" id="tempo-mesa-cx"></div>
-      </div>
+<div id="screen-pedido" class="screen" style="display:none;flex-direction:column;height:100vh;background:#0e1210;">
+  <div class="header" style="padding:10px 14px;background:linear-gradient(180deg,#1a2e1e,#111912);border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:10px;">
+    <button onclick="voltarMesasCaixa()" style="background:#1f2521;border:1px solid #313a33;border-radius:8px;color:var(--txt);padding:8px 12px;font-size:13px;cursor:pointer;">← Mesas</button>
+    <div style="flex:1;">
+      <div class="header-title" id="titulo-mesa-cx" style="font-size:16px;font-weight:700;color:var(--txt);">Mesa 01</div>
+      <div style="font-size:11px;color:var(--txt2);" id="tempo-mesa-cx"></div>
     </div>
-    <button class="btn btn-verde" onclick="abrirFechamentoCx()" style="font-size:13px;padding:9px 14px;font-weight:600;">Fechar Mesa</button>
   </div>
   
-  <div id="pedido-body-cx">
+  <div id="pedido-body-cx" style="flex:1;display:flex;overflow:hidden;min-height:0;">
     <!-- LADO ESQUERDO: Categorias + Produtos -->
-      <div id="lado-esquerdo-cx">
+    <div id="lado-esquerdo-cx">
       <input type="text" id="busca-produto-cx" placeholder="🔍 Buscar produto..." oninput="buscarProdutoCx(this.value)"
         style="width:100%;padding:9px 12px;margin-bottom:8px;background:#1a201c;border:1px solid #303a33;border-radius:10px;color:var(--txt);font-size:13px;">
       <button onclick="abrirItemAvulsoCx()" style="width:100%;margin-bottom:8px;padding:10px;background:linear-gradient(180deg,#3d2e1a,#2a1f10);border:1px solid #c89a2a;border-radius:10px;color:#f0c96b;font-size:12px;font-weight:700;cursor:pointer;">
         ➕ Item Avulso (não cadastrado)
       </button>
-      <div id="cat-list-cx"></div>
-      <div id="cat-list-cx"></div>
-      <div id="produto-area-cx">
-        <div id="cat-titulo-cx" style="font-size:11px;color:var(--txt2);margin-bottom:6px;padding:0 2px;"></div>
-        <div id="produto-grid-cx" class="produto-grid"></div>
+      <div id="cat-list-cx" style="display:flex;gap:6px;width:100%;margin-bottom:10px;flex-wrap:wrap;"></div>
+      <div id="produto-area-cx" style="flex:1;">
+        <div id="cat-titulo-cx" style="font-size:12px;color:var(--txt2);margin-bottom:6px;padding:0 2px;font-weight:600;"></div>
+        <div id="produto-grid-cx" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;"></div>
       </div>
     </div>
     
     <!-- LADO DIREITO: Carrinho -->
-    <div id="carrinho-panel-cx">
-      <div onclick="toggleCarrinhoCx()" style="cursor:pointer;user-select:none;">
-        <span style="font-size:14px;font-weight:700;">Pedido <span id="badge-qtd-cx" style="background:linear-gradient(180deg,#ff6464,#dc3e3e);color:#fff;border-radius:999px;font-size:10px;padding:2px 7px;margin-left:4px;">0</span></span>
+    <div id="carrinho-panel-cx" style="width:320px;display:flex;flex-direction:column;background:linear-gradient(180deg,#1a2e1e,#111912);border-left:1px solid var(--border2);">
+      <div onclick="toggleCarrinhoCx()" style="cursor:pointer;user-select:none;padding:12px 14px;border-bottom:1px solid var(--border2);display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:14px;font-weight:700;color:var(--txt);">🛒 Pedido <span id="badge-qtd-cx" style="background:linear-gradient(180deg,#ff6464,#dc3e3e);color:#fff;border-radius:999px;font-size:10px;padding:2px 7px;margin-left:4px;">0</span></span>
         <div style="display:flex;align-items:center;gap:10px;">
           <span style="font-size:14px;font-weight:700;color:var(--verde);" id="total-pedido-cx">R$ 0,00</span>
           <span id="carrinho-toggle-cx" style="color:var(--txt2);">▲</span>
         </div>
       </div>
-      <div id="carrinho-body-cx">
+      <div id="carrinho-body-cx" style="flex:1;overflow-y:auto;padding:10px 14px;">
         <div id="carrinho-lista-cx"></div>
       </div>
-      <button onclick="enviarCozinhaCx()" class="btn btn-red" style="font-weight:700;cursor:pointer;font-family:var(--font);">🖨 Enviar para Cozinha</button>
+      <button onclick="enviarCozinhaCx()" style="margin:10px 14px 14px 14px;padding:12px;background:linear-gradient(180deg,#2aa160,#1d7b49);border:1px solid #258754;border-radius:10px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;">🖨 Enviar para Cozinha</button>
     </div>
   </div>
 </div>
 
-<!-- TELA FECHAMENTO - NOVO LAYOUT -->
-<div id="screen-fechamento-cx" class="screen">
-  <div class="header">
-    <button class="btn" onclick="telaCx('pedido')" style="padding:8px 12px;font-size:13px;">← Voltar</button>
-    <div class="header-title" id="titulo-fech-cx">Fechamento</div>
-    <button class="btn btn-azul" onclick="imprimirContaCx()" style="font-size:13px;padding:9px 14px;">🖨 Conta</button>
-  </div>
-
-  <!-- ABAS FIXAS NO TOPO -->
-  <div style="display:flex;border-bottom:1px solid var(--border2);flex-shrink:0;background:var(--card);">
-    <button id="cx-aba-total" onclick="mudarAbaFechCx('total')"
-      style="flex:1;padding:10px;font-size:13px;font-weight:600;background:var(--card);border:none;color:var(--verde);border-bottom:2px solid var(--verde);cursor:pointer;font-family:var(--font);">
-      Mesa Completa
-    </button>
-    <button id="cx-aba-parcial" onclick="abrirModalParcialCx()"
-      style="flex:1;padding:10px;font-size:13px;font-weight:600;background:transparent;border:none;color:var(--txt2);border-bottom:2px solid transparent;cursor:pointer;font-family:var(--font);">
-      🧾 Fechamento Parcial
-    </button>
-  </div>
-
-  <!-- CONTAINER PRINCIPAL COM DUAS COLUNAS -->
-  <div style="flex:1;overflow:hidden;display:flex;gap:10px;padding:10px 12px;">
-    
-    <!-- COLUNA ESQUERDA: CONSUMO DA MESA -->
-    <div style="flex:0 0 320px;display:flex;flex-direction:column;background:rgba(20,26,21,.96);border:1px solid var(--border2);border-radius:var(--rad-lg);overflow:hidden;">
-      <div style="padding:10px 14px;border-bottom:1px solid var(--border2);font-size:13px;font-weight:600;flex-shrink:0;">Consumo da Mesa</div>
-      <div id="tabela-fech-cx" style="flex:1;overflow-y:auto;min-height:0;"></div>
-      <div style="padding:10px 14px;border-top:1px solid var(--border2);display:flex;justify-content:space-between;flex-shrink:0;">
-        <span style="font-size:13px;color:var(--txt2);">Subtotal</span>
-        <span style="font-size:13px;font-weight:600;" id="subtotal-fech-cx">R$ 0,00</span>
-      </div>
-      <div id="taxa-fech-cx-linha" style="display:none;padding:0 14px 10px;justify-content:space-between;flex-shrink:0;">
-        <span style="font-size:12px;color:#c89a2a;">🛵 Taxa de entrega</span>
-        <span style="font-size:12px;font-weight:600;color:#c89a2a;" id="taxa-fech-cx-valor">R$ 0,00</span>
-      </div>
-    </div>
-
-    <!-- COLUNA DIREITA: RESTANTE -->
-    <div style="flex:1;display:flex;flex-direction:column;gap:10px;overflow-y:auto;">
-      
-      <!-- DESCONTO/TAXA -->
-      <div style="background:rgba(20,26,21,.96);border:1px solid var(--border2);border-radius:var(--rad-lg);padding:12px 14px;flex-shrink:0;">
-        <div style="font-size:13px;font-weight:600;margin-bottom:8px;">Desconto / Taxa</div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;">
-          <button class="btn" onclick="aplicarDescontoCx(10)" style="font-size:12px;">-10%</button>
-          <button class="btn" onclick="aplicarDescontoCx(-10)" style="font-size:12px;">+10% taxa</button>
-          <button class="btn" onclick="aplicarDescontoCx(0)" style="font-size:12px;">Limpar</button>
-        </div>
-        <div style="font-size:12px;color:var(--txt2);margin-top:6px;" id="desconto-info-cx">Nenhum aplicado</div>
-      </div>
-
-      <!-- TOTAL A PAGAR -->
-      <div style="background:linear-gradient(180deg,#1a2e1e,#111912);border:1px solid #2a4a30;border-radius:var(--rad-lg);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
-        <span style="font-size:14px;font-weight:600;color:#8ecfaa;">Total a Pagar</span>
-        <span style="font-size:28px;font-weight:700;color:var(--verde);" id="total-final-cx">R$ 0,00</span>
-      </div>
-
-      <!-- FORMA DE PAGAMENTO -->
-      <div style="background:rgba(20,26,21,.96);border:1px solid var(--border2);border-radius:var(--rad-lg);padding:12px 14px;flex-shrink:0;">
-        <div style="font-size:13px;font-weight:600;margin-bottom:10px;">Forma de Pagamento</div>
-        <div style="display:flex;gap:6px;margin-bottom:12px;">
-          <button class="add-pag-btn" id="cx-addpag-dinheiro" onclick="addPagCx('dinheiro')" style="flex:1;">💵 Dinheiro</button>
-          <button class="add-pag-btn" id="cx-addpag-cartao"   onclick="addPagCx('cartao')"   style="flex:1;">💳 Cartão</button>
-          <button class="add-pag-btn" id="cx-addpag-pix"      onclick="addPagCx('pix')"      style="flex:1;">📲 Pix</button>
-          <button class="add-pag-btn" id="cx-addpag-credario" onclick="addPagCx('credario')" style="flex:1;">📒 Crediário</button>
-
-        </div>
-        <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;padding:6px 4px;margin-bottom:8px;border-bottom:1px solid var(--border2);">
-          <span style="color:var(--txt2);">Total: <span id="cx-total-ref" style="color:var(--verde);">R$ 0,00</span></span>
-          <span id="cx-res-diff" style="color:#cf5b74;">Falta: R$ 0,00</span>
-        </div>
-        <div id="pag-div-lista-cx"></div>
-        <div class="falta-bar"><div class="falta-bar-fill" id="cx-falta-bar" style="width:0%"></div></div>
-        <div style="font-size:12px;color:var(--txt2);margin-top:6px;">Pago: <span id="cx-res-pago" style="color:var(--verde);font-weight:600;">R$ 0,00</span></div>
-        <div id="cx-troco-box" style="display:none;margin-top:10px;">
-          <div style="font-size:12px;color:var(--txt2);margin-bottom:6px;">Troco (dinheiro)</div>
-          <div style="display:flex;gap:8px;align-items:center;">
-            <input id="cx-valor-recebido" type="number" step="0.01" min="0" placeholder="Valor recebido (R$)"
-              style="flex:1;padding:10px;background:#1a201c;border:1px solid var(--border3);border-radius:12px;color:var(--txt);font-size:15px;font-family:var(--font);"
-              oninput="calcularTrocoCx()">
-            <div style="text-align:right;min-width:80px;">
-              <div style="font-size:11px;color:var(--txt2);">Troco</div>
-              <div style="font-size:18px;font-weight:700;color:var(--verde);" id="cx-valor-troco">R$ 0,00</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- BOTÃO CONFIRMAR FIXO NA PARTE INFERIOR -->
-  <div style="flex-shrink:0;padding:10px 12px;border-top:1px solid var(--border2);background:var(--card);">
-    <button id="btn-confirmar-cx" onclick="concluirVendaCx()"
-      style="width:100%;padding:14px;font-size:15px;font-weight:700;border-radius:18px;background:linear-gradient(180deg,#2aa160,#1d7b49);color:#fff;border:1px solid #258754;cursor:pointer;font-family:var(--font);opacity:.4;pointer-events:none;">
-      ✓ Confirmar Pagamento e Liberar Mesa
-    </button>
-  </div>
-</div>
-<!-- TELA OK -->
-<div id="screen-ok-cx" class="screen" style="align-items:center;justify-content:center;gap:14px;padding:24px;flex-direction:column;">
-  <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(180deg,#2aa160,#1d7b49);display:flex;align-items:center;justify-content:center;font-size:36px;">✓</div>
-  <div style="font-size:22px;font-weight:700;">Pagamento confirmado!</div>
-  <div style="font-size:14px;color:var(--txt2);text-align:center;" id="ok-msg-cx"></div>
-  <button class="btn btn-verde" onclick="voltarMesasCaixa()" style="padding:12px 28px;font-size:14px;margin-top:10px;">← Voltar ao Salão</button>
-</div>
 </div><!-- #app -->
+
 <!-- MODAL TAMANHO PIZZA -->
 <div class="modal-overlay" id="modal-tamanho-cx">
   <div class="modal-box">
@@ -670,7 +507,7 @@
 <!-- MODAL CONFIGURAÇÕES -->
 <div class="modal-overlay" id="modal-config">
   <div class="modal-box">
-    <div style="font-size:16px;font-weight:700;margin-bottom:16px;">⚙ Configurações</div>
+    <div style="font-size:16px;font-weight:700;margin-bottom:16px;"> Configurações</div>
     <div style="margin-bottom:14px;">
       <div style="font-size:13px;font-weight:600;margin-bottom:6px;">Número de Mesas</div>
       <div style="font-size:12px;color:var(--txt2);margin-bottom:8px;">Quantas mesas o restaurante tem?</div>
@@ -690,180 +527,7 @@
   </div>
 </div>
 
-<!-- MODAL FECHAR CAIXA — escolha de tipo -->
-<div class="modal-overlay" id="modal-fechar-caixa">
-  <div class="modal-box">
-    <div style="text-align:center;margin-bottom:16px;">
-      <div style="font-size:32px;margin-bottom:8px;">🔒</div>
-      <div style="font-size:16px;font-weight:700;">Fechar Caixa</div>
-      <div style="font-size:12px;color:var(--txt2);margin-top:4px;">Escolha o tipo de fechamento</div>
-    </div>
-    <div style="display:flex;gap:10px;margin-bottom:18px;">
-      <button id="btn-tipo-total" onclick="selecionarTipoFechamento('total')"
-        style="flex:1;padding:14px 8px;border-radius:14px;border:2px solid var(--verde);background:linear-gradient(180deg,#1a2e1e,#111912);cursor:pointer;font-family:var(--font);text-align:center;transition:all .15s;">
-        <div style="font-size:22px;margin-bottom:4px;">💰</div>
-        <div style="font-size:13px;font-weight:700;color:var(--verde);">Total</div>
-        <div style="font-size:11px;color:var(--txt2);margin-top:2px;">Fecha o caixa do dia completo</div>
-      </button>
-      <button id="btn-tipo-parcial" onclick="selecionarTipoFechamento('parcial')"
-        style="flex:1;padding:14px 8px;border-radius:14px;border:2px solid var(--border3);background:linear-gradient(180deg,#1f1c0d,#151208);cursor:pointer;font-family:var(--font);text-align:center;transition:all .15s;">
-        <div style="font-size:22px;margin-bottom:4px;">🧾</div>
-        <div style="font-size:13px;font-weight:700;color:#c89a2a;">Parcial</div>
-        <div style="font-size:11px;color:var(--txt2);margin-top:2px;">Registra entrada parcial</div>
-      </button>
-    </div>
-
-    <!-- Formas de pagamento -->
-    <div style="margin-bottom:12px;">
-      <div style="font-size:13px;font-weight:600;margin-bottom:4px;color:var(--txt2);">Forma de Pagamento</div>
-      <div style="display:flex;gap:8px;">
-        <button onclick="togglePagFC('pix')" id="fc-btn-pix"
-          style="flex:1;padding:12px 6px;border-radius:14px;border:2px solid var(--border3);background:linear-gradient(180deg,#1f1c0d,#151208);cursor:pointer;font-family:var(--font);text-align:center;transition:all .15s;">
-          <div style="font-size:20px;">📲</div>
-          <div style="font-size:12px;font-weight:700;color:#c89a2a;margin-top:3px;">Pix</div>
-        </button>
-        <button onclick="togglePagFC('cartao')" id="fc-btn-cartao"
-          style="flex:1;padding:12px 6px;border-radius:14px;border:2px solid var(--border3);background:linear-gradient(180deg,#0f1829,#0a1020);cursor:pointer;font-family:var(--font);text-align:center;transition:all .15s;">
-          <div style="font-size:20px;">💳</div>
-          <div style="font-size:12px;font-weight:700;color:#5e96ff;margin-top:3px;">Cartão</div>
-        </button>
-        <button onclick="togglePagFC('dinheiro')" id="fc-btn-dinheiro"
-          style="flex:1;padding:12px 6px;border-radius:14px;border:2px solid var(--border3);background:linear-gradient(180deg,#0d1f12,#091410);cursor:pointer;font-family:var(--font);text-align:center;transition:all .15s;">
-          <div style="font-size:20px;">💵</div>
-          <div style="font-size:12px;font-weight:700;color:var(--verde);margin-top:3px;">Dinheiro</div>
-        </button>
-      </div>
-    </div>
-
-    <!-- Valor parcial (só aparece no modo parcial) -->
-    <div id="fc-parcial-valor" style="display:none;margin-bottom:12px;">
-      <div style="font-size:13px;font-weight:600;margin-bottom:6px;color:#c89a2a;">Valor Parcial (R$)</div>
-      <input type="number" id="fc-valor-parcial" min="0" step="0.01" placeholder="0,00"
-        style="width:100%;padding:12px;background:#1a201c;border:1px solid var(--border3);border-radius:12px;color:var(--txt);font-size:18px;font-family:var(--font);text-align:right;">
-    </div>
-
-    <div id="fc-resumo" style="background:rgba(47,179,109,.07);border:1px solid #2a4a30;border-radius:12px;padding:10px 14px;margin-bottom:14px;display:none;">
-      <div style="font-size:12px;color:#8ecfaa;" id="fc-resumo-texto">—</div>
-    </div>
-
-    <div style="display:flex;gap:8px;">
-      <button class="btn" onclick="fecharModal('modal-fechar-caixa');resetFechamentoCaixa();" style="flex:1;">Cancelar</button>
-      <button class="btn btn-red" id="btn-confirmar-fechamento-caixa" onclick="confirmarFechamentoCaixa()" style="flex:1;font-weight:700;opacity:.4;pointer-events:none;">Confirmar</button>
-    </div>
-    <div style="margin-top:10px;text-align:center;font-size:11px;color:var(--txt3);">⚠ Imprima o relatório antes de fechar.</div>
-  </div>
-</div>
-
-       <!-- MODAL PARCIAL CX -->
-    <div class="modal-overlay" id="modal-parcial-cx">
-    <div class="modal-box" style="max-width:500px;width:100%;padding:16px 14px;">
-        <div style="font-size:17px;font-weight:700;margin-bottom:4px;">🧾 Selecionar Itens</div>
-        <div style="font-size:11px;color:var(--txt2);margin-bottom:12px;">Toque para selecionar os itens que serão pagos agora</div>
-        <div id="lista-parcial-cx" style="max-height:55vh;overflow-y:auto;border-radius:12px;border:1px solid var(--border2);overflow:hidden;"></div>
-        <div style="display:flex;gap:8px;margin-top:12px;">
-        <button class="btn" onclick="toggleTodosParcialCx()" style="flex:1;font-size:12px;">☑ Todos</button>
-        <button class="btn btn-verde" onclick="confirmarParcialCx()" style="flex:2;font-size:14px;font-weight:700;padding:13px;">✓ OK</button>
-        </div>
-      </div>
-    </div>
-<!-- ═══ MODAL REGISTRAR PAGAMENTO CREDIÁRIO ═══ -->
-<div id="modal-credario-pag" class="modal-overlay">
-  <div class="modal-box" style="max-width:420px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-      <div style="font-size:16px;font-weight:700;">💰 Registrar Pagamento</div>
-      <button onclick="fecharModal('modal-credario-pag')" style="background:none;border:none;color:var(--txt2);font-size:22px;cursor:pointer;">×</button>
-    </div>
-
-    <div id="cred-pag-info" style="background:rgba(20,26,21,.96);border:1px solid var(--border2);border-radius:12px;padding:12px;margin-bottom:14px;">
-      <!-- preenchido via JS -->
-    </div>
-
-    <div style="margin-bottom:12px;">
-      <label style="font-size:12px;color:var(--txt2);display:block;margin-bottom:4px;">Valor a pagar (R$)</label>
-      <input type="number" id="cred-pag-valor" step="0.01" min="0" placeholder="0,00"
-        style="width:100%;padding:12px;background:#1a201c;border:1px solid var(--border3);border-radius:10px;color:var(--txt);font-size:18px;font-weight:700;font-family:var(--font);text-align:right;">
-    </div>
-
-    <div style="margin-bottom:12px;">
-      <label style="font-size:12px;color:var(--txt2);display:block;margin-bottom:4px;">Data do pagamento</label>
-      <input type="date" id="cred-pag-data"
-        style="width:100%;padding:10px;background:#1a201c;border:1px solid var(--border3);border-radius:10px;color:var(--txt);font-family:var(--font);">
-    </div>
-
-    <div style="margin-bottom:14px;">
-      <label style="font-size:12px;color:var(--txt2);display:block;margin-bottom:4px;">Forma de recebimento</label>
-      <div style="display:flex;gap:6px;">
-        <button id="cred-pag-btn-dinheiro" class="btn" style="flex:1;" onclick="selecionarFormaRecCred('dinheiro')">💵 Dinheiro</button>
-        <button id="cred-pag-btn-cartao" class="btn" style="flex:1;" onclick="selecionarFormaRecCred('cartao')">💳 Cartão</button>
-        <button id="cred-pag-btn-pix" class="btn" style="flex:1;" onclick="selecionarFormaRecCred('pix')">📲 Pix</button>
-      </div>
-    </div>
-
-    <div style="display:flex;gap:8px;">
-      <button class="btn" onclick="fecharModal('modal-credario-pag')" style="flex:1;">Cancelar</button>
-      <button class="btn btn-verde" onclick="confirmarPagamentoCrediario()" style="flex:2;">✓ Confirmar Pagamento</button>
-    </div>
-  </div>
-</div>
-
-<!-- ═══ MODAL DETALHES DO CREDIÁRIO ═══ -->
-<div id="modal-credario-detalhes" class="modal-overlay">
-  <div class="modal-box" style="max-width:500px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-      <div style="font-size:16px;font-weight:700;">📋 Detalhes do Crediário</div>
-      <button onclick="fecharModal('modal-credario-detalhes')" style="background:none;border:none;color:var(--txt2);font-size:22px;cursor:pointer;">×</button>
-    </div>
-    <div id="cred-detalhes-conteudo"></div>
-  </div>
-</div>
-
-    <!-- MODAL PEDI AQUI -->
-<div class="modal-overlay" id="modal-pedidoaqui">
-  <div class="modal-box" style="max-width:340px;">
-    <div style="font-size:16px;font-weight:700;margin-bottom:14px;">🛵 Pedido Pedi Aqui</div>
-    <label style="font-size:12px;color:var(--txt2);">Número do pedido</label>
-    <input type="text" id="pa-numero" placeholder="Ex: 9344" style="width:100%;padding:10px;margin:4px 0 12px;background:#1a201c;border:1px solid var(--border3);border-radius:10px;color:var(--txt);font-size:15px;"/>
-    <label style="font-size:12px;color:var(--txt2);">Taxa de entrega (R$)</label>
-    <input type="number" step="0.01" id="pa-taxa" placeholder="0,00" style="width:100%;padding:10px;margin:4px 0 12px;background:#1a201c;border:1px solid var(--border3);border-radius:10px;color:var(--txt);font-size:15px;"/>
-    <label style="font-size:12px;color:var(--txt2);">Valores por forma de pagamento</label>
-    <div style="display:flex;gap:6px;margin:6px 0 16px;">
-      <div style="flex:1;">
-        <div style="font-size:11px;color:var(--verde);margin-bottom:3px;">💵 Dinheiro</div>
-        <input type="number" step="0.01" id="pa-valor-dinheiro" placeholder="0,00" style="width:100%;padding:10px;background:#1a201c;border:1px solid var(--border3);border-radius:10px;color:var(--txt);font-size:14px;"/>
-      </div>
-      <div style="flex:1;">
-        <div style="font-size:11px;color:#5e96ff;margin-bottom:3px;">💳 Cartão</div>
-        <input type="number" step="0.01" id="pa-valor-cartao" placeholder="0,00" style="width:100%;padding:10px;background:#1a201c;border:1px solid var(--border3);border-radius:10px;color:var(--txt);font-size:14px;"/>
-      </div>
-      <div style="flex:1;">
-        <div style="font-size:11px;color:#c89a2a;margin-bottom:3px;">📲 Pix</div>
-        <input type="number" step="0.01" id="pa-valor-pix" placeholder="0,00" style="width:100%;padding:10px;background:#1a201c;border:1px solid var(--border3);border-radius:10px;color:var(--txt);font-size:14px;"/>
-      </div>
-    </div>
-    <div style="display:flex;gap:8px;">
-      <button onclick="fecharModal('modal-pedidoaqui')" class="btn" style="flex:1;">Cancelar</button>
-      <button onclick="confirmarPedidoAqui()" class="btn btn-verde" style="flex:1;">✓ Lançar</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL CONFIRMAR PAGAMENTO PENDENTE -->
-<div class="modal-overlay" id="modal-confirmar-pagamento">
-  <div class="modal-box" style="max-width:320px;">
-    <div style="font-size:16px;font-weight:700;margin-bottom:6px;">💳 Forma de pagamento</div>
-    <div style="font-size:12px;color:var(--txt2);margin-bottom:14px;">Este pedido ainda não tem pagamento registrado. Selecione antes de concluir:</div>
-    <div style="display:flex;gap:8px;margin-bottom:16px;">
-      <button id="cp-btn-dinheiro" onclick="selecionarPagamentoPendente('dinheiro')" class="btn" style="flex:1;border:2px solid var(--border3);opacity:.55;">💵 Dinheiro</button>
-      <button id="cp-btn-cartao" onclick="selecionarPagamentoPendente('cartao')" class="btn" style="flex:1;border:2px solid var(--border3);opacity:.55;">💳 Cartão</button>
-      <button id="cp-btn-pix" onclick="selecionarPagamentoPendente('pix')" class="btn" style="flex:1;border:2px solid var(--border3);opacity:.55;">📲 Pix</button>
-    </div>
-    <div style="display:flex;gap:8px;">
-      <button onclick="fecharModal('modal-confirmar-pagamento')" class="btn" style="flex:1;">Cancelar</button>
-      <button onclick="confirmarPagamentoPendenteEConcluir()" class="btn btn-verde" style="flex:1;">✓ Confirmar e concluir</button>
-    </div>
-  </div>
-</div>
 <!-- JAVASCRIPT EXTERNO -->
-<script type="module" src="js/script.js"></script>
+<script type="module" src="js/garcom.js"></script>
 </body>
 </html>
