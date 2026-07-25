@@ -222,7 +222,7 @@
         </div>
         <div style="flex:1;">
           <label style="font-size:12px;color:var(--txt2);">Taxa de entrega (R$)</label>
-          <input type="number" id="np-taxa" placeholder="0,00" min="0" step="0.01"
+          <input type="number" id="np-taxa" placeholder="0,00" min="0" step="0.01" oninput="atualizarTotalNovoPedido()"
             style="width:100%;padding:10px;background:#1a201c;border:1px solid #303a33;border-radius:10px;color:var(--txt);font-size:14px;">
         </div>
       </div>
@@ -245,6 +245,8 @@
               style="width:100%;padding:10px;background:#1a201c;border:1px solid #303a33;border-radius:10px;color:var(--txt);font-size:14px;">
           </div>
         </div>
+        <button type="button" id="np-btn-crediario" class="add-pag-btn" onclick="marcarCrediarioNovoPedido()"
+          style="width:100%;margin-top:8px;padding:10px;">📒 Crediário (fiar — pagar depois)</button>
       </div>
       <div>
         <label style="font-size:12px;color:var(--txt2);">Troco p/ (se dinheiro)</label>
@@ -258,17 +260,29 @@
       </div>
       <div style="border-top:1px solid #2a322c;padding-top:10px;">
         <label style="font-size:12px;color:var(--txt2);font-weight:700;">🛒 Produtos do Pedido</label>
-        <div onclick="abrirMeioAMeioPedido()" style="margin-top:6px;background:linear-gradient(180deg,#1a3564,#102040);border:2px solid var(--azul);border-radius:12px;padding:11px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;">
+      <div onclick="abrirMeioAMeioPedido()" style="margin-top:6px;background:linear-gradient(180deg,#1a3564,#102040);border:2px solid var(--azul);border-radius:12px;padding:11px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;">
           <span style="font-size:20px;">🍕</span>
           <div><div style="font-weight:700;font-size:13px;color:#aad4ff;">Pizza Meio a Meio</div><div style="font-size:11px;color:var(--txt2);">Escolha 2 sabores — G ou GG</div></div>
+        </div>
+        <div onclick="abrirPromocoesPedido()" style="margin-top:6px;background:linear-gradient(180deg,#5c1414,#3a0d0d);border:2px solid #cc3333;border-radius:12px;padding:11px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;">
+          <span style="font-size:20px;">🎉</span>
+          <div><div style="font-weight:700;font-size:13px;color:#ff9a9a;">Promoções</div><div style="font-size:11px;color:var(--txt2);">Pizza Gigante e Grande — sabores tradicionais</div></div>
         </div>
         <input type="text" id="np-busca-produto" placeholder="🔍 Buscar produto para adicionar..." oninput="buscarProdutoModalPedido(this.value)"
           style="width:100%;padding:10px;margin-top:6px;background:#1a201c;border:1px solid #303a33;border-radius:10px;color:var(--txt);font-size:14px;">
         <div id="np-resultados-produto" style="display:none;max-height:160px;overflow-y:auto;background:#12160f;border:1px solid #303a33;border-radius:10px;margin-top:4px;"></div>
         <div id="np-carrinho-lista" style="margin-top:8px;"></div>
         <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;padding-top:6px;border-top:1px solid #232a25;margin-top:4px;">
-          <span style="color:var(--txt2);">Total dos produtos</span>
+          <span style="color:var(--txt2);">Valor produtos</span>
           <span id="np-carrinho-total" style="color:var(--verde);">R$ 0,00</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;padding-top:2px;">
+          <span style="color:var(--txt2);">+ Taxa de entrega</span>
+          <span id="np-taxa-exibicao" style="color:#c89a2a;">R$ 0,00</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:16px;font-weight:800;padding-top:6px;border-top:1px solid #232a25;margin-top:4px;">
+          <span>VALOR TOTAL</span>
+          <span id="np-valor-total-geral" style="color:var(--verde);">R$ 0,00</span>
         </div>
       </div>
     </div>
@@ -409,7 +423,6 @@
       <button onclick="abrirItemAvulsoCx()" style="width:100%;margin-bottom:8px;padding:10px;background:linear-gradient(180deg,#3d2e1a,#2a1f10);border:1px solid #c89a2a;border-radius:10px;color:#f0c96b;font-size:12px;font-weight:700;cursor:pointer;">
         ➕ Item Avulso (não cadastrado)
       </button>
-      <div id="cat-list-cx"></div>
       <div id="cat-list-cx"></div>
       <div id="produto-area-cx">
         <div id="cat-titulo-cx" style="font-size:11px;color:var(--txt2);margin-bottom:6px;padding:0 2px;"></div>
@@ -647,6 +660,43 @@
     <button class="btn" onclick="fecharModal('modal-meiomeio2-cx');abrirModal('modal-meiomeio1-cx')" style="width:100%;margin-top:12px;color:var(--txt2);">← Voltar</button>
   </div>
 </div>
+<div class="modal-overlay" id="modal-promo-cx">
+  <div class="modal-box">
+    <div style="font-size:16px;font-weight:700;margin-bottom:4px;">🎉 Promoções</div>
+    <div style="font-size:12px;color:var(--txt2);margin-bottom:14px;">Sabores tradicionais</div>
+    <div id="cx-promo-lista" style="display:flex;flex-direction:column;gap:8px;"></div>
+    <button class="btn" onclick="fecharModal('modal-promo-cx')" style="width:100%;margin-top:12px;color:var(--txt2);">Cancelar</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-promo-modo-cx">
+  <div class="modal-box" style="text-align:center;">
+    <div style="font-size:16px;font-weight:700;margin-bottom:4px;" id="promo-modo-titulo-cx">Promoção</div>
+    <div style="font-size:12px;color:var(--txt2);margin-bottom:18px;">1 sabor inteiro ou 2 pizzas?</div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <button class="btn btn-azul" onclick="escolherModoPromoCx('uma')" style="padding:15px;font-size:14px;font-weight:700;" id="promo-modo-uma-cx">Uma pizza</button>
+      <button class="btn btn-azul" onclick="escolherModoPromoCx('duas')" style="padding:15px;font-size:14px;font-weight:700;" id="promo-modo-duas-cx">Duas pizzas</button>
+    </div>
+    <button class="btn" onclick="fecharModal('modal-promo-modo-cx')" style="width:100%;margin-top:14px;color:var(--txt2);">Cancelar</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-promo-sabor1-cx">
+  <div class="modal-box" style="max-height:85vh;overflow-y:auto;">
+    <div style="font-size:15px;font-weight:700;margin-bottom:14px;">Escolha o sabor:</div>
+    <div id="cx-promo-sabor1-lista" style="display:flex;flex-direction:column;gap:6px;"></div>
+    <button class="btn" onclick="fecharModal('modal-promo-sabor1-cx')" style="width:100%;margin-top:12px;color:var(--txt2);">Cancelar</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-promo-sabor2-cx">
+  <div class="modal-box" style="max-height:85vh;overflow-y:auto;">
+    <div style="font-size:12px;color:var(--verde);margin-bottom:4px;" id="cx-promo-sabor2-info">1ª pizza: ...</div>
+    <div style="font-size:15px;font-weight:700;margin-bottom:14px;">Escolha a 2ª pizza:</div>
+    <div id="cx-promo-sabor2-lista" style="display:flex;flex-direction:column;gap:6px;"></div>
+    <button class="btn" onclick="fecharModal('modal-promo-sabor2-cx')" style="width:100%;margin-top:12px;color:var(--txt2);">Cancelar</button>
+  </div>
+</div>
 
 <!-- MODAL COZINHA CONFIRMAÇÃO -->
 <div class="modal-overlay" id="modal-cozinha-cx">
@@ -823,8 +873,14 @@
     <div style="font-size:16px;font-weight:700;margin-bottom:14px;">🛵 Pedido Pedi Aqui</div>
     <label style="font-size:12px;color:var(--txt2);">Número do pedido</label>
     <input type="text" id="pa-numero" placeholder="Ex: 9344" style="width:100%;padding:10px;margin:4px 0 12px;background:#1a201c;border:1px solid var(--border3);border-radius:10px;color:var(--txt);font-size:15px;"/>
+    <label style="font-size:12px;color:var(--txt2);">Valor dos produtos (R$)</label>
+    <input type="number" step="0.01" id="pa-produtos" placeholder="0,00" oninput="atualizarTotalPedidoAqui()" style="width:100%;padding:10px;margin:4px 0 12px;background:#1a201c;border:1px solid var(--border3);border-radius:10px;color:var(--txt);font-size:15px;"/>
     <label style="font-size:12px;color:var(--txt2);">Taxa de entrega (R$)</label>
-    <input type="number" step="0.01" id="pa-taxa" placeholder="0,00" style="width:100%;padding:10px;margin:4px 0 12px;background:#1a201c;border:1px solid var(--border3);border-radius:10px;color:var(--txt);font-size:15px;"/>
+    <input type="number" step="0.01" id="pa-taxa" placeholder="0,00" oninput="atualizarTotalPedidoAqui()" style="width:100%;padding:10px;margin:4px 0 12px;background:#1a201c;border:1px solid var(--border3);border-radius:10px;color:var(--txt);font-size:15px;"/>
+    <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:800;padding:8px 0;border-top:1px solid #232a25;border-bottom:1px solid #232a25;margin-bottom:12px;">
+      <span>VALOR TOTAL</span>
+      <span id="pa-valor-total-geral" style="color:var(--verde);">R$ 0,00</span>
+    </div>
     <label style="font-size:12px;color:var(--txt2);">Valores por forma de pagamento</label>
     <div style="display:flex;gap:6px;margin:6px 0 16px;">
       <div style="flex:1;">
