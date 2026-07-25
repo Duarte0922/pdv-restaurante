@@ -341,6 +341,46 @@
   </div>
 </div>
 
+<!-- MODAL PROMOÇÕES (NOVO PEDIDO — Delivery/Telefone) -->
+<div class="modal-overlay" id="modal-promo-pedido">
+  <div class="modal-box">
+    <div style="font-size:16px;font-weight:700;margin-bottom:4px;">🎉 Promoções</div>
+    <div style="font-size:12px;color:var(--txt2);margin-bottom:14px;">Sabores tradicionais</div>
+    <div id="np-promo-lista" style="display:flex;flex-direction:column;gap:8px;"></div>
+    <button class="btn" onclick="fecharModal('modal-promo-pedido')" style="width:100%;margin-top:12px;color:var(--txt2);">Cancelar</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-promo-modo-pedido">
+  <div class="modal-box" style="text-align:center;">
+    <div style="font-size:16px;font-weight:700;margin-bottom:4px;" id="promo-modo-titulo-pedido">Promoção</div>
+    <div style="font-size:12px;color:var(--txt2);margin-bottom:18px;">1 sabor inteiro ou 2 pizzas?</div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <button class="btn btn-azul" onclick="escolherModoPromoPedido('uma')" style="padding:15px;font-size:14px;font-weight:700;" id="promo-modo-uma-pedido">Uma pizza</button>
+      <button class="btn btn-azul" onclick="escolherModoPromoPedido('duas')" style="padding:15px;font-size:14px;font-weight:700;" id="promo-modo-duas-pedido">Duas pizzas</button>
+    </div>
+    <button class="btn" onclick="fecharModal('modal-promo-modo-pedido')" style="width:100%;margin-top:14px;color:var(--txt2);">Cancelar</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-promo-sabor1-pedido">
+  <div class="modal-box" style="max-height:85vh;overflow-y:auto;">
+    <div style="font-size:15px;font-weight:700;margin-bottom:14px;">Escolha o sabor:</div>
+    <div id="np-promo-sabor1-lista" style="display:flex;flex-direction:column;gap:6px;"></div>
+    <button class="btn" onclick="fecharModal('modal-promo-sabor1-pedido')" style="width:100%;margin-top:12px;color:var(--txt2);">Cancelar</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-promo-sabor2-pedido">
+  <div class="modal-box" style="max-height:85vh;overflow-y:auto;">
+    <div style="font-size:12px;color:var(--verde);margin-bottom:4px;" id="np-promo-sabor2-info">1ª pizza: ...</div>
+    <div style="font-size:15px;font-weight:700;margin-bottom:14px;">Escolha a 2ª pizza:</div>
+    <div id="np-promo-sabor2-lista" style="display:flex;flex-direction:column;gap:6px;"></div>
+    <button class="btn" onclick="fecharModal('modal-promo-sabor2-pedido')" style="width:100%;margin-top:12px;color:var(--txt2);">Cancelar</button>
+  </div>
+</div>
+
+
 <!-- MODAL MEIO A MEIO (PEDIDO ZAP/TELEFONE) — BORDA -->
 <div class="modal-overlay" id="modal-mmp-borda">
   <div class="modal-box">
