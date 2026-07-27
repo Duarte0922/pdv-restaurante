@@ -445,7 +445,7 @@ function imprimirComanda(pedido){
     </div>
     ${blocoEntrega}
     <div style="border-top:1px dashed #000;margin-top:10px;padding-top:10px;font-size:13px;font-weight:bold;">
-      Método de pagamento: ${nomePagamento}
+      Método de pagamento: ${nomePagamento}${(pedido.pagamento === 'dinheiro' && pedido.trocoPara > 0) ? ' — Troco p/ ' + fmt(pedido.trocoPara) : ''}
     </div>
     ${pedido.observacaoGeral ? `<div style="border-top:1px dashed #000;margin-top:10px;padding-top:10px;font-size:12px;">Observações gerais: ${pedido.observacaoGeral}</div>` : ''}
     <div style="border-top:1px dashed #000;margin-top:10px;padding-top:10px;display:flex;justify-content:space-between;font-size:16px;font-weight:bold;">
@@ -1204,6 +1204,7 @@ const codigo = numeroComanda;
     dados.pagamento = pedidoCanal ? pedidoCanal.pagamento : '';
     dados.taxa = mesaAtualCx.taxa || 0;
     dados.observacaoGeral = mesaAtualCx.observacao || '';
+    dados.trocoPara = pedidoCanal ? (pedidoCanal.trocoPara || 0) : 0;
   }
   try{
     // 🔴 ESCREVE DIRETO — o próprio Caixa imprime (pois a impressora está nele)
@@ -1995,6 +1996,17 @@ window.atualizarTotalNovoPedido = function(){
   const elTotal = document.getElementById('np-valor-total-geral');
   if(elTaxa) elTaxa.textContent = fmt(taxa);
   if(elTotal) elTotal.textContent = fmt(produtos + taxa);
+  atualizarTrocoNovoPedido();
+};
+
+window.atualizarTrocoNovoPedido = function(){
+  const produtos = (window._carrinhoPedidoModal || []).reduce((s,i) => s + i.preco * i.qtd, 0);
+  const taxa = parseFloat(document.getElementById('np-taxa').value) || 0;
+  const total = produtos + taxa;
+  const dinheiro = parseFloat(document.getElementById('np-valor-dinheiro').value) || 0;
+  const troco = dinheiro - total;
+  const inpTroco = document.getElementById('np-troco');
+  if(inpTroco) inpTroco.value = troco > 0 ? troco.toFixed(2) : '';
 };
 window.abrirModalNovoPedido = function(tipo){
   _tipoNovoPedido = tipo;
@@ -2434,6 +2446,9 @@ function renderizarTelefone(){
     }[p.status] || 'Aguardando';
     let info = `${p.endereco || ''} · R$ ${(p.total || 0).toFixed(2).replace('.', ',')} · ${mins}min<br>`;
     info += {pix:'📲 Pix', cartao:'💳 Cartão', dinheiro:'💵 Dinheiro', credario:'📒 Crediário'}[p.pagamento] || p.pagamento;
+    if(p.pagamento === 'dinheiro' && p.trocoPara > 0){
+      info += ` (troco p/ R$ ${(p.trocoPara || 0).toFixed(2).replace('.', ',')})`;
+    }
     const card = document.createElement('div');
     card.className = `pedido-card ${p.status}`;
     card.onclick = () => abrirMesaCx(p.id);
