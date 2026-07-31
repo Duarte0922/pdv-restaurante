@@ -790,9 +790,12 @@ const categoriasCx = [
     {nome:'Conhaque',preco:5,bar:true},{nome:'Rum Bacardi',preco:10,bar:true}, 
     {nome:'seleta/salinas',preco:7,bar:true}, 
   ])},
-  {nome:'Espaguete', icon:'🍝', img:'img/espaguete.jpg', produtos: adicionarImagem([
+    {nome:'Espaguete', icon:'🍝', img:'img/espaguete.jpg', produtos: adicionarImagem([
     {nome:'Espaguete na Chapa — Pequeno',preco:19.9},
     {nome:'Espaguete na Chapa — Grande',preco:29.9},
+  ])},
+    {nome:'Promoções Zap', icon:'🎉', img:'img/promocoes.jpg', produtos: adicionarImagem([
+    {nome:'Gigante c/ Refrigerante (Trad. — anotar sabor na obs)',preco:71.90},
   ])},
 ];
 
@@ -898,6 +901,38 @@ window.concluirPedidoCard = function(ev, id, canal){
   ev.stopPropagation();
   concluirPedidoPorId(id, canal);
 };
+
+window.reimprimirPedidoCard = function(ev, id, canal){
+  ev.stopPropagation();
+  const lista = canal === 'delivery' ? deliveryList : telefoneList;
+  const p = lista.find(x => x.id === id);
+  if(!p) return;
+  imprimirComanda({
+    codigo: p.id,
+    canal: p.tipo || canal,
+    data: new Date(p.abertoEm).toLocaleString('pt-BR'),
+    itens: p.itens || [],
+    taxa: p.taxa || 0,
+    nomeCliente: p.nome,
+    telefoneCliente: p.telefone,
+    endereco: p.endereco,
+    pagamento: p.pagamento,
+    trocoPara: p.trocoPara || 0,
+    observacaoGeral: p.observacao || ''
+  });
+};
+
+window.editarPagamentoCard = function(ev, id, canal){
+  ev.stopPropagation();
+  _pedidoPendenteConclusao = {id, canal, apenasEditar:true};
+  _pagamentoPendenteSelecionado = null;
+  ['dinheiro','cartao','pix'].forEach(t => {
+    const el = document.getElementById('cp-btn-'+t);
+    if(el){ el.style.borderColor = 'var(--border3)'; el.style.opacity = '0.55'; }
+  });
+  abrirModal('modal-confirmar-pagamento');
+};
+
 window.avancarStatusEntregaCx = function(novoStatus){
   if(!mesaAtualCx) return;
   const lista = mesaAtualCx.canal === 'delivery' ? deliveryList : telefoneList;
@@ -2203,14 +2238,18 @@ window.buscarClienteModalPorNome = function(termo){
   const resultados = Object.values(db).filter(c => (c.nome || '').toLowerCase().includes(termo));
   if(!resultados.length){ box.style.display = 'none'; box.innerHTML = ''; return; }
   box.style.display = 'block';
-  box.innerHTML = resultados.slice(0, 8).map(c => `
+window._resultadosNomeTemp = resultados;
+  box.innerHTML = resultados.slice(0, 8).map((c, i) => `
     <div style="padding:8px 10px;border-bottom:1px solid #232a25;font-size:12px;cursor:pointer;display:flex;justify-content:space-between;"
-      onclick="selecionarClienteBuscaNome('${c.telefone}')">
+      onclick="selecionarClienteBuscaNome(${i})">
       <span>${c.nome}</span><span style="color:var(--txt2);">${c.telefone}</span>
     </div>`).join('');
 };
-window.selecionarClienteBuscaNome = function(telefone){
-  document.getElementById('np-telefone').value = telefone;
+window.selecionarClienteBuscaNome = function(idx){
+  const c = (window._resultadosNomeTemp || [])[idx];
+  if(!c) return;
+  document.getElementById('np-nome').value = c.nome || '';
+  document.getElementById('np-telefone').value = c.telefone;
   document.getElementById('np-nome-resultados').style.display = 'none';
   document.getElementById('np-nome-resultados').innerHTML = '';
   aoDigitarTelefonePedido();
@@ -2416,7 +2455,11 @@ function renderizarDelivery(){
       <button type="button" onclick="concluirPedidoCard(event,'${p.id}','delivery')"
         style="width:100%;margin-top:8px;padding:8px;background:linear-gradient(180deg,#2aa160,#1d7b49);border:1px solid #258754;border-radius:8px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;">
         ✓ Concluir (entregue)
-      </button>`;
+      </button>
+      <div style="display:flex;gap:6px;margin-top:6px;">
+        <button type="button" onclick="reimprimirPedidoCard(event,'${p.id}','delivery')" style="flex:1;padding:7px;background:#1b3158;border:1px solid #5e96ff;border-radius:8px;color:#aad4ff;font-size:11px;font-weight:700;cursor:pointer;">🖨 Imprimir</button>
+        <button type="button" onclick="editarPagamentoCard(event,'${p.id}','delivery')" style="flex:1;padding:7px;background:#2e2208;border:1px solid #c89a2a;border-radius:8px;color:#f0c96b;font-size:11px;font-weight:700;cursor:pointer;">✏️ Pagamento</button>
+      </div>`;
     lista.appendChild(card);
   });
   const btn = document.createElement('button');
@@ -2461,7 +2504,11 @@ function renderizarTelefone(){
       <button type="button" onclick="concluirPedidoCard(event,'${p.id}','telefone')"
         style="width:100%;margin-top:8px;padding:8px;background:linear-gradient(180deg,#2aa160,#1d7b49);border:1px solid #258754;border-radius:8px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;">
         ✓ Concluir (entregue)
-      </button>`;
+      </button>
+      <div style="display:flex;gap:6px;margin-top:6px;">
+        <button type="button" onclick="reimprimirPedidoCard(event,'${p.id}','telefone')" style="flex:1;padding:7px;background:#1b3158;border:1px solid #5e96ff;border-radius:8px;color:#aad4ff;font-size:11px;font-weight:700;cursor:pointer;">🖨 Imprimir</button>
+        <button type="button" onclick="editarPagamentoCard(event,'${p.id}','telefone')" style="flex:1;padding:7px;background:#2e2208;border:1px solid #c89a2a;border-radius:8px;color:#f0c96b;font-size:11px;font-weight:700;cursor:pointer;">✏️ Pagamento</button>
+      </div>`;
     lista.appendChild(card);
   });
 const btn = document.createElement('button');
@@ -2616,7 +2663,7 @@ window.selecionarPagamentoPendente = function(pag){
 window.confirmarPagamentoPendenteEConcluir = async function(){
   if(!_pagamentoPendenteSelecionado){ mostrarAlerta('Selecione a forma de pagamento', 'vermelho'); return; }
   if(!_pedidoPendenteConclusao) return;
-  const {id, canal} = _pedidoPendenteConclusao;
+  const {id, canal, apenasEditar} = _pedidoPendenteConclusao;
   const lista = canal === 'delivery' ? deliveryList : telefoneList;
   const p = lista.find(x => x.id === id);
   if(p){
@@ -2624,7 +2671,11 @@ window.confirmarPagamentoPendenteEConcluir = async function(){
     salvarPedidoAvulsoFirebase(canal, p);
   }
   fecharModal('modal-confirmar-pagamento');
-  await finalizarConclusaoPedido(id, canal);
+  if(apenasEditar){
+    mostrarAlerta('Forma de pagamento atualizada', 'verde');
+  } else {
+    await finalizarConclusaoPedido(id, canal);
+  }
   _pedidoPendenteConclusao = null;
   _pagamentoPendenteSelecionado = null;
 };
