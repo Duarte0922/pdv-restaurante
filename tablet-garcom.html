@@ -233,6 +233,47 @@
     <button class="btn" onclick="fecharModal('modal-meiomeio2-cx');abrirModal('modal-meiomeio1-cx')" style="width:100%;margin-top:12px;color:var(--txt2);">← Voltar</button>
   </div>
 </div>
+<!-- MODAL PROMOÇÕES -->
+<div class="modal-overlay" id="modal-promo-cx">
+  <div class="modal-box">
+    <div style="font-size:16px;font-weight:700;margin-bottom:4px;">🎉 Promoções</div>
+    <div style="font-size:12px;color:var(--txt2);margin-bottom:14px;">Escolha a promoção:</div>
+    <div id="cx-promo-lista" style="display:flex;flex-direction:column;gap:8px;"></div>
+    <button class="btn" onclick="fecharModal('modal-promo-cx')" style="width:100%;margin-top:12px;color:var(--txt2);">Cancelar</button>
+  </div>
+</div>
+
+<!-- MODAL PROMOÇÃO — MODO -->
+<div class="modal-overlay" id="modal-promo-modo-cx">
+  <div class="modal-box" style="text-align:center;">
+    <div style="font-size:16px;font-weight:700;margin-bottom:4px;" id="promo-modo-titulo-cx">Promoção</div>
+    <div style="font-size:12px;color:var(--txt2);margin-bottom:18px;">Quantas pizzas?</div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <button class="btn btn-azul" onclick="escolherModoPromoCx('uma')" id="promo-modo-uma-cx" style="padding:15px;font-size:15px;font-weight:700;"></button>
+      <button class="btn btn-azul" onclick="escolherModoPromoCx('duas')" id="promo-modo-duas-cx" style="padding:15px;font-size:15px;font-weight:700;"></button>
+    </div>
+    <button class="btn" onclick="fecharModal('modal-promo-modo-cx')" style="width:100%;margin-top:14px;color:var(--txt2);">Cancelar</button>
+  </div>
+</div>
+
+<!-- MODAL PROMOÇÃO — SABOR 1 -->
+<div class="modal-overlay" id="modal-promo-sabor1-cx">
+  <div class="modal-box" style="max-height:85vh;overflow-y:auto;">
+    <div style="font-size:15px;font-weight:700;margin-bottom:4px;">Escolha o sabor</div>
+    <div id="cx-promo-sabor1-lista" style="display:flex;flex-direction:column;gap:6px;"></div>
+    <button class="btn" onclick="fecharModal('modal-promo-sabor1-cx')" style="width:100%;margin-top:12px;color:var(--txt2);">Cancelar</button>
+  </div>
+</div>
+
+<!-- MODAL PROMOÇÃO — SABOR 2 -->
+<div class="modal-overlay" id="modal-promo-sabor2-cx">
+  <div class="modal-box" style="max-height:85vh;overflow-y:auto;">
+    <div style="font-size:15px;font-weight:700;margin-bottom:2px;">Promoção — 2ª pizza</div>
+    <div style="font-size:12px;color:var(--verde);margin-bottom:14px;" id="cx-promo-sabor2-info">...</div>
+    <div id="cx-promo-sabor2-lista" style="display:flex;flex-direction:column;gap:6px;"></div>
+    <button class="btn" onclick="fecharModal('modal-promo-sabor2-cx')" style="width:100%;margin-top:12px;color:var(--txt2);">Cancelar</button>
+  </div>
+</div>
 
 <!-- MODAL COZINHA CONFIRMAÇÃO -->
 <div class="modal-overlay" id="modal-cozinha-cx">
