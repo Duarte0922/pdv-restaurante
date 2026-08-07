@@ -188,6 +188,11 @@ const pizzasTradCx = ['01 - Frango c/ Catupiry','02 - Palmito á Bolonhesa','03 
 
 const pizzasEspCx = ['18 - Lombo Tropical','19 - Lombo Canadense','20 - Milhombo','21 - A Moda Renito','22 - Quatro Queijo','23 - Salaminho Italiano','24 - Quatro Carnes','25 - Cinco Carnes','26 - Nordestina','27 - Porconobilis','28 - A Moda Especial'].map(n => ({nome:n, tamanhos:{M:45.90, G:57.90, GG:76.90}}));
 
+const PROMOCOES_PIZZA = [
+  {id:'p1', label:'Promoção 01 — Pizza Gigante', tamanho:'GG', precoUma:61.90, precoDuas:110.90},
+  {id:'p2', label:'Promoção 02 — Sabores Tradicionais Grande', tamanho:'G', precoUma:52.90, precoDuas:95.90},
+];
+
 const categoriasCx = [
   {nome:'Pizza Trad.', icon:'🍕', img:'img/pizza-trad.jpg', pizza:true, produtos: adicionarImagem(pizzasTradCx)},
   {nome:'Pizza Esp.', icon:'🌟', img:'img/pizza-esp.jpg', pizza:true, produtos: adicionarImagem(pizzasEspCx)},
@@ -248,6 +253,7 @@ const categoriasCx = [
 
 let mesaAtualCx = null, itemPendenteCx = null, carrinhoAbertoCx = true;
 let mmTamanhoCx = null, mmSabor1Cx = null;
+let promoAtualCx = null, promoModoCx = null, promoSabor1Cx = null;
 
 window.voltarMesasCaixa = function(){
   mesaAtualCx = null; // 🔴 LIMPA A MESA ATUAL
@@ -374,6 +380,12 @@ function selecionarCatCx(idx){
     btnMM.innerHTML = '<span style="font-size:22px;">🍕</span><div><div style="font-weight:700;font-size:14px;color:#aad4ff;">Pizza Meio a Meio</div><div style="font-size:11px;color:var(--txt2);">Escolha 2 sabores — G ou GG</div></div>';
     btnMM.onclick = ()=>abrirMeioAMeioCx();
     grid.appendChild(btnMM);
+
+    const btnPromo = document.createElement('div');
+    btnPromo.style.cssText = 'grid-column:1/-1;background:linear-gradient(180deg,#5c1414,#3a0d0d);border:2px solid #cc3333;border-radius:14px;padding:13px 16px;cursor:pointer;display:flex;align-items:center;gap:10px;margin-bottom:4px;';
+    btnPromo.innerHTML = '<span style="font-size:22px;">🎉</span><div><div style="font-weight:700;font-size:14px;color:#ff9a9a;">Promoções</div><div style="font-size:11px;color:var(--txt2);">Pizza Gigante e Grande — sabores tradicionais</div></div>';
+    btnPromo.onclick = () => abrirPromocoesCx();
+    grid.appendChild(btnPromo);
   }
   c.produtos.forEach(p => {
     const el = document.createElement('div');
@@ -588,6 +600,81 @@ window.filtrarMM2Cx=function(tipo){
     mmSabor1Cx=null; mmTamanhoCx=null;
     setTimeout(()=>abrirBordaCx(nome,tam,total,'Pizza Trad.'),200);
   });
+};
+
+window.abrirPromocoesCx = function(){
+  const box = document.getElementById('cx-promo-lista');
+  box.innerHTML = PROMOCOES_PIZZA.map(p => `
+    <button class="btn" onclick="escolherPromoCx('${p.id}')" style="text-align:left;padding:13px 16px;font-size:14px;width:100%;">
+      <div style="font-weight:700;">${p.label}</div>
+      <div style="font-size:11px;color:var(--verde);">Uma = ${fmt(p.precoUma)} · Duas = ${fmt(p.precoDuas)}</div>
+    </button>`).join('');
+  abrirModal('modal-promo-cx');
+};
+
+window.escolherPromoCx = function(id){
+  promoAtualCx = PROMOCOES_PIZZA.find(p => p.id === id);
+  fecharModal('modal-promo-cx');
+  document.getElementById('promo-modo-titulo-cx').textContent = promoAtualCx.label;
+  document.getElementById('promo-modo-uma-cx').textContent = 'Uma pizza — ' + fmt(promoAtualCx.precoUma);
+  document.getElementById('promo-modo-duas-cx').textContent = 'Duas pizzas — ' + fmt(promoAtualCx.precoDuas);
+  abrirModal('modal-promo-modo-cx');
+};
+
+window.escolherModoPromoCx = function(modo){
+  promoModoCx = modo;
+  fecharModal('modal-promo-modo-cx');
+  renderListaPromoCx('cx-promo-sabor1-lista');
+  abrirModal('modal-promo-sabor1-cx');
+};
+
+function renderListaPromoCx(containerId){
+  const container = document.getElementById(containerId);
+  container.innerHTML = '';
+  pizzasTradCx.forEach(p => {
+    const btn = document.createElement('button');
+    btn.className = 'btn';
+    btn.style.cssText = 'text-align:left;padding:11px 14px;font-size:13px;width:100%;';
+    btn.textContent = p.nome;
+    btn.onclick = () => escolherSabor1PromoCx(p.nome);
+    container.appendChild(btn);
+  });
+}
+
+window.escolherSabor1PromoCx = function(nome){
+  if(promoModoCx === 'uma'){
+    fecharModal('modal-promo-sabor1-cx');
+    pushItemCx({nome: nome + ' — Pizza Inteira ' + promoAtualCx.tamanho + ' (' + promoAtualCx.label + ')', preco: promoAtualCx.precoUma}, '', 'Promoção');
+    promoAtualCx = null;
+    return;
+  }
+  promoSabor1Cx = nome;
+  fecharModal('modal-promo-sabor1-cx');
+  document.getElementById('cx-promo-sabor2-info').textContent = '1ª pizza: ' + nome + ' — escolha a 2ª:';
+  renderListaPromo2Cx();
+  abrirModal('modal-promo-sabor2-cx');
+};
+
+function renderListaPromo2Cx(){
+  const container = document.getElementById('cx-promo-sabor2-lista');
+  container.innerHTML = '';
+  pizzasTradCx.forEach(p => {
+    const btn = document.createElement('button');
+    btn.className = 'btn';
+    btn.style.cssText = 'text-align:left;padding:11px 14px;font-size:13px;width:100%;';
+    btn.textContent = p.nome;
+    btn.onclick = () => escolherSabor2PromoCx(p.nome);
+    container.appendChild(btn);
+  });
+}
+
+window.escolherSabor2PromoCx = function(nome){
+  fecharModal('modal-promo-sabor2-cx');
+  const precoCada = promoAtualCx.precoDuas / 2;
+  const sufixo = ' — Pizza Inteira ' + promoAtualCx.tamanho + ' (' + promoAtualCx.label + ')';
+  pushItemCx({nome: promoSabor1Cx + sufixo, preco: precoCada}, '', 'Promoção');
+  pushItemCx({nome: nome + sufixo, preco: precoCada}, '', 'Promoção');
+  promoAtualCx = null; promoSabor1Cx = null;
 };
 
 // 🔴 LISTENERS FIREBASE
