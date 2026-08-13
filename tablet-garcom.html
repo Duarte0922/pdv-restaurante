@@ -7,17 +7,88 @@
   <title>🌙 Luar do Viena — Garçom Tablet</title>
 
   <!-- CSS EXTERNO — reaproveita o mesmo CSS do garçom -->
-  <link rel="stylesheet" href="css/garcom.css">
+  <link rel="stylesheet" href="css/garcom.css?v=3">
+
+  <!-- ════════════════════════════════════════════════════════════
+       PATCH TABLET HORIZONTAL — LAYOUT COMPACTO (TESTE)
+       Este <style> vem DEPOIS do garcom.css, então ganha dos estilos
+       antigos. Os !important ganham dos estilos inline gerados no JS.
+       ════════════════════════════════════════════════════════════ -->
+  <style>
+    /* Tira o blur dos modais (deixa o tablet mais rápido) */
+    .modal-overlay{
+      backdrop-filter:none !important;
+      -webkit-backdrop-filter:none !important;
+    }
+
+    /* Barra do topo: ← Mesas | Mesa | Busca | Item Avulso na mesma linha */
+    #header-pedido-cx{
+      display:flex !important;
+      align-items:center !important;
+      gap:10px !important;
+      padding:8px 12px !important;
+      flex-shrink:0;
+    }
+
+    /* Categorias compactas (override dos inline do JS) */
+    #cat-list-cx{ gap:4px !important; padding:4px 6px !important; }
+    #cat-list-cx > div{
+      min-height:0 !important;
+      height:76px !important;
+      min-width:0 !important;
+      flex:0 0 auto !important;
+      padding:5px 10px !important;
+      gap:3px !important;
+      border-radius:10px !important;
+      font-size:10px !important;
+      line-height:1.1 !important;
+    }
+    #cat-list-cx > div > img{ width:36px !important; height:36px !important; border-radius:6px !important; }
+    #cat-list-cx > div > span:first-of-type{ width:36px !important; height:36px !important; font-size:22px !important; }
+    #cat-list-cx > div > span:last-child{ font-size:10px !important; }
+
+    /* Produtos compactos = cabe muito mais na tela */
+    .produto-img{ height:80px !important; }
+    .produto-no-img{ height:70px !important; font-size:20px !important; }
+    .produto-nome{ font-size:11px !important; }
+    .produto-preco{ font-size:12px !important; }
+    .produto-tamanhos{ font-size:9px !important; }
+    .produto-grid{ gap:8px !important; }
+    @media (min-width:1100px){ .produto-grid{ grid-template-columns:repeat(5,1fr) !important; } }
+
+    /* Faixas "Meio a Meio" e "Promoções" mais finas */
+    #produto-grid-cx > div[style*="grid-column"]{ padding:8px 12px !important; }
+    #produto-grid-cx > div[style*="grid-column"] > span{ font-size:18px !important; }
+
+    /* Carrinho: lista rola internamente e o botão NUNCA some */
+    #carrinho-panel-cx{
+      width:300px !important;
+      display:flex !important;
+      flex-direction:column !important;
+      height:100% !important;
+      min-height:0 !important;
+      max-height:none !important;
+      overflow:hidden !important;
+    }
+    #carrinho-panel-cx > div:first-child{ flex-shrink:0; }
+    #carrinho-body-cx{ flex:1 1 auto !important; min-height:0 !important; overflow-y:auto !important; }
+
+    /* 🔴 BOTÃO ENVIAR PARA COZINHA — FIXO NA BASE, SEMPRE VISÍVEL */
+    #carrinho-panel-cx > button:last-child{
+      flex-shrink:0 !important;
+      margin:8px !important;
+      min-height:52px !important;
+      font-size:15px !important;
+      font-weight:800 !important;
+      border-radius:12px !important;
+    }
+  </style>
 </head>
 <body>
 
 <div id="alertas-container"></div>
 
-<!-- ══ TELA DE LOGIN ══
-     ⚠ ESTRUTURA ASSUMIDA — o garcom.html/caixa.html originais que vocês
-     me enviaram não incluíam este bloco no trecho colado. Se o login
-     não aparecer corretamente ao abrir o arquivo, me mandem o
-     login-screen real do garcom.html para eu substituir este bloco. -->
+<!-- ══ TELA DE LOGIN ══ -->
 <div id="login-screen" style="display:flex;min-height:100vh;align-items:center;justify-content:center;flex-direction:column;gap:16px;background:#0d1210;">
   <div style="font-size:22px;font-weight:800;color:#f4f7f1;">🌙 Luar do Viena</div>
   <div style="font-size:13px;color:#8a938c;margin-bottom:8px;">Garçom — Tablet (Mesas)</div>
@@ -39,7 +110,7 @@
     </div>
   </div>
 
-  <!-- ABAS (só Mesas, sem outras opções — tablet é 100% salão) -->
+  <!-- ABAS (só Mesas) -->
   <div id="nav-abas">
     <div class="aba ativa" onclick="mudarAba('mesas')">🪑 Mesas</div>
   </div>
@@ -47,18 +118,13 @@
   <!-- ABA MESAS -->
   <div class="aba-content ativa" id="aba-mesas">
     <div class="layout-principal">
-
-      <!-- COLUNA MESAS — única coluna, ocupa a tela toda -->
       <div class="coluna-mesas" style="flex:1;">
-
-        <!-- Indicadores de Status -->
         <div style="font-size:11px;color:var(--txt2);margin-bottom:8px;display:flex;gap:14px;">
           <span><span class="dot-status" style="background:#2f9d64;"></span>Livre</span>
           <span><span class="dot-status" style="background:#cf5b74;"></span>Ocupada</span>
           <span><span class="dot-status" style="background:#c89a2a;"></span>Conta</span>
         </div>
 
-        <!-- Grid de mesas -->
         <div class="mesas-balcao-grid-wrapper">
           <div class="mesas-full-linha">
             <div class="mesas-container-novo">
@@ -66,7 +132,6 @@
                 <!-- Mesas geradas via JS -->
               </div>
             </div>
-            <!-- Contadores de Status -->
             <div style="margin-top:10px;display:flex;justify-content:space-around;font-size:12px;color:var(--txt2);">
               <span id="c-stat-livre">0 livres</span>
               <span id="c-stat-ocup">0 ocupadas</span>
@@ -84,40 +149,38 @@
               <button class="btn-novo" onclick="novoBalcão()">+ Novo</button>
             </div>
             <div class="balcao-grid-novo" id="balcaoList">
-              <!-- Balcões gerados via JS -->
               <div class="balcao-empty" style="grid-column:1/-1;">Nenhum balcão aberto</div>
             </div>
           </div>
-          <!-- 🔴 SEM delivery, SEM telefone, SEM Pedi Aqui -->
         </div>
-
       </div>
-
     </div>
   </div>
-
 </div><!-- /screen-main -->
 
-<!-- TELA PEDIDO (abre a mesa, lança itens, envia pra cozinha) -->
+<!-- ════════════════════════════════════════════════════════════
+     TELA PEDIDO — BUSCA E ITEM AVULSO AGORA NA BARRA DO TOPO
+     ════════════════════════════════════════════════════════════ -->
 <div id="screen-pedido" class="screen">
-  <div class="header">
-    <div style="display:flex;align-items:center;gap:8px;">
+  <div class="header" id="header-pedido-cx">
+    <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
       <button class="btn" onclick="voltarMesasCaixa()" style="padding:8px 12px;font-size:13px;">← Mesas</button>
       <div>
         <div class="header-title" id="titulo-mesa-cx">Mesa 01</div>
-        <div style="font-size:11px;color:var(--txt2);" id="tempo-mesa-cx"></div>
+        <div style="font-size:10px;color:var(--txt2);" id="tempo-mesa-cx"></div>
       </div>
     </div>
+    <input type="text" id="busca-produto-cx" placeholder="🔍 Buscar produto..." oninput="buscarProdutoCx(this.value)"
+      style="flex:1;min-width:0;max-width:480px;padding:8px 12px;background:#1a201c;border:1px solid #303a33;border-radius:10px;color:var(--txt);font-size:13px;">
+    <button onclick="abrirItemAvulsoCx()"
+      style="flex-shrink:0;padding:8px 14px;background:linear-gradient(180deg,#3d2e1a,#2a1f10);border:1px solid #c89a2a;border-radius:10px;color:#f0c96b;font-size:12px;font-weight:700;cursor:pointer;">
+      ➕ Item Avulso
+    </button>
   </div>
 
-<div id="pedido-body-cx">
-    <!-- LADO ESQUERDO: Categorias + Produtos -->
+  <div id="pedido-body-cx">
+    <!-- LADO ESQUERDO: Categorias + Produtos (busca/avulso subiram) -->
     <div id="lado-esquerdo-cx">
-      <input type="text" id="busca-produto-cx" placeholder="🔍 Buscar produto..." oninput="buscarProdutoCx(this.value)"
-        style="width:100%;padding:9px 12px;margin-bottom:8px;background:#1a201c;border:1px solid #303a33;border-radius:10px;color:var(--txt);font-size:13px;">
-      <button onclick="abrirItemAvulsoCx()" style="width:100%;margin-bottom:8px;padding:10px;background:linear-gradient(180deg,#3d2e1a,#2a1f10);border:1px solid #c89a2a;border-radius:10px;color:#f0c96b;font-size:12px;font-weight:700;cursor:pointer;">
-        ➕ Item Avulso (não cadastrado)
-      </button>
       <div id="cat-list-cx"></div>
       <div id="produto-area-cx">
         <div id="cat-titulo-cx" style="font-size:11px;color:var(--txt2);margin-bottom:6px;padding:0 2px;"></div>
@@ -125,8 +188,7 @@
       </div>
     </div>
 
-
-    <!-- LADO DIREITO: Carrinho -->
+    <!-- LADO DIREITO: Carrinho com botão fixo embaixo -->
     <div id="carrinho-panel-cx">
       <div onclick="toggleCarrinhoCx()" style="cursor:pointer;user-select:none;">
         <span style="font-size:14px;font-weight:700;">Pedido <span id="badge-qtd-cx" style="background:linear-gradient(180deg,#ff6464,#dc3e3e);color:#fff;border-radius:999px;font-size:10px;padding:2px 7px;margin-left:4px;">0</span></span>
@@ -233,6 +295,7 @@
     <button class="btn" onclick="fecharModal('modal-meiomeio2-cx');abrirModal('modal-meiomeio1-cx')" style="width:100%;margin-top:12px;color:var(--txt2);">← Voltar</button>
   </div>
 </div>
+
 <!-- MODAL PROMOÇÕES -->
 <div class="modal-overlay" id="modal-promo-cx">
   <div class="modal-box">
@@ -269,7 +332,7 @@
 <div class="modal-overlay" id="modal-promo-sabor2-cx">
   <div class="modal-box" style="max-height:85vh;overflow-y:auto;">
     <div style="font-size:15px;font-weight:700;margin-bottom:2px;">Promoção — 2ª pizza</div>
-    <div style="font-size:12px;color:var(--verde);margin-bottom:14px;" id="cx-promo-sabor2-info">...</div>
+    <div style="font-size:12px;color:var(--verde);margin-bottom:4px;" id="cx-promo-sabor2-info">...</div>
     <div id="cx-promo-sabor2-lista" style="display:flex;flex-direction:column;gap:6px;"></div>
     <button class="btn" onclick="fecharModal('modal-promo-sabor2-cx')" style="width:100%;margin-top:12px;color:var(--txt2);">Cancelar</button>
   </div>
@@ -303,16 +366,6 @@
   </div>
 </div>
 
-<!-- 🔴 SEM modal-novo-pedido -->
-
-<!-- 🔴 SEM modal-novo-pedido, SEM modal-pedidoaqui, SEM modais meio-a-meio "MMP" (esses são
-     exclusivos do fluxo Delivery/Telefone). O tablet só cria pedido dentro de uma mesa física. -->
-
-<!-- 🔴 SEM modal-config — número de mesas é definido pelo Caixa/Notebook, não pelo tablet -->
-
-<!-- JAVASCRIPT EXTERNO — mesmo motor do garcom.html. As funções de balcão/delivery/
-     telefone/PediAqui existem no arquivo mas nunca são chamadas: todas têm guarda
-     tipo `if(!lista) return;` para elementos que não existem neste HTML. -->
-<script type="module" src="js/garcom.js"></script>
+<script type="module" src="js/garcom.js?v=3"></script>
 </body>
 </html>
