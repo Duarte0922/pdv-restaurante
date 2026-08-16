@@ -773,7 +773,7 @@ const categoriasCx = [
     {nome:'cocazero',preco:6,bar:true},{nome:'coca',preco:6,bar:true},
     {nome:'fantauva',preco:6,bar:true},{nome:'fantalaranja',preco:6,bar:true},{nome:'ks',preco:6,bar:true},
     {nome:'aguamineral',preco:5,bar:true},{nome:'aguagas',preco:5,bar:true},{nome:'redbul',preco:13,bar:true},   
-  ])},
+])},
     {nome:'Cervejas', icon:'🍺', img:'img/cervejas.jpg', produtos: adicionarImagem([
     {nome: 'lataobhama', preco: 6, bar: true},{nome: 'lataokaiser', preco: 6, bar: true},{nome: 'lataoheineken', preco: 6, bar: true},
     {nome:'Brahma / Skol 600ml',preco:10,bar:true},{nome:'Kaiser 600ml',preco:8,bar:true},
@@ -794,6 +794,26 @@ const categoriasCx = [
     {nome:'Espaguete na Chapa — Pequeno',preco:19.9},
     {nome:'Espaguete na Chapa — Grande',preco:29.9},
   ])},
+    {nome:'Acréscimos', icon:'➕', img:'produtos/acrescimos.jpg', produtos: adicionarImagem([
+    {nome: 'Abacaxi', preco: 2.0, img: 'produtos/abacaxi.jpg'},
+    {nome: 'Ovo', preco: 2.0, img: 'produtos/ovo.jpg'},
+    {nome: 'Molho', preco: 1.5, img: 'produtos/molho.jpg'},
+    {nome: 'Hambúrguer', preco: 3.0, img: 'produtos/hamburguer.jpg'},
+    {nome: 'Catupiry', preco: 4.0, img: 'produtos/catupiry.jpg'},
+    {nome: 'Cheddar', preco: 4.0, img: 'produtos/cheddar.jpg'},
+    {nome: 'Palmito', preco: 4.0, img: 'produtos/palmito.jpg'},
+    {nome: 'Frango Desfiado', preco: 4.0, img: 'produtos/frango-desfiado.jpg'},
+    {nome: 'Molho Bolonhesa', preco: 4.0, img: 'produtos/molho-bolonhesa.jpg'},
+    {nome: 'Mussarela', preco: 4.0, img: 'produtos/mussarelafatiada.jpg'},
+    {nome: 'Atumfatiado', preco: 4.0, img: 'produtos/atum.jpg'},
+    {nome: 'Bife Angus', preco: 8.0, img: 'produtos/bife-angus.jpg'},
+    {nome: 'Bacon Porção', preco: 8.0, img: 'produtos/bacon-porcao.jpg'},
+    {nome: 'Bacon Pizza', preco: 4.0, img: 'produtos/bacon-pizza.jpg'}
+  ])},
+    {nome:'Promoções Zap', icon:'🎉', img:'img/promocoes.jpg', produtos: adicionarImagem([
+    {nome:'Gigante c/ Refrigerante (Trad. — anotar sabor na obs)',preco:71.90},
+  ])},
+
     {nome:'Promoções Zap', icon:'🎉', img:'img/promocoes.jpg', produtos: adicionarImagem([
     {nome:'Gigante c/ Refrigerante (Trad. — anotar sabor na obs)',preco:71.90},
   ])},
@@ -2459,7 +2479,8 @@ function renderizarDelivery(){
       <div style="display:flex;gap:6px;margin-top:6px;">
         <button type="button" onclick="reimprimirPedidoCard(event,'${p.id}','delivery')" style="flex:1;padding:7px;background:#1b3158;border:1px solid #5e96ff;border-radius:8px;color:#aad4ff;font-size:11px;font-weight:700;cursor:pointer;">🖨 Imprimir</button>
         <button type="button" onclick="editarPagamentoCard(event,'${p.id}','delivery')" style="flex:1;padding:7px;background:#2e2208;border:1px solid #c89a2a;border-radius:8px;color:#f0c96b;font-size:11px;font-weight:700;cursor:pointer;">✏️ Pagamento</button>
-      </div>`;
+      </div>
+      <button type="button" onclick="cancelarPedidoCard(event,'${p.id}','delivery')" style="width:100%;margin-top:6px;padding:7px;background:#3a1414;border:1px solid #cc3333;border-radius:8px;color:#ff8080;font-size:11px;font-weight:700;cursor:pointer;">✕ Cancelar pedido</button>`;
     lista.appendChild(card);
   });
   const btn = document.createElement('button');
@@ -2508,7 +2529,8 @@ function renderizarTelefone(){
       <div style="display:flex;gap:6px;margin-top:6px;">
         <button type="button" onclick="reimprimirPedidoCard(event,'${p.id}','telefone')" style="flex:1;padding:7px;background:#1b3158;border:1px solid #5e96ff;border-radius:8px;color:#aad4ff;font-size:11px;font-weight:700;cursor:pointer;">🖨 Imprimir</button>
         <button type="button" onclick="editarPagamentoCard(event,'${p.id}','telefone')" style="flex:1;padding:7px;background:#2e2208;border:1px solid #c89a2a;border-radius:8px;color:#f0c96b;font-size:11px;font-weight:700;cursor:pointer;">✏️ Pagamento</button>
-      </div>`;
+      </div>
+      <button type="button" onclick="cancelarPedidoCard(event,'${p.id}','telefone')" style="width:100%;margin-top:6px;padding:7px;background:#3a1414;border:1px solid #cc3333;border-radius:8px;color:#ff8080;font-size:11px;font-weight:700;cursor:pointer;">✕ Cancelar pedido</button>`;
     lista.appendChild(card);
   });
 const btn = document.createElement('button');
@@ -2716,6 +2738,19 @@ async function finalizarConclusaoPedido(id, canal){
     if(canal === 'telefone') upd.canalTelefone = (atual.canalTelefone || 0) + 1;
     await update(ref(db, `caixa/${hojeData}`), upd);
 
+    // 🔴 Se pagou (parte ou tudo) em crediário, registra na conta do cliente
+    const pagCredarioP = pagamentosFinal.find(pg => pg.tipo === 'credario');
+    if(pagCredarioP && pagCredarioP.valor > 0){
+      await registrarCrediario({
+        nome: nomeExibicao,
+        telefone: venda.telefone,
+        valorTotal: pagCredarioP.valor,
+        itens: venda.itens,
+        origem: canal,
+        mesaId: id
+      });
+    }
+
     p.status = 'entregue';
     if(mesa){
       mesa.status = 'livre'; mesa.pedido = []; mesa.inicio = null;
@@ -2742,6 +2777,59 @@ async function finalizarConclusaoPedido(id, canal){
     mostrarAlerta('Erro ao concluir pedido: ' + e.message, 'vermelho');
   }
 }
+
+// ══════════════════════════════════════════════
+// 22a. CANCELAMENTO DE PEDIDOS (telefone/delivery)
+// ══════════════════════════════════════════════
+window.cancelarPedidoCard = function(ev, id, canal){
+  ev.stopPropagation();
+  const lista = canal === 'delivery' ? deliveryList : telefoneList;
+  const p = lista.find(x => x.id === id);
+  if(!p){ mostrarAlerta('Pedido não encontrado', 'vermelho'); return; }
+  const motivo = prompt('Motivo do cancelamento (ex: cliente foi buscar na loja, pedido em duplicidade...):');
+  if(motivo === null) return;
+  if(!motivo.trim()){ mostrarAlerta('Informe o motivo do cancelamento', 'vermelho'); return; }
+  if(!confirm(`Cancelar pedido de ${p.nome} — ${fmt(p.total || 0)}?\nMotivo: ${motivo}`)) return;
+  cancelarPedido(id, canal, motivo.trim());
+};
+
+async function cancelarPedido(id, canal, motivo){
+  const lista = canal === 'delivery' ? deliveryList : telefoneList;
+  const p = lista.find(x => x.id === id);
+  if(!p) return;
+  const mesa = mesas.find(m => m.id === id);
+  const itens = (mesa && mesa.pedido && mesa.pedido.length) ? mesa.pedido : (p.itens || []);
+  const registro = {
+    id, canal, nome: p.nome || '', telefone: p.telefone || '', endereco: p.endereco || '',
+    itens: itens.map(it => ({nome:it.nome, qtd:it.qtd, preco:it.preco, obs:it.obs || ''})),
+    total: p.total || 0,
+    motivo,
+    canceladoEm: Date.now(),
+    dataFormatada: new Date().toLocaleString('pt-BR'),
+    status: 'cancelado'
+  };
+  try{
+    await set(ref(db, 'pedidos_cancelados/' + id), registro);
+    removerPedidoAvulsoFirebase(canal, id);
+    if(mesa){ mesa.status = 'livre'; mesa.pedido = []; mesa.inicio = null; await salvarMesaCx(mesa); }
+    mesas = mesas.filter(m => m.id !== id);
+    if(canal === 'delivery'){
+      deliveryList = deliveryList.filter(x => x.id !== id);
+      renderizarDelivery();
+    } else {
+      telefoneList = telefoneList.filter(x => x.id !== id);
+      renderizarTelefone();
+    }
+    mostrarAlerta('Pedido cancelado — ' + motivo, 'vermelho');
+    if(mesaAtualCx && mesaAtualCx.id === id){
+      mesaAtualCx = null;
+      voltarMesasCaixa();
+    }
+  }catch(e){
+    console.error('Erro ao cancelar pedido:', e);
+    mostrarAlerta('Erro ao cancelar pedido: ' + e.message, 'vermelho');
+  }
+}
 // ══════════════════════════════════════════════
 // 22. 🔴 MÓDULO CREDIÁRIO
 // ══════════════════════════════════════════════
@@ -2763,26 +2851,62 @@ onValue(ref(db, 'crediario'), (snap) => {
 // 🔴 REGISTRAR novo crediário (chamado ao fechar mesa com pagamento crediário)
 async function registrarCrediario({nome, telefone, valorTotal, itens, origem, mesaId}){
   if(!valorTotal || valorTotal <= 0) return;
+
+  const telNorm = normalizarTel(telefone);
+  const nomeNorm = (nome || '').trim().toLowerCase();
+
+  const contaExistente = crediarioLista.find(c => {
+    if(c.status !== 'aberto') return false;
+    const telCNorm = normalizarTel(c.telefone);
+    if(telNorm && telCNorm) return telNorm === telCNorm;
+    if(!telNorm && !telCNorm) return (c.nome || '').trim().toLowerCase() === nomeNorm;
+    return false;
+  });
+
+  const compra = {
+    data: Date.now(),
+    dataFormatada: new Date().toLocaleDateString('pt-BR'),
+    hora: new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}),
+    itens: itens || [],
+    valor: parseFloat(valorTotal),
+    origem: origem || 'mesa',
+    mesaId: mesaId || ''
+  };
+
+  if(contaExistente){
+    contaExistente.compras = contaExistente.compras || [];
+    contaExistente.compras.push(compra);
+    contaExistente.valorTotal = (contaExistente.valorTotal || 0) + compra.valor;
+    contaExistente.totalAberto = (contaExistente.totalAberto || 0) + compra.valor;
+    if(telNorm && !normalizarTel(contaExistente.telefone)) contaExistente.telefone = telefone;
+    try{
+      await set(ref(db, 'crediario/' + contaExistente.id), contaExistente);
+      mostrarAlerta(`📒 Somado à conta de ${contaExistente.nome}: +${fmt(compra.valor)} (em aberto: ${fmt(contaExistente.totalAberto)})`, 'verde');
+    }catch(e){
+      console.error('Erro ao atualizar crediário:', e);
+      mostrarAlerta('Erro ao atualizar crediário', 'vermelho');
+    }
+    return;
+  }
+
   const id = 'CRED' + Date.now();
   const registro = {
     id,
     nome: nome || 'Cliente',
     telefone: telefone || '',
-    valorTotal: parseFloat(valorTotal),
+    valorTotal: compra.valor,
     totalPago: 0,
-    totalAberto: parseFloat(valorTotal),
-    itens: itens || [],
-    origem: origem || 'mesa',
-    mesaId: mesaId || '',
+    totalAberto: compra.valor,
+    compras: [compra],
     dataCriacao: Date.now(),
-    dataFormatada: new Date().toLocaleDateString('pt-BR'),
-    horaCriacao: new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}),
+    dataFormatada: compra.dataFormatada,
+    horaCriacao: compra.hora,
     pagamentos: [],
     status: 'aberto'
   };
   try{
     await set(ref(db, 'crediario/' + id), registro);
-    mostrarAlerta(`📒 Crediário registrado: ${nome} — ${fmt(valorTotal)}`, 'verde');
+    mostrarAlerta(`📒 Crediário registrado: ${nome} — ${fmt(compra.valor)}`, 'verde');
   }catch(e){
     console.error('Erro ao registrar crediário:', e);
     mostrarAlerta('Erro ao registrar crediário', 'vermelho');
@@ -2906,13 +3030,20 @@ window.abrirDetalhesCrediario = function(id){
   const conteudo = document.getElementById('cred-detalhes-conteudo');
   if(!conteudo) return;
 
-  const itensHtml = (c.itens || []).map(it =>
-    `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border2);font-size:12px;">
-      <span>${it.qtd}x ${it.nome}</span>
-      <span style="font-weight:600;">${fmt(it.preco * it.qtd)}</span>
-    </div>`
-  ).join('') || '<div style="color:var(--txt2);font-size:12px;padding:8px 0;">Sem itens registrados</div>';
-
+  const itensHtml = (c.compras && c.compras.length)
+    ? c.compras.map(compra => `
+      <div style="margin-bottom:10px;">
+        <div style="font-size:11px;font-weight:700;color:var(--txt2);margin-bottom:4px;">📅 ${compra.dataFormatada} às ${compra.hora} — ${fmt(compra.valor)}</div>
+        ${(compra.itens || []).map(it => `<div style="display:flex;justify-content:space-between;padding:4px 0 4px 10px;border-bottom:1px solid var(--border2);font-size:12px;">
+          <span>${it.qtd}x ${it.nome}</span><span style="font-weight:600;">${fmt(it.preco * it.qtd)}</span>
+        </div>`).join('')}
+      </div>`).join('')
+    : ((c.itens || []).map(it =>
+        `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border2);font-size:12px;">
+          <span>${it.qtd}x ${it.nome}</span>
+          <span style="font-weight:600;">${fmt(it.preco * it.qtd)}</span>
+        </div>`
+      ).join('') || '<div style="color:var(--txt2);font-size:12px;padding:8px 0;">Sem itens registrados</div>');
   const pagsHtml = (c.pagamentos || []).length ? c.pagamentos.map(p =>
     `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:rgba(47,179,109,.06);border:1px solid rgba(47,179,109,.2);border-radius:10px;margin-bottom:6px;font-size:12px;">
       <div>
