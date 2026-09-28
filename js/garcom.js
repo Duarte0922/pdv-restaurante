@@ -235,7 +235,7 @@ const categoriasCx = [
     {nome:'Cervejas', icon:'🍺', img:'img/cervejas.jpg', produtos: adicionarImagem([
     {nome: 'lataobhama', preco: 6, bar: true},{nome: 'lataokaiser', preco: 6, bar: true},{nome: 'lataoheineken', preco: 6, bar: true},
     {nome:'Brahma / Skol 600ml',preco:10,bar:true},{nome:'Kaiser 600ml',preco:8,bar:true},
-    {nome:'Original 600ml',preco:13,bar:true},{nome:'Spaten / Stella 600ml',preco:14,bar:true},{nome:'BG',preco:6,bar:true},
+    {nome:'Original 600ml',preco:13,bar:true},{nome:'Spaten / Stella 600ml',preco:14,bar:true},{nome:'BG',preco:7,bar:true},
     {nome:'Heineken 600ml',preco:16,bar:true},
     {nome:'Vinho Taça',preco:22.9,bar:true},{nome:'Vinho Garrafa',preco:22.9,bar:true},
     {nome:'Vinho Pergola Taça',preco:10.9,bar:true},{nome:'Vinho Pergola Garrafa',preco:45.9,bar:true},
