@@ -277,6 +277,26 @@ const categoriasCx = [
   ])},
 ];
 
+function gerarChavePreco(nome){
+  return nome.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 30);
+}
+
+onValue(ref(db, 'precos'), snap => {
+  const precos = snap.val() || {};
+  categoriasCx.forEach(cat => {
+    cat.produtos.forEach(p => {
+      const chave = gerarChavePreco(p.nome);
+      if(p.tamanhos){
+        if(precos[chave] !== undefined) p.tamanhos.M = precos[chave];
+        if(precos[chave+'_G'] !== undefined) p.tamanhos.G = precos[chave+'_G'];
+        if(precos[chave+'_GG'] !== undefined) p.tamanhos.GG = precos[chave+'_GG'];
+      } else if(precos[chave] !== undefined){
+        p.preco = precos[chave];
+      }
+    });
+  });
+});
+
 let mesaAtualCx = null, itemPendenteCx = null, carrinhoAbertoCx = true;
 let mmTamanhoCx = null, mmSabor1Cx = null;
 let promoAtualCx = null, promoModoCx = null, promoSabor1Cx = null;
