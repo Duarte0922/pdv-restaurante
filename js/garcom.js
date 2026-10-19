@@ -191,6 +191,7 @@ const pizzasEspCx = ['18 - Lombo Tropical','19 - Lombo Canadense','20 - Milhombo
 const PROMOCOES_PIZZA = [
   {id:'p1', label:'Promoção 01 — Pizza Gigante', tamanho:'GG', precoUma:61.90, precoDuas:110.90},
   {id:'p2', label:'Promoção 02 — Sabores Tradicionais Grande', tamanho:'G', precoUma:52.90, precoDuas:95.90},
+  {id:'p3', label:'Promoção 03 — Gigante c/ Refrigerante Trad.', tamanho:'GG', precoUma:81.90, precoDuas:0, soUma:true},
 ];
 
 const categoriasCx = [
