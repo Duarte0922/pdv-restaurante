@@ -654,7 +654,7 @@ window.abrirPromocoesCx = function(){
   box.innerHTML = PROMOCOES_PIZZA.map(p => `
     <button class="btn" onclick="escolherPromoCx('${p.id}')" style="text-align:left;padding:13px 16px;font-size:14px;width:100%;">
       <div style="font-weight:700;">${p.label}</div>
-      <div style="font-size:11px;color:var(--verde);">Uma = ${fmt(p.precoUma)} · Duas = ${fmt(p.precoDuas)}</div>
+      <div style="font-size:11px;color:var(--verde);">Uma = ${fmt(p.precoUma)}${p.soUma ? '' : ' · Duas = ' + fmt(p.precoDuas)}</div>
     </button>`).join('');
   abrirModal('modal-promo-cx');
 };
@@ -662,6 +662,7 @@ window.abrirPromocoesCx = function(){
 window.escolherPromoCx = function(id){
   promoAtualCx = PROMOCOES_PIZZA.find(p => p.id === id);
   fecharModal('modal-promo-cx');
+  if(promoAtualCx.soUma){ escolherModoPromoCx('uma'); return; }
   document.getElementById('promo-modo-titulo-cx').textContent = promoAtualCx.label;
   document.getElementById('promo-modo-uma-cx').textContent = 'Uma pizza — ' + fmt(promoAtualCx.precoUma);
   document.getElementById('promo-modo-duas-cx').textContent = 'Duas pizzas — ' + fmt(promoAtualCx.precoDuas);
