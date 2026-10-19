@@ -811,9 +811,6 @@ const categoriasCx = [
     {nome: 'Bacon Porção', preco: 8.0, img: 'produtos/bacon-porcao.jpg'},
     {nome: 'Bacon Pizza', preco: 4.0, img: 'produtos/bacon-pizza.jpg'}
   ])},
-    {nome:'Promoções Zap', icon:'🎉', img:'img/promocoes.jpg', produtos: adicionarImagem([
-    {nome:'Gigante c/ Refrigerante (Trad. — anotar sabor na obs)',preco:71.90},
-  ])},
 
     {nome:'Promoções Zap', icon:'🎉', img:'img/promocoes.jpg', produtos: adicionarImagem([
     {nome:'Gigante c/ Refrigerante (Trad. — anotar sabor na obs)',preco:71.90},
