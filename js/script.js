@@ -733,7 +733,8 @@ const pizzasEspCx = ['18 - Lombo Tropical','19 - Lombo Canadense','20 - Milhombo
 const PROMOCOES_PIZZA = [
   {id:'p1', label:'Promoção 01 — Pizza Gigante', tamanho:'GG', precoUma:61.90, precoDuas:110.90},
   {id:'p2', label:'Promoção 02 — Sabores Tradicionais Grande', tamanho:'G', precoUma:52.90, precoDuas:95.90},
-  {id:'p3', label:'Promoção 03 — Gigante c/ Refrigerante Trad.', tamanho:'GG', precoUma:81.90, precoDuas:0, soUma:true},
+  {id:'p3', label:'Promoção 03 — Gigante c/ Refrigerante Trad.', tamanho:'GG', precoDuas:0, soUma:true,
+    get precoUma(){ const z = categoriasCx.flatMap(c => c.produtos).find(x => x.promoId === 'p3'); return z ? z.preco : 81.90; }},
 ];
 
 const categoriasCx = [
@@ -1088,6 +1089,7 @@ function selecionarCatCx(idx){
 }
 
 function adicionarItemCx(p, catNome, pizza){
+  if(p.promoId){ escolherPromoCx(p.promoId); return; }
   if(pizza && p.tamanhos){
     itemPendenteCx = {...p, categoria:catNome};
     document.getElementById('modal-pizza-nome-cx').textContent = p.nome;
@@ -1996,6 +1998,13 @@ window.adicionarProdutoModalPedido = function(idx, tamanho){
   const r = (window._resultadosBuscaTemp || [])[idx];
   if(!r) return;
   const p = r.p;
+  if(p.promoId){
+    document.getElementById('np-busca-produto').value='';
+    document.getElementById('np-resultados-produto').style.display='none';
+    document.getElementById('np-resultados-produto').innerHTML='';
+    escolherPromoPedido(p.promoId);
+    return;
+  }
   let preco = p.preco, nomeFinal = p.nome;
   if(tamanho && p.tamanhos){ preco = p.tamanhos[tamanho]; nomeFinal = p.nome + ' (' + tamanho + ')'; }
   const existente = window._carrinhoPedidoModal.find(i => i.nome === nomeFinal);
