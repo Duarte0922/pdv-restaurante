@@ -1596,6 +1596,7 @@ window.abrirPromocoesCx = function(){
 window.escolherPromoCx = function(id){
   promoAtualCx = PROMOCOES_PIZZA.find(p => p.id === id);
   fecharModal('modal-promo-cx');
+  if(promoAtualCx.soUma){ escolherModoPromoCx('uma'); return; }
   document.getElementById('promo-modo-titulo-cx').textContent = promoAtualCx.label;
   document.getElementById('promo-modo-uma-cx').textContent = 'Uma pizza — ' + fmt(promoAtualCx.precoUma);
   document.getElementById('promo-modo-duas-cx').textContent = 'Duas pizzas — ' + fmt(promoAtualCx.precoDuas);
@@ -2160,6 +2161,7 @@ window.abrirPromocoesPedido = function(){
 window.escolherPromoPedido = function(id){
   promoAtualPedido = PROMOCOES_PIZZA.find(p => p.id === id);
   fecharModal('modal-promo-pedido');
+  if(promoAtualPedido.soUma){ escolherModoPromoPedido('uma'); return; }
   document.getElementById('promo-modo-titulo-pedido').textContent = promoAtualPedido.label;
   document.getElementById('promo-modo-uma-pedido').textContent = 'Uma pizza — ' + fmt(promoAtualPedido.precoUma);
   document.getElementById('promo-modo-duas-pedido').textContent = 'Duas pizzas — ' + fmt(promoAtualPedido.precoDuas);
