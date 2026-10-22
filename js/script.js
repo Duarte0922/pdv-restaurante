@@ -57,6 +57,18 @@ window.fecharModal = fecharModal;
 
 function normalizarTel(t){ return (t||'').replace(/\D/g,''); }
 
+
+// Dia operacional: o "dia" só vira às 03:00 (o Luar fecha entre 00:20 e 02:00)
+function diaOperacional(d = new Date()){
+  const x = new Date(d.getTime() - 3*60*60*1000);
+  return x.toLocaleDateString('pt-BR').replace(/\//g,'-');
+}
+function diaOperacionalISO(d = new Date()){
+  const x = new Date(d.getTime() - 3*60*60*1000);
+  const p = n => String(n).padStart(2,'0');
+  return x.getFullYear() + '-' + p(x.getMonth()+1) + '-' + p(x.getDate());
+}
+
 function mostrarAlerta(msg, cor){
   const div = document.createElement('div');
   div.className = 'toast-msg toast-'+(cor==='vermelho' ? 'vermelho' : 'verde');
@@ -134,13 +146,13 @@ window.salvarPedidoHistoricoCliente = salvarPedidoHistoricoCliente;
 // ══════════════════════════════════════════════
 let mesas = [];
 let caixaHoje = {dinheiro:0, cartao:0, pix:0, taxa:0, vendas:{}};
-const hoje = new Date().toLocaleDateString('pt-BR').replace(/\//g,'-');
+const hoje = diaOperacional();
 async function proximoNumeroComanda(){
   const contadorRef = ref(db, 'contadores/' + hoje);
   const resultado = await runTransaction(contadorRef, (atual) => (atual || 0) + 1);
   return resultado.snapshot.val();
 }
-document.getElementById('data-relatorio').value = new Date().toISOString().slice(0,10);
+document.getElementById('data-relatorio').value = diaOperacionalISO();
 document.getElementById('caixa-data-hoje').textContent = 'Caixa — ' + new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'});
 
 // ══════════════════════════════════════════════
@@ -1459,7 +1471,7 @@ window.concluirVendaCx = async function(){
   if(pago < total){ alert('Valor pago menor que o total.'); return; }
   const nomeExibicao = mesaAtualCx.virtual ? (mesaAtualCx.nomeCliente || ('Balcão ' + String(mesaAtualCx.id).replace('B',''))) : 'Mesa ' + String(mesaAtualCx.id).padStart(2,'0');
   if(!confirm('Confirmar pagamento e liberar ' + nomeExibicao + '?')) return;
-  const hojeData = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
+  const hojeData = diaOperacional();
   const canal = mesaAtualCx.canal || 'mesa';
   const venda = {
     id: Date.now(), mesa: mesaAtualCx.id, canal,
@@ -3287,3 +3299,5 @@ setTimeout(() => {
   renderizarTelefone();
   renderizarPedidoAqui();
 }, 500);
+// Se o caixa ficar aberto de um dia pro outro, recarrega quando o dia operacional virar (03:00)
+setInterval(() => { if(diaOperacional() !== hoje) location.reload(); }, 60000);
