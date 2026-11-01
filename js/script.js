@@ -69,6 +69,26 @@ function diaOperacionalISO(d = new Date()){
   return x.getFullYear() + '-' + p(x.getMonth()+1) + '-' + p(x.getDate());
 }
 
+// Ajusta os pagamentos ao total: o excedente (troco) só pode sair do dinheiro
+function normalizarPagamentos(lista, total){
+  const r2 = n => Math.round((Number(n) || 0) * 100) / 100;
+  const pags = lista.map(p => ({tipo:p.tipo, valor:r2(p.valor)})).filter(p => p.valor > 0);
+  const soma = r2(pags.reduce((s,p) => s + p.valor, 0));
+  const diff = r2(soma - total);
+  let sobra = diff > 0 ? diff : 0;
+  let trocoDado = 0;
+  if(sobra > 0){
+    const din = pags.find(p => p.tipo === 'dinheiro');
+    if(din){
+      const abate = Math.min(din.valor, sobra);
+      din.valor = r2(din.valor - abate);
+      sobra = r2(sobra - abate);
+      trocoDado = abate;
+    }
+  }
+  return { pagamentos: pags.filter(p => p.valor > 0), troco: trocoDado, excedente: sobra, falta: diff < 0 ? r2(-diff) : 0 };
+}
+
 function mostrarAlerta(msg, cor){
   const div = document.createElement('div');
   div.className = 'toast-msg toast-'+(cor==='vermelho' ? 'vermelho' : 'verde');
@@ -743,8 +763,9 @@ const pizzasTradCx = ['01 - Frango c/ Catupiry','02 - Palmito á Bolonhesa','03 
 const pizzasEspCx = ['18 - Lombo Tropical','19 - Lombo Canadense','20 - Milhombo','21 - A Moda Renito','22 - Quatro Queijo','23 - Salaminho Italiano','24 - Quatro Carnes','25 - Cinco Carnes','26 - Nordestina','27 - Porconobilis','28 - A Moda Especial'].map(n => ({nome:n, tamanhos:{M:45.90, G:57.90, GG:76.90}}));
 
 const PROMOCOES_PIZZA = [
-  {id:'p1', label:'Promoção 01 — Pizza Gigante', tamanho:'GG', precoUma:61.90, precoDuas:110.90},
-  {id:'p2', label:'Promoção 02 — Sabores Tradicionais Grande', tamanho:'G', precoUma:52.90, precoDuas:95.90},
+  {id:'p1', label:'Promoção 01 — Pizza Gigante', tamanho:'GG', precoUma:68.90, precoDuas:120.90,
+    sabores:['05','06','12','13','17','07','10','15']},
+  {id:'p2', label:'Promoção 02 — Sabores Tradicionais Grande', tamanho:'G', precoUma:58.90, precoDuas:105.90},
   {id:'p3', label:'Promoção 03 — Gigante c/ Refrigerante Trad.', tamanho:'GG', precoDuas:0, soUma:true,
     get precoUma(){ const z = categoriasCx.flatMap(c => c.produtos).find(x => x.promoId === 'p3'); return z ? z.preco : 81.90; }},
 ];
@@ -825,9 +846,7 @@ const categoriasCx = [
     {nome: 'Bacon Pizza', preco: 4.0, img: 'produtos/bacon-pizza.jpg'}
   ])},
 
-    {nome:'Promoções Zap', icon:'🎉', img:'img/promocoes.jpg', produtos: adicionarImagem([
-    {nome:'Gigante c/ Refrigerante (Trad. — anotar sabor na obs)',preco:71.90},
-  ])},
+    {nome:'Promoções Zap', icon:'🎉', img:'img/promocoes.jpg', promocoes:true, produtos: []},
 ];
 
 onValue(ref(db, 'precos'), snap => {
@@ -1085,6 +1104,15 @@ function selecionarCatCx(idx){
     btnPromo.innerHTML = '<span style="font-size:22px;">🎉</span><div><div style="font-weight:700;font-size:14px;color:#ff9a9a;">Promoções</div><div style="font-size:11px;color:var(--txt2);">Pizza Gigante e Grande — sabores tradicionais</div></div>';
     btnPromo.onclick = () => abrirPromocoesCx();
     grid.appendChild(btnPromo);
+  }
+  if(c.promocoes){
+    PROMOCOES_PIZZA.forEach(pr => {
+      const el = document.createElement('div');
+      el.style.cssText = 'grid-column:1/-1;background:linear-gradient(180deg,#5c1414,#3a0d0d);border:2px solid #cc3333;border-radius:14px;padding:13px 16px;cursor:pointer;margin-bottom:4px;';
+      el.innerHTML = '<div style="font-weight:700;font-size:14px;color:#ff9a9a;">' + pr.label + '</div><div style="font-size:11px;color:var(--txt2);margin-top:2px;">Uma = ' + fmt(pr.precoUma) + (pr.soUma ? '' : ' · Duas = ' + fmt(pr.precoDuas)) + '</div>';
+      el.onclick = () => escolherPromoCx(pr.id);
+      grid.appendChild(el);
+    });
   }
   c.produtos.forEach(p => {
     const el = document.createElement('div');
@@ -1415,13 +1443,14 @@ function atualizarResumoPagCx(){
   const pago = totalPagDivCx();
   const falta = Math.max(0, total - pago);
   const pct = total > 0 ? Math.min(100, (pago / total) * 100) : 0;
+  const quitado = pago >= total - 0.005;
   document.getElementById('cx-total-ref').textContent = fmt(total);
   document.getElementById('cx-res-pago').textContent = fmt(pago);
   const diffEl = document.getElementById('cx-res-diff');
-  if(pago >= total && pagDivCx.length > 0){ diffEl.textContent = pago - total > 0.005 ? 'Troco: ' + fmt(pago - total) : '✓ Pago'; diffEl.style.color = 'var(--verde'; }
+  if(quitado && pagDivCx.length > 0){ diffEl.textContent = pago - total > 0.005 ? 'Troco: ' + fmt(pago - total) : '✓ Pago'; diffEl.style.color = 'var(--verde)'; }
   else { diffEl.textContent = 'Falta: ' + fmt(falta); diffEl.style.color = '#cf5b74'; }
   document.getElementById('cx-falta-bar').style.width = pct + '%';
-  const ok = pagDivCx.length > 0 && pago >= total && (mesaAtualCx.pedido || []).length > 0;
+  const ok = pagDivCx.length > 0 && quitado && (mesaAtualCx.pedido || []).length > 0;
   const btn = document.getElementById('btn-confirmar-cx');
   btn.style.opacity = ok ? '1' : '0.4';
   btn.style.pointerEvents = ok ? 'auto' : 'none';
@@ -1468,9 +1497,17 @@ window.concluirVendaCx = async function(){
   const taxaCobrar = (!mesaAtualCx._taxaCobrada && mesaAtualCx.taxa) ? mesaAtualCx.taxa : 0;
   const total = sub - desc + taxaCobrar;
   const pago = totalPagDivCx();
-  if(pago < total){ alert('Valor pago menor que o total.'); return; }
+  if(pago < total - 0.005){ alert('Valor pago menor que o total.'); return; }
+  const ajuste = normalizarPagamentos(pagDivCx, total);
+  if(ajuste.excedente > 0.009){
+    alert('Cartão/Pix/crediário passam do total em ' + fmt(ajuste.excedente) + '. Só o dinheiro pode ter troco. Confira se o mesmo valor não foi lançado em duas formas de pagamento.');
+    return;
+  }
+  const pagamentosLiq = ajuste.pagamentos;
   const nomeExibicao = mesaAtualCx.virtual ? (mesaAtualCx.nomeCliente || ('Balcão ' + String(mesaAtualCx.id).replace('B',''))) : 'Mesa ' + String(mesaAtualCx.id).padStart(2,'0');
   if(!confirm('Confirmar pagamento e liberar ' + nomeExibicao + '?')) return;
+  const btnConf = document.getElementById('btn-confirmar-cx');
+  btnConf.style.pointerEvents = 'none'; btnConf.style.opacity = '0.4';
   const hojeData = diaOperacional();
   const canal = mesaAtualCx.canal || 'mesa';
   const venda = {
@@ -1479,15 +1516,16 @@ window.concluirVendaCx = async function(){
     hora: new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}),
     itens: (mesaAtualCx.pedido || []).map(it => ({nome:it.nome, qtd:it.qtd, preco:it.preco, obs:it.obs || ''})),
     subtotal: sub, desconto: desc, taxa: taxaCobrar, total,
-    pagamentos: pagDivCx.map(p => ({tipo:p.tipo, valor:parseFloat(p.valor) || 0})),
-    pagamento: pagDivCx[0].tipo
+    pagamentos: pagamentosLiq,
+    pagamento: pagamentosLiq[0] ? pagamentosLiq[0].tipo : pagDivCx[0].tipo,
+    troco: ajuste.troco
   };
   try{
     await set(ref(db, `caixa/${hojeData}/vendas/v${Date.now()}`), venda);
     const snap = await get(ref(db, `caixa/${hojeData}`));
     const atual = snap.val() || {};
     const upd = {data: hojeData};
-    pagDivCx.forEach(p => { upd[p.tipo] = (atual[p.tipo] || 0) + (parseFloat(p.valor) || 0); });
+    pagamentosLiq.forEach(p => { upd[p.tipo] = (atual[p.tipo] || 0) + p.valor; });
     if(taxaCobrar) upd.taxa = (atual.taxa || 0) + taxaCobrar;
     if(canal === 'delivery') upd.canalWhatsapp = (atual.canalWhatsapp || 0) + 1;
     if(canal === 'telefone') upd.canalTelefone = (atual.canalTelefone || 0) + 1;
@@ -1495,8 +1533,7 @@ window.concluirVendaCx = async function(){
     await window.imprimirContaCx();
     if(taxaCobrar) mesaAtualCx._taxaCobrada = true;
 
-    // 🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢
-    // 🔴 NOVO: Se tem pagamento via Crediário, registra no módulo de Crediário
+    // Se tem pagamento via Crediário, registra no módulo de Crediário
     const pagCredario = pagDivCx.find(p => p.tipo === 'credario');
     if(pagCredario && parseFloat(pagCredario.valor) > 0){
       await registrarCrediario({
@@ -1508,7 +1545,6 @@ window.concluirVendaCx = async function(){
         mesaId: mesaAtualCx.id
       });
     }
-    // 🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢
 
     let fechouTotal = false;
     if(abaFechCx === 'parcial'){
@@ -1524,7 +1560,7 @@ window.concluirVendaCx = async function(){
     }
     await salvarMesaCx(mesaAtualCx);
 
-    // 🔴 Se fechou totalmente uma mesa virtual, remove do Firebase
+    // Se fechou totalmente uma mesa virtual, remove do Firebase
     if(fechouTotal && mesaAtualCx.virtual){
       const idFechado = mesaAtualCx.id;
       mesas = mesas.filter(m => m.id !== idFechado);
@@ -1543,13 +1579,16 @@ window.concluirVendaCx = async function(){
       }
     }
     const pagDesc = pagDivCx.map(p => ({dinheiro:'💵',cartao:'💳',pix:'📲',credario:'📒'}[p.tipo] + ' ' + fmt(parseFloat(p.valor) || 0))).join(' · ');
-    document.getElementById('ok-msg-cx').textContent = nomeExibicao + ' liberada · ' + fmt(total) + '\n' + pagDesc;
+    document.getElementById('ok-msg-cx').textContent = nomeExibicao + ' liberada · ' + fmt(total) + '\n' + pagDesc + (ajuste.troco > 0 ? '\nTroco: ' + fmt(ajuste.troco) : '');
     mesaAtualCx = null;
     const fech = document.getElementById('screen-fechamento-cx');
     fech.classList.remove('active'); fech.style.display = 'none';
     const ok = document.getElementById('screen-ok-cx');
     ok.style.display = 'flex'; ok.classList.add('active');
-  }catch(e){ alert('Erro ao confirmar pagamento: ' + e.message); }
+  }catch(e){
+    btnConf.style.pointerEvents = 'auto'; btnConf.style.opacity = '1';
+    alert('Erro ao confirmar pagamento: ' + e.message);
+  }
 };
 // ══════════════════════════════════════════════
 // 17. MEIO A MEIO (mesa)
@@ -1594,6 +1633,12 @@ window.filtrarMM2Cx = function(tipo){
   });
 };
 
+// Sabores permitidos em cada promoção (sem lista, vale qualquer sabor tradicional)
+function saboresDaPromo(promo){
+  if(!promo || !promo.sabores) return pizzasTradCx;
+  return pizzasTradCx.filter(p => promo.sabores.includes(p.nome.slice(0,2)));
+}
+
 window.abrirPromocoesCx = function(){
   const box = document.getElementById('cx-promo-lista');
   box.innerHTML = PROMOCOES_PIZZA.map(p => `
@@ -1624,7 +1669,7 @@ window.escolherModoPromoCx = function(modo){
 function renderListaPromoCx(containerId){
   const container = document.getElementById(containerId);
   container.innerHTML = '';
-  pizzasTradCx.forEach(p => {
+  saboresDaPromo(promoAtualCx).forEach(p => {
     const btn = document.createElement('button');
     btn.className = 'btn';
     btn.style.cssText = 'text-align:left;padding:11px 14px;font-size:13px;width:100%;';
@@ -1651,7 +1696,7 @@ window.escolherSabor1PromoCx = function(nome){
 function renderListaPromo2Cx(){
   const container = document.getElementById('cx-promo-sabor2-lista');
   container.innerHTML = '';
-  pizzasTradCx.forEach(p => {
+  saboresDaPromo(promoAtualCx).forEach(p => {
     const btn = document.createElement('button');
     btn.className = 'btn';
     btn.style.cssText = 'text-align:left;padding:11px 14px;font-size:13px;width:100%;';
@@ -2190,7 +2235,7 @@ window.escolherModoPromoPedido = function(modo){
   fecharModal('modal-promo-modo-pedido');
   const container = document.getElementById('np-promo-sabor1-lista');
   container.innerHTML = '';
-  pizzasTradCx.forEach(p => {
+  saboresDaPromo(promoAtualPedido).forEach(p => {
     const btn = document.createElement('button');
     btn.className = 'btn';
     btn.style.cssText = 'text-align:left;padding:11px 14px;font-size:13px;width:100%;';
@@ -2215,7 +2260,7 @@ window.escolherSabor1PromoPedido = function(nome){
   document.getElementById('np-promo-sabor2-info').textContent = '1ª pizza: ' + nome + ' — escolha a 2ª:';
   const container = document.getElementById('np-promo-sabor2-lista');
   container.innerHTML = '';
-  pizzasTradCx.forEach(p => {
+  saboresDaPromo(promoAtualPedido).forEach(p => {
     const btn = document.createElement('button');
     btn.className = 'btn';
     btn.style.cssText = 'text-align:left;padding:11px 14px;font-size:13px;width:100%;';
@@ -2640,7 +2685,7 @@ window.concluirPedidoAqui = async function(id){
   const p = pedidoAquiList.find(x => x.id === id);
   if(!p) return;
   if(!confirm('Concluir pedido #' + p.numero + ' — ' + fmt(p.total) + '?')) return;
-  const hojeData = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
+  const hojeData = diaOperacional(); .toLocaleDateString('pt-BR').replace(/\//g, '-');
   const subtotal = p.produtos !== undefined ? p.produtos : (p.total - (p.taxa || 0));
   const venda = {
     id: Date.now(), mesa: p.numero, canal:'pedidoaqui',
@@ -2736,7 +2781,7 @@ async function finalizarConclusaoPedido(id, canal){
   if(!confirm('Concluir pedido de ' + nomeExibicao + ' — ' + fmt(total) + '?')) return;
 
   const pagamentosFinal = (p.pagamentos && p.pagamentos.length) ? p.pagamentos : [{tipo: p.pagamento || 'dinheiro', valor: total}];
-  const hojeData = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
+  const hojeData = diaOperacional();.toLocaleDateString('pt-BR').replace(/\//g, '-');
   const venda = {
     id: Date.now(), mesa: id, canal, cliente: nomeExibicao,
     telefone: p.telefone || (mesa && mesa.telefoneCliente) || '',
@@ -3245,7 +3290,7 @@ window.confirmarPagamentoCrediario = async function(){
     await set(ref(db, 'crediario/' + c.id), c);
 
     // 🔴 Também registra no caixa do dia como ENTRADA (quando o cliente paga o crediário)
-    const hojeData = new Date().toLocaleDateString('pt-BR').replace(/\//g,'-');
+    const hojeData = diaOperacional();.toLocaleDateString('pt-BR').replace(/\//g,'-');
     const snap = await get(ref(db, `caixa/${hojeData}`));
     const atual = snap.val() || {};
     const upd = {data: hojeData};
