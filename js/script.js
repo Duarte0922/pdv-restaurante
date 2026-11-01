@@ -2685,7 +2685,7 @@ window.concluirPedidoAqui = async function(id){
   const p = pedidoAquiList.find(x => x.id === id);
   if(!p) return;
   if(!confirm('Concluir pedido #' + p.numero + ' — ' + fmt(p.total) + '?')) return;
-  const hojeData = diaOperacional(); .toLocaleDateString('pt-BR').replace(/\//g, '-');
+  const hojeData = diaOperacional();
   const subtotal = p.produtos !== undefined ? p.produtos : (p.total - (p.taxa || 0));
   const venda = {
     id: Date.now(), mesa: p.numero, canal:'pedidoaqui',
@@ -2781,7 +2781,7 @@ async function finalizarConclusaoPedido(id, canal){
   if(!confirm('Concluir pedido de ' + nomeExibicao + ' — ' + fmt(total) + '?')) return;
 
   const pagamentosFinal = (p.pagamentos && p.pagamentos.length) ? p.pagamentos : [{tipo: p.pagamento || 'dinheiro', valor: total}];
-  const hojeData = diaOperacional();.toLocaleDateString('pt-BR').replace(/\//g, '-');
+  const hojeData = diaOperacional();
   const venda = {
     id: Date.now(), mesa: id, canal, cliente: nomeExibicao,
     telefone: p.telefone || (mesa && mesa.telefoneCliente) || '',
@@ -3290,7 +3290,7 @@ window.confirmarPagamentoCrediario = async function(){
     await set(ref(db, 'crediario/' + c.id), c);
 
     // 🔴 Também registra no caixa do dia como ENTRADA (quando o cliente paga o crediário)
-    const hojeData = diaOperacional();.toLocaleDateString('pt-BR').replace(/\//g,'-');
+    const hojeData = diaOperacional();
     const snap = await get(ref(db, `caixa/${hojeData}`));
     const atual = snap.val() || {};
     const upd = {data: hojeData};
