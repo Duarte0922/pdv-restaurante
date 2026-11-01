@@ -849,8 +849,13 @@ const categoriasCx = [
     {nome:'Promoções Zap', icon:'🎉', img:'img/promocoes.jpg', promocoes:true, produtos: []},
 ];
 
+let precosCache = {};
+let produtosExtras = {};
+
+// ── Preços (aba Preços) ──
 onValue(ref(db, 'precos'), snap => {
   const precos = snap.val() || {};
+  precosCache = precos;
   categoriasCx.forEach(cat => {
     cat.produtos.forEach(p => {
       const chave = gerarChavePreco(p.nome);
@@ -867,6 +872,95 @@ onValue(ref(db, 'precos'), snap => {
     carregarProdutosPrecos();
   }
 });
+
+// ── Produtos novos (cadastro rápido) ──
+onValue(ref(db, 'produtos_extras'), snap => {
+  produtosExtras = snap.val() || {};
+  aplicarProdutosExtras();
+});
+
+function aplicarProdutosExtras(){
+  categoriasCx.forEach(cat => { cat.produtos = cat.produtos.filter(p => !p._extra); });
+  Object.entries(produtosExtras).forEach(([id, x]) => {
+    const cat = categoriasCx.find(c => c.nome === x.categoria) || categoriasCx.find(c => c.nome === 'Bebidas');
+    const chave = gerarChavePreco(x.nome);
+    const preco = precosCache[chave] !== undefined ? precosCache[chave] : Number(x.preco) || 0;
+    cat.produtos.push({
+      nome: x.nome, preco, bar: !!x.bar,
+      img: gerarCaminhoImagemProduto(x.nome),
+      _extra: true, _id: id
+    });
+  });
+  const abaPrecos = document.getElementById('aba-precos');
+  if(abaPrecos && abaPrecos.classList.contains('ativa')) carregarProdutosPrecos();
+}
+
+window.abrirNovoProdutoCx = function(){
+  let ov = document.getElementById('ov-novo-produto');
+  if(ov) ov.remove();
+  ov = document.createElement('div');
+  ov.id = 'ov-novo-produto';
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px;';
+  const estiloInp = 'width:100%;padding:12px;background:#1a201c;border:1px solid #303a33;border-radius:10px;color:#f4f7f1;font-size:16px;margin-bottom:10px;font-family:inherit;';
+  ov.innerHTML = `
+    <div style="background:#141a15;border:1px solid #2a322c;border-radius:16px;padding:18px;width:100%;max-width:380px;color:#f4f7f1;">
+      <div style="font-size:16px;font-weight:700;margin-bottom:12px;">➕ Novo produto</div>
+      <input id="np2-nome" placeholder="Nome do produto (ex: Água Tônica)" style="${estiloInp}">
+      <input id="np2-preco" type="number" step="0.01" inputmode="decimal" placeholder="Preço (ex: 6.00)" style="${estiloInp}">
+      <select id="np2-cat" style="${estiloInp}">
+        ${categoriasCx.filter(c => !c.promocoes).map(c => `<option value="${c.nome}" ${c.nome==='Bebidas'?'selected':''}>${c.icon} ${c.nome}</option>`).join('')}
+      </select>
+      <select id="np2-setor" style="${estiloInp}">
+        <option value="bar">Bar (não vai pra cozinha)</option>
+        <option value="cozinha">Cozinha (imprime comanda)</option>
+      </select>
+      <div style="display:flex;gap:8px;">
+        <button onclick="document.getElementById('ov-novo-produto').remove()" style="flex:1;padding:12px;background:#232a25;border:1px solid #313a33;border-radius:10px;color:#f4f7f1;font-weight:600;cursor:pointer;">Cancelar</button>
+        <button onclick="salvarNovoProdutoCx()" style="flex:1;padding:12px;background:linear-gradient(180deg,#2aa160,#1d7b49);border:none;border-radius:10px;color:#fff;font-weight:700;cursor:pointer;">Salvar</button>
+      </div>
+    </div>`;
+  document.body.appendChild(ov);
+  document.getElementById('np2-nome').focus();
+};
+
+window.salvarNovoProdutoCx = async function(){
+  const nome = document.getElementById('np2-nome').value.trim();
+  const preco = parseFloat(document.getElementById('np2-preco').value);
+  const categoria = document.getElementById('np2-cat').value;
+  const bar = document.getElementById('np2-setor').value === 'bar';
+  if(!nome){ mostrarAlerta('Informe o nome do produto', 'vermelho'); return; }
+  if(isNaN(preco) || preco <= 0){ mostrarAlerta('Informe um preço válido', 'vermelho'); return; }
+  const jaExiste = categoriasCx.some(c => c.produtos.some(p => p.nome.toLowerCase() === nome.toLowerCase()));
+  if(jaExiste){ mostrarAlerta('Já existe um produto com esse nome', 'vermelho'); return; }
+  try{
+    await push(ref(db, 'produtos_extras'), {nome, preco, categoria, bar, criadoEm: Date.now()});
+    document.getElementById('ov-novo-produto').remove();
+    mostrarAlerta('✓ ' + nome + ' cadastrado — ' + fmt(preco), 'verde');
+  }catch(e){
+    mostrarAlerta('Erro ao salvar: ' + e.message, 'vermelho');
+  }
+};
+
+window.removerProdutoExtra = async function(id){
+  if(!confirm('Remover este produto da lista?')) return;
+  await remove(ref(db, 'produtos_extras/' + id));
+};
+
+// Botão "➕ Novo produto" abaixo da busca (tela do pedido) e no topo da aba Preços
+setTimeout(() => {
+  const mk = () => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = '➕ Novo produto';
+    b.onclick = abrirNovoProdutoCx;
+    b.style.cssText = 'padding:10px 14px;margin:6px 0;background:linear-gradient(180deg,#274f88,#1b3158);border:1px solid #5e96ff;border-radius:10px;color:#aad4ff;font-size:13px;font-weight:700;cursor:pointer;';
+    return b;
+  };
+  const busca = document.getElementById('busca-produto-cx');
+  if(busca) busca.insertAdjacentElement('afterend', mk());
+  const abaPrecos = document.getElementById('aba-precos');
+  if(abaPrecos) abaPrecos.insertAdjacentElement('afterbegin', mk());
+}, 600);
 
 let mesaAtualCx = null, itemPendenteCx = null, carrinhoAbertoCx = true;
 let descontoAtualCx = 0, pagDivCx = [];
